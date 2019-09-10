@@ -1,3 +1,4 @@
+# cython: language_level=3
 #  Drakkar-Software OctoBot-Backtesting
 #  Copyright (c) Drakkar-Software, All rights reserved.
 #
@@ -9,36 +10,7 @@
 #  This library is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+#  Lesser General License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from enum import Enum
-
-
-class DataFormats(Enum):
-    REGULAR_COLLECTOR_DATA = 0
-    KAIKO_DATA = 1
-
-
-class DataFormatKeys(Enum):
-    SYMBOL = "symbol"
-    EXCHANGE = "exchange"
-    DATE = "date"
-    CANDLES = "candles"
-    TYPE = "type"
-
-
-class ReportFormat(Enum):
-    SYMBOL_REPORT = "symbol_report"
-    BOT_REPORT = "bot_report"
-    SYMBOLS_WITH_TF = "symbols_with_time_frames_frames"
-
-
-class DataBaseTables(Enum):
-    RECENT_TRADES = "recent_trades"
-    ORDER_BOOK = "order_book"
-    OHLCV = "ohlcv"
-    KLINE = "kline"
-    TICKER = "ticker"
-

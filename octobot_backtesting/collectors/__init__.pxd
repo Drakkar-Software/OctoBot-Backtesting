@@ -1,4 +1,3 @@
-# cython: language_level=3
 #  Drakkar-Software OctoBot-Backtesting
 #  Copyright (c) Drakkar-Software, All rights reserved.
 #
@@ -10,18 +9,7 @@
 #  This library is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General License for more details.
+#  Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-
-
-cdef class DataCollectorParser:
-    @staticmethod
-    cdef dict _get_file_content(str file_name)
-
-    @staticmethod
-    cdef dict _merge_arrays(dict arrays)
-
-    @staticmethod
-    cdef dict _get_empty_parsed_data()

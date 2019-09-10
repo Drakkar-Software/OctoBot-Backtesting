@@ -13,32 +13,25 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from enum import Enum
+import asyncio
+import logging
+
+from octobot_commons.enums import TimeFrames
+from octobot_commons.logging.logging_util import get_logger
+
+from octobot_backtesting.collectors.exchanges.exchange_collector import ExchangeDataCollector
 
 
-class DataFormats(Enum):
-    REGULAR_COLLECTOR_DATA = 0
-    KAIKO_DATA = 1
+async def run_exchange_collector(config, exchange_name, symbols, time_frames):
+    collector = ExchangeDataCollector(config, exchange_name, symbols, time_frames)
+    await collector.start()
 
 
-class DataFormatKeys(Enum):
-    SYMBOL = "symbol"
-    EXCHANGE = "exchange"
-    DATE = "date"
-    CANDLES = "candles"
-    TYPE = "type"
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    get_logger().info("starting...")
 
+    main_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(main_loop)
 
-class ReportFormat(Enum):
-    SYMBOL_REPORT = "symbol_report"
-    BOT_REPORT = "bot_report"
-    SYMBOLS_WITH_TF = "symbols_with_time_frames_frames"
-
-
-class DataBaseTables(Enum):
-    RECENT_TRADES = "recent_trades"
-    ORDER_BOOK = "order_book"
-    OHLCV = "ohlcv"
-    KLINE = "kline"
-    TICKER = "ticker"
-
+    main_loop.run_until_complete(run_exchange_collector({}, "binance", ["BTC/USDT"], [TimeFrames.ONE_MINUTE]))
