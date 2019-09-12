@@ -24,8 +24,8 @@ from octobot_backtesting.collectors.exchanges.exchange_collector import Exchange
 
 async def run_exchange_collector(config, exchange_name, symbols, time_frames):
     collector = ExchangeDataCollector(config, exchange_name, symbols, time_frames)
+    await collector.initialize()
     await collector.start()
-
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

@@ -14,3 +14,18 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+cdef class DataBase:
+    cdef str file_name
+
+    cdef object logger
+    cdef object connection
+    cdef object cursor
+
+    cdef list tables
+
+    cdef void stop(self)
+
+    cdef void __insert_values(self, object table, int timestamp, str inserting_values)
+    cdef bool __check_table_exists(self, object table)
+    cdef void __init_tables_list(self)

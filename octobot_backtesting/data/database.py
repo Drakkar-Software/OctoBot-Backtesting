@@ -28,15 +28,18 @@ class DataBase:
         self.__init_tables_list()
 
     def insert(self, table, timestamp, **kwargs):
-        if table not in self.tables:
+        if table.value not in self.tables:
             self.__create_table(table, **kwargs)
 
         # Insert a row of data
-        values = [f"'{value}'" for value in kwargs.values()]
-        self.cursor.execute(f"INSERT INTO {table.value} VALUES ({timestamp}, {', '.join(values)})")
+        inserting_values = [f"'{value}'" for value in kwargs.values()]
+        self.__insert_values(table, timestamp, ', '.join(inserting_values))
 
         # Save (commit) the changes
         self.connection.commit()
+
+    def __insert_values(self, table, timestamp, inserting_values):
+        self.cursor.execute(f"INSERT INTO {table.value} VALUES ({timestamp}, {inserting_values})")
 
     def select(self, table, size=-1, sort="ASC", **kwargs):
         where_clauses = [f"{key} = '{value}'" for key, value in kwargs.items()]
@@ -47,14 +50,17 @@ class DataBase:
         self.connection.close()
 
     def __check_table_exists(self, table) -> bool:
-        self.cursor.execute(
-            f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
+        self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
         return self.cursor.fetchall() != []
 
     def __create_table(self, table, **kwargs) -> None:
-        self.cursor.execute(
-            f"CREATE TABLE {table.value} (timestamp datetime, {' text, '.join([col for col in kwargs.keys()])})")
-        self.tables.append(table.value)
+        try:
+            self.cursor.execute(
+                f"CREATE TABLE {table.value} (timestamp datetime, {' text, '.join([col for col in kwargs.keys()])})")
+        except sqlite3.OperationalError:
+            self.logger.error(f"{table} already exists")
+        finally:
+            self.tables.append(table.value)
 
     def __init_tables_list(self):
         self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")

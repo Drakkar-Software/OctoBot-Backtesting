@@ -32,6 +32,9 @@ class DataCollector:
         self.file_name = f"{exchange_name}_{time.time()}"
         self.database = DataBase(self.file_name)
 
+    async def initialize(self):
+        pass
+
     async def stop(self) -> None:
         self.should_stop = True
 
