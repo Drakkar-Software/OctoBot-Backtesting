@@ -14,4 +14,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from .exchanges import *
+
+def test_collector():
+    # TODO
+    pass

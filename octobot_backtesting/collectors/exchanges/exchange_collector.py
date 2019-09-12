@@ -40,14 +40,8 @@ class ExchangeDataCollector(DataCollector):
         self.config[CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {CONFIG_CRYPTO_PAIRS: self.symbols}}
 
     async def start(self):
-        exchange_factory = create_new_exchange(self.config,
-                                               self.exchange_name,
-                                               is_simulated=True,
-                                               is_rest_only=True,
-                                               is_backtesting=False,
-                                               is_sandboxed=False,
-                                               is_collecting=True,
-                                               backtesting_files=None)
+        exchange_factory = create_new_exchange(self.config, self.exchange_name, is_simulated=True, is_rest_only=True,
+                                               is_collecting=True)
         await exchange_factory.create_basic()
 
         await get_chan(OctoBotTradingChannelsName.TICKER_CHANNEL.value,
