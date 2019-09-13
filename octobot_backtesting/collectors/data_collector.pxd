@@ -25,7 +25,10 @@ cdef class DataCollector:
     cdef public bint should_stop
 
     cdef public str file_name
+    cdef public str file_path
+    cdef public str path
 
     cdef public DataBase database
 
     cpdef void create_database(self)
+    cpdef void set_file_path(self)

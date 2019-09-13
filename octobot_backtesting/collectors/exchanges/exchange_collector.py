@@ -34,6 +34,7 @@ class ExchangeDataCollector(DataCollector):
         self.symbols = symbols if symbols else []
         self.time_frames = time_frames if time_frames else []
         self.file_name = f"{exchange_name}_{time.time()}{BACKTESTING_DATA_FILE_EXT}"
+        self.set_file_path()
 
     async def initialize(self):
         self.create_database()

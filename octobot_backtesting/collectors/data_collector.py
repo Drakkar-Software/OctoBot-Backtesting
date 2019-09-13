@@ -14,21 +14,26 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 import time
+from os.path import join
 
 from octobot_commons.logging.logging_util import get_logger
 
-from octobot_backtesting.constants import BACKTESTING_DATA_FILE_EXT
+from octobot_backtesting.constants import BACKTESTING_DATA_FILE_EXT, BACKTESTING_FILE_PATH
 from octobot_backtesting.data.database import DataBase
 
 
 class DataCollector:
-    def __init__(self, config):
+    def __init__(self, config, path=BACKTESTING_FILE_PATH):
         self.config = config
+        self.path = path
         self.logger = get_logger(self.__class__.__name__)
 
         self.should_stop = False
         self.file_name = f"{time.time()}{BACKTESTING_DATA_FILE_EXT}"
+
         self.database = None
+        self.file_path = None
+        self.set_file_path()
 
     async def initialize(self):
         pass
@@ -39,6 +44,9 @@ class DataCollector:
     async def start(self) -> None:
         raise NotImplementedError("Start is not implemented")
 
+    def set_file_path(self):
+        self.file_path = join(self.path, self.file_name) if self.path else self.file_name
+
     def create_database(self):
         if not self.database:
-            self.database = DataBase(self.file_name)
+            self.database = DataBase(self.file_path)
