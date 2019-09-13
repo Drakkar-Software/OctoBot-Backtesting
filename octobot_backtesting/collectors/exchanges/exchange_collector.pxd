@@ -14,3 +14,12 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.collectors.data_collector cimport DataCollector
+
+
+class ExchangeDataCollector(DataCollector):
+    cdef public str exchange_name
+
+    cdef public list symbols
+    cdef public list time_frames

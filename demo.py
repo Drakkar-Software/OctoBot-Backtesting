@@ -19,11 +19,11 @@ import logging
 from octobot_commons.enums import TimeFrames
 from octobot_commons.logging.logging_util import get_logger
 
-from octobot_backtesting.collectors.exchanges.exchange_collector import ExchangeDataCollector
+from octobot_backtesting.collectors.exchanges.exchange_live_collector import ExchangeLiveDataCollector
 
 
 async def run_exchange_collector(config, exchange_name, symbols, time_frames):
-    collector = ExchangeDataCollector(config, exchange_name, symbols, time_frames)
+    collector = ExchangeLiveDataCollector(config, exchange_name, symbols, time_frames)
     await collector.initialize()
     await collector.start()
 

@@ -15,17 +15,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_backtesting.data.database cimport DataBase
+from octobot_backtesting.collectors.exchanges.exchange_collector cimport ExchangeDataCollector
 
-cdef class DataCollector:
-    cdef public dict config
-
-    cdef public object logger
-
-    cdef public bint should_stop
-
-    cdef public str file_name
-
-    cdef public DataBase database
-
-    cpdef void create_database(self)
+cdef class ExchangeLiveDataCollector(ExchangeDataCollector):
+    pass
