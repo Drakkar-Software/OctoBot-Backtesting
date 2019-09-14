@@ -20,7 +20,7 @@ import sqlite3
 class DataBase:
     TIMESTAMP_COLUMN = "timestamp"
     DEFAULT_ORDER_BY = TIMESTAMP_COLUMN
-    DEFAULT_SORT = "ASC"
+    DEFAULT_SORT = "DESC"
     DEFAULT_WHERE_OPERATION = "="
     DEFAULT_SIZE = -1
 
@@ -74,7 +74,7 @@ class DataBase:
     def __where_clauses_from_operations(self, keys, values, operations):
         return " AND ".join([self.__where_clauses_from_operation(keys[i],
                                                                  values[i],
-                                                                 operations[i] if i in operations else None)
+                                                                 operations[i] if len(operations) > i else None)
                              for i in range(len(keys))
                              if values[i] is not None])
 

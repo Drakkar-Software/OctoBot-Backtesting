@@ -27,7 +27,7 @@ from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDa
 async def import_exchange_live_collector(config, file_path):
     importer = ExchangeDataImporter(config, file_path)
     importer.initialize()
-    print(importer.get_ohlcv("binance"))
+    print(importer.get_ohlcv("binance", "BTC/USDT"))
 
 
 async def run_exchange_live_collector(config, exchange_name, symbols, time_frames):

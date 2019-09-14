@@ -42,3 +42,10 @@ class DataBaseTables(Enum):
     KLINE = "kline"
     TICKER = "ticker"
 
+
+class DataBaseOperations(Enum):
+    SUP = ">"
+    INF = "<"
+    EQUALS = "="
+    INF_EQUALS = f"{INF}{EQUALS}"
+    SUP_EQUALS = f"{SUP}{EQUALS}"
