@@ -31,6 +31,9 @@ class DataImporter:
     def initialize(self) -> None:
         pass
 
+    def get_minimum_timestamp(self) -> float:
+        raise NotImplementedError("get_minimum_timestamp is not implemented")
+
     async def stop(self) -> None:
         self.should_stop = True
 

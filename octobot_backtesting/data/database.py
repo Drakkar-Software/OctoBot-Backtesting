@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.enums import DataBaseOrderBy
 from octobot_commons.logging.logging_util import get_logger
 import sqlite3
 
@@ -20,7 +21,7 @@ import sqlite3
 class DataBase:
     TIMESTAMP_COLUMN = "timestamp"
     DEFAULT_ORDER_BY = TIMESTAMP_COLUMN
-    DEFAULT_SORT = "DESC"
+    DEFAULT_SORT = DataBaseOrderBy.DESC.value
     DEFAULT_WHERE_OPERATION = "="
     DEFAULT_SIZE = -1
 
@@ -84,8 +85,14 @@ class DataBase:
                f"{sort if sort is not None else self.DEFAULT_SORT}"
 
     def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", size=DEFAULT_SIZE):
-        self.cursor.execute(f"SELECT {select_items} FROM {table.value} WHERE {where_clauses} {additional_clauses}")
-        return self.cursor.fetchall() if size == self.DEFAULT_SIZE else self.cursor.fetchmany(size)
+        try:
+            self.cursor.execute(f"SELECT {select_items} FROM {table.value} "
+                                f"{'WHERE' if where_clauses else ''} {where_clauses} "
+                                f"{additional_clauses}")
+            return self.cursor.fetchall() if size == self.DEFAULT_SIZE else self.cursor.fetchmany(size)
+        except sqlite3.OperationalError as e:
+            self.logger.error(f"Error occurred when executing select : {e}")
+        return []
 
     def __check_table_exists(self, table) -> bool:
         self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")

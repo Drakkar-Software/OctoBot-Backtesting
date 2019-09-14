@@ -28,3 +28,4 @@ cdef class DataImporter:
     cdef public DataBase database
 
     cpdef void load_database(self)
+    cpdef float get_minimum_timestamp(self)

@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 from octobot_backtesting.data.database import DataBase
-from octobot_backtesting.enums import DataBaseTables, DataBaseOperations
+from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataBaseOrderBy
 from octobot_backtesting.importers.data_importer import DataImporter
 
 
@@ -24,6 +24,17 @@ class ExchangeDataImporter(DataImporter):
 
     async def start(self) -> None:
         pass
+
+    def get_minimum_timestamp(self) -> float:
+        minimum_timestamp = None
+        for table in ExchangeDataTables:
+            try:
+                timestamp = self.database.select(table, size=1, sort=DataBaseOrderBy.ASC.value)[0][0]
+                if not minimum_timestamp or minimum_timestamp > timestamp:
+                    minimum_timestamp = timestamp
+            except IndexError:
+                pass
+        return minimum_timestamp
 
     def __get_operations_from_timestamps(self, superior_timestamp, inferior_timestamp):
         operations = []
@@ -38,58 +49,58 @@ class ExchangeDataImporter(DataImporter):
         return timestamps, operations
 
     def get_ohlcv(self, exchange_name=None, symbol=None, time_frame=None, limit=DataBase.DEFAULT_SIZE):
-        return self.database.select(DataBaseTables.OHLCV, size=limit,
+        return self.database.select(ExchangeDataTables.OHLCV, size=limit,
                                     exchange_name=exchange_name, symbol=symbol, time_frame=time_frame)
 
     def get_ohlcv_from_timestamps(self, exchange_name=None, symbol=None, time_frame=None, limit=DataBase.DEFAULT_SIZE,
                                   inferior_timestamp=None, superior_timestamp=None):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-        return self.database.select_from_timestamp(DataBaseTables.OHLCV, size=limit,
+        return self.database.select_from_timestamp(ExchangeDataTables.OHLCV, size=limit,
                                                    exchange_name=exchange_name, symbol=symbol,
                                                    time_frame=time_frame,
                                                    timestamps=timestamps, operations=operations)
 
     def get_ticker(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE):
-        return self.database.select(DataBaseTables.TICKER, size=limit,
-                                    exchange_name=exchange_name, symbol=symbol,)
+        return self.database.select(ExchangeDataTables.TICKER, size=limit,
+                                    exchange_name=exchange_name, symbol=symbol, )
 
     def get_ticker_from_timestamps(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE,
                                   inferior_timestamp=None, superior_timestamp=None):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-        return self.database.select_from_timestamp(DataBaseTables.TICKER, size=limit,
+        return self.database.select_from_timestamp(ExchangeDataTables.TICKER, size=limit,
                                                    exchange_name=exchange_name, symbol=symbol,
                                                    timestamps=timestamps, operations=operations)
 
     def get_order_book(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE):
-        return self.database.select(DataBaseTables.ORDER_BOOK, size=limit,
+        return self.database.select(ExchangeDataTables.ORDER_BOOK, size=limit,
                                     exchange_name=exchange_name, symbol=symbol)
 
     def get_order_book_from_timestamps(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE,
                                   inferior_timestamp=None, superior_timestamp=None):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-        return self.database.select_from_timestamp(DataBaseTables.ORDER_BOOK, size=limit,
+        return self.database.select_from_timestamp(ExchangeDataTables.ORDER_BOOK, size=limit,
                                                    exchange_name=exchange_name, symbol=symbol,
                                                    timestamps=timestamps, operations=operations)
 
     def get_recent_trades(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE):
-        return self.database.select(DataBaseTables.RECENT_TRADES, size=limit,
+        return self.database.select(ExchangeDataTables.RECENT_TRADES, size=limit,
                                     exchange_name=exchange_name, symbol=symbol)
 
     def get_recent_trades_from_timestamps(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE,
                                   inferior_timestamp=None, superior_timestamp=None):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-        return self.database.select_from_timestamp(DataBaseTables.RECENT_TRADES, size=limit,
+        return self.database.select_from_timestamp(ExchangeDataTables.RECENT_TRADES, size=limit,
                                                    exchange_name=exchange_name, symbol=symbol,
                                                    timestamps=timestamps, operations=operations)
 
     def get_kline(self, exchange_name=None, symbol=None, time_frame=None, limit=DataBase.DEFAULT_SIZE):
-        return self.database.select(DataBaseTables.KLINE, size=limit,
+        return self.database.select(ExchangeDataTables.KLINE, size=limit,
                                     exchange_name=exchange_name, symbol=symbol, time_frame=time_frame)
 
     def get_kline_from_timestamps(self, exchange_name=None, symbol=None, time_frame=None, limit=DataBase.DEFAULT_SIZE,
                                   inferior_timestamp=None, superior_timestamp=None):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-        return self.database.select_from_timestamp(DataBaseTables.KLINE, size=limit,
+        return self.database.select_from_timestamp(ExchangeDataTables.KLINE, size=limit,
                                                    exchange_name=exchange_name, symbol=symbol,
                                                    time_frame=time_frame,
                                                    timestamps=timestamps, operations=operations)

@@ -35,7 +35,12 @@ class ReportFormat(Enum):
     SYMBOLS_WITH_TF = "symbols_with_time_frames_frames"
 
 
-class DataBaseTables(Enum):
+class DataBaseOrderBy(Enum):
+    ASC = "ASC"
+    DESC = "DESC"
+
+
+class ExchangeDataTables(Enum):
     RECENT_TRADES = "recent_trades"
     ORDER_BOOK = "order_book"
     OHLCV = "ohlcv"
