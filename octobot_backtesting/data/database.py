@@ -18,8 +18,10 @@ import sqlite3
 
 
 class DataBase:
-    DEFAULT_ORDER_BY = "timestamp"
+    TIMESTAMP_COLUMN = "timestamp"
+    DEFAULT_ORDER_BY = TIMESTAMP_COLUMN
     DEFAULT_SORT = "ASC"
+    DEFAULT_WHERE_OPERATION = "="
     DEFAULT_SIZE = -1
 
     def __init__(self, file_name):
@@ -51,26 +53,39 @@ class DataBase:
                                      additional_clauses=self.__select_order_by(order_by, sort),
                                      size=size)
 
-    def select_from_timestamp(self, table, timestamp, operation: str,
+    def select_from_timestamp(self, table, timestamps: list, operations: list,
                               size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, **kwargs):
+        timestamps_where_clauses = self.__where_clauses_from_operations(keys=[self.TIMESTAMP_COLUMN] * len(timestamps),
+                                                                        values=timestamps,
+                                                                        operations=operations)
         return self.__execute_select(table=table,
                                      where_clauses=f"{self.__where_clauses_from_kwargs(**kwargs)} "
-                                                   f"AND timestamp {operation} {timestamp}",
+                                                   f"AND "
+                                                   f"{timestamps_where_clauses}",
                                      additional_clauses=self.__select_order_by(order_by, sort),
                                      size=size)
 
     def __where_clauses_from_kwargs(self, **kwargs) -> str:
-        return ','.join([f"{key} = '{value}'" for key, value in kwargs.items() if value is not None])
+        return self.__where_clauses_from_operations(list(kwargs.keys()), list(kwargs.values()), [])
+
+    def __where_clauses_from_operation(self, key, value, operation=DEFAULT_WHERE_OPERATION):
+        return f"{key} {operation if operation is not None else self.DEFAULT_WHERE_OPERATION} '{value}'"
+
+    def __where_clauses_from_operations(self, keys, values, operations):
+        return " AND ".join([self.__where_clauses_from_operation(keys[i],
+                                                                 values[i],
+                                                                 operations[i] if i in operations else None)
+                             for i in range(len(keys))
+                             if values[i] is not None])
 
     def __select_order_by(self, order_by, sort):
-        return f"ORDER BY {order_by} {sort}"
+        return f"ORDER BY " \
+               f"{order_by if order_by is not None else self.DEFAULT_ORDER_BY} " \
+               f"{sort if sort is not None else self.DEFAULT_SORT}"
 
     def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", size=DEFAULT_SIZE):
         self.cursor.execute(f"SELECT {select_items} FROM {table.value} WHERE {where_clauses} {additional_clauses}")
         return self.cursor.fetchall() if size == self.DEFAULT_SIZE else self.cursor.fetchmany(size)
-
-    def stop(self):
-        self.connection.close()
 
     def __check_table_exists(self, table) -> bool:
         self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
@@ -79,7 +94,7 @@ class DataBase:
     def __create_table(self, table, **kwargs) -> None:
         try:
             self.cursor.execute(
-                f"CREATE TABLE {table.value} (timestamp datetime, {' text, '.join([col for col in kwargs.keys()])})")
+                f"CREATE TABLE {table.value} ({self.TIMESTAMP_COLUMN} datetime, {' text, '.join([col for col in kwargs.keys()])})")
         except sqlite3.OperationalError:
             self.logger.error(f"{table} already exists")
         finally:
@@ -88,3 +103,6 @@ class DataBase:
     def __init_tables_list(self):
         self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
         self.tables = self.cursor.fetchall()
+
+    def stop(self):
+        self.connection.close()
