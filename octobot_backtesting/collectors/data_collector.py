@@ -35,7 +35,7 @@ class DataCollector:
         self.file_path = None
         self.set_file_path()
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         pass
 
     async def stop(self) -> None:
@@ -44,9 +44,9 @@ class DataCollector:
     async def start(self) -> None:
         raise NotImplementedError("Start is not implemented")
 
-    def set_file_path(self):
+    def set_file_path(self) -> None:
         self.file_path = join(self.path, self.file_name) if self.path else self.file_name
 
-    def create_database(self):
+    def create_database(self) -> None:
         if not self.database:
             self.database = DataBase(self.file_path)

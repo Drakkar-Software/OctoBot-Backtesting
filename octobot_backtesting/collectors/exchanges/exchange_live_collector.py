@@ -51,20 +51,25 @@ class ExchangeLiveDataCollector(ExchangeDataCollector):
 
     async def ticker_callback(self, exchange, symbol, ticker):
         self.logger.info(f"TICKER : SYMBOL = {symbol} || TICKER = {ticker}")
-        self.database.insert(DataBaseTables.TICKER, time.time(), symbol=symbol, ticker=ticker)
+        self.database.insert(DataBaseTables.TICKER, time.time(),
+                             exchange_name=exchange, symbol=symbol, ticker=ticker)
 
     async def order_book_callback(self, exchange, symbol, asks, bids):
         self.logger.info(f"ORDERBOOK : SYMBOL = {symbol} || ASKS = {asks} || BIDS = {bids}")
-        self.database.insert(DataBaseTables.ORDER_BOOK, time.time(), symbol=symbol, asks=asks, bids=bids)
+        self.database.insert(DataBaseTables.ORDER_BOOK, time.time(),
+                             exchange_name=exchange, symbol=symbol, asks=asks, bids=bids)
 
     async def ohlcv_callback(self, exchange, symbol, time_frame, candle):
         self.logger.info(f"OHLCV : SYMBOL = {symbol} || TIME FRAME = {time_frame} || CANDLE = {candle}")
-        self.database.insert(DataBaseTables.OHLCV, time.time(), symbol=symbol, time_frame=time_frame.value, candle=candle)
+        self.database.insert(DataBaseTables.OHLCV, time.time(),
+                             exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candle)
 
     async def recent_trades_callback(self, exchange, symbol, recent_trades):
         self.logger.info(f"RECENT TRADE : SYMBOL = {symbol} || RECENT TRADE = {recent_trades}")
-        self.database.insert(DataBaseTables.RECENT_TRADES, time.time(), symbol=symbol, recent_trades=json.dumps(recent_trades))
+        self.database.insert(DataBaseTables.RECENT_TRADES, time.time(),
+                             exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
 
     async def kline_callback(self, exchange, symbol, time_frame, kline):
         self.logger.info(f"KLINE : SYMBOL = {symbol} || TIME FRAME = {time_frame} || KLINE = {kline}")
-        self.database.insert(DataBaseTables.KLINE, time.time(), symbol=symbol, time_frame=time_frame.value, kline=kline)
+        self.database.insert(DataBaseTables.KLINE, time.time(),
+                             exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, kline=kline)

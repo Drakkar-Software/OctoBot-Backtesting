@@ -28,4 +28,5 @@ cdef class DataBase:
 
     cdef void __insert_values(self, object table, int timestamp, str inserting_values)
     cdef bint __check_table_exists(self, object table)
+    cdef str __select_order_by(self, str order_by, str sort):
     cdef void __init_tables_list(self)

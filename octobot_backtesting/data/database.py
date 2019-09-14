@@ -18,6 +18,10 @@ import sqlite3
 
 
 class DataBase:
+    DEFAULT_ORDER_BY = "timestamp"
+    DEFAULT_SORT = "ASC"
+    DEFAULT_SIZE = -1
+
     def __init__(self, file_name):
         self.file_name = file_name
         self.logger = get_logger(self.__class__.__name__)
@@ -41,10 +45,29 @@ class DataBase:
     def __insert_values(self, table, timestamp, inserting_values):
         self.cursor.execute(f"INSERT INTO {table.value} VALUES ({timestamp}, {inserting_values})")
 
-    def select(self, table, size=-1, sort="ASC", **kwargs):
-        where_clauses = [f"{key} = '{value}'" for key, value in kwargs.items()]
-        self.cursor.execute(f"SELECT * FROM {table.value} WHERE {','.join(where_clauses)} ORDER BY timestamp {sort}")
-        return self.cursor.fetchall() if size == -1 else self.cursor.fetchmany(size)
+    def select(self, table, size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, **kwargs):
+        return self.__execute_select(table=table,
+                                     where_clauses=self.__where_clauses_from_kwargs(**kwargs),
+                                     additional_clauses=self.__select_order_by(order_by, sort),
+                                     size=size)
+
+    def select_from_timestamp(self, table, timestamp, operation: str,
+                              size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, **kwargs):
+        return self.__execute_select(table=table,
+                                     where_clauses=f"{self.__where_clauses_from_kwargs(**kwargs)} "
+                                                   f"AND timestamp {operation} {timestamp}",
+                                     additional_clauses=self.__select_order_by(order_by, sort),
+                                     size=size)
+
+    def __where_clauses_from_kwargs(self, **kwargs) -> str:
+        return ','.join([f"{key} = '{value}'" for key, value in kwargs.items() if value is not None])
+
+    def __select_order_by(self, order_by, sort):
+        return f"ORDER BY {order_by} {sort}"
+
+    def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", size=DEFAULT_SIZE):
+        self.cursor.execute(f"SELECT {select_items} FROM {table.value} WHERE {where_clauses} {additional_clauses}")
+        return self.cursor.fetchall() if size == self.DEFAULT_SIZE else self.cursor.fetchmany(size)
 
     def stop(self):
         self.connection.close()

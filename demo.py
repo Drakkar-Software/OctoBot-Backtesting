@@ -15,14 +15,22 @@
 #  License along with this library.
 import asyncio
 import logging
+import os
 
 from octobot_commons.enums import TimeFrames
 from octobot_commons.logging.logging_util import get_logger
 
 from octobot_backtesting.collectors.exchanges.exchange_live_collector import ExchangeLiveDataCollector
+from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 
 
-async def run_exchange_collector(config, exchange_name, symbols, time_frames):
+async def import_exchange_live_collector(config, file_path):
+    importer = ExchangeDataImporter(config, file_path)
+    importer.initialize()
+    print(importer.get_ohlcv("binance"))
+
+
+async def run_exchange_live_collector(config, exchange_name, symbols, time_frames):
     collector = ExchangeLiveDataCollector(config, exchange_name, symbols, time_frames)
     await collector.initialize()
     await collector.start()
@@ -34,4 +42,5 @@ if __name__ == '__main__':
     main_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(main_loop)
 
-    main_loop.run_until_complete(run_exchange_collector({}, "binance", ["BTC/USDT"], [TimeFrames.ONE_MINUTE]))
+    # main_loop.run_until_complete(run_exchange_live_collector({}, "binance", ["BTC/USDT"], [TimeFrames.ONE_MINUTE]))
+    main_loop.run_until_complete(import_exchange_live_collector({}, os.getenv('BACKTESTING-FILE')))
