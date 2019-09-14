@@ -43,6 +43,7 @@ class DataBase:
         self.__execute_insert(table, self.__insert_values(timestamp, ', '.join(inserting_values)))
 
     def insert_all(self, table, timestamp, **kwargs):
+        # TODO refactor with : cursor.executemany("INSERT INTO my_table VALUES (?,?)", values)
         if table.value not in self.tables:
             self.__create_table(table, **kwargs)
 

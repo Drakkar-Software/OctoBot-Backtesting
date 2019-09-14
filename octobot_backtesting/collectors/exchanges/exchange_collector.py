@@ -57,13 +57,13 @@ class ExchangeDataCollector(DataCollector):
         self.database.insert(ExchangeDataTables.RECENT_TRADES, timestamp,
                              exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
 
-    def save_ohlcv(self, exchange, symbol, time_frame, candle=None, timestamp=None, candles=None, timestamps=None):
-        if candle is not None and timestamp is not None:
+    def save_ohlcv(self, timestamp, exchange, symbol, time_frame, candle, multiple=False):
+        if not multiple:
             self.database.insert(ExchangeDataTables.OHLCV, timestamp,
                                  exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candle)
-        elif candles is not None and timestamps is not None:
-            self.database.insert_all(ExchangeDataTables.OHLCV, timestamp=timestamps,
-                                     exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candles)
+        else:
+            self.database.insert_all(ExchangeDataTables.OHLCV, timestamp=timestamp,
+                                     exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candle)
 
     def save_kline(self, timestamp, exchange, symbol, time_frame, kline):
         self.database.insert(ExchangeDataTables.KLINE, timestamp,
