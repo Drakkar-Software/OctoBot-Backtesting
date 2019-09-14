@@ -25,16 +25,21 @@ class ExchangeDataImporter(DataImporter):
     async def start(self) -> None:
         pass
 
-    def get_minimum_timestamp(self) -> float:
+    def get_data_timestamp_interval(self) -> tuple:
         minimum_timestamp = None
+        maximum_timestamp = None
         for table in ExchangeDataTables:
             try:
-                timestamp = self.database.select(table, size=1, sort=DataBaseOrderBy.ASC.value)[0][0]
-                if not minimum_timestamp or minimum_timestamp > timestamp:
-                    minimum_timestamp = timestamp
+                min_timestamp = self.database.select(table, size=1, sort=DataBaseOrderBy.ASC.value)[0][0]
+                if not minimum_timestamp or minimum_timestamp > min_timestamp:
+                    minimum_timestamp = min_timestamp
+
+                max_timestamp = self.database.select(table, size=1, sort=DataBaseOrderBy.DESC.value)[0][0]
+                if not maximum_timestamp or maximum_timestamp > max_timestamp:
+                    maximum_timestamp = max_timestamp
             except IndexError:
                 pass
-        return minimum_timestamp
+        return minimum_timestamp, maximum_timestamp
 
     def __get_operations_from_timestamps(self, superior_timestamp, inferior_timestamp):
         operations = []

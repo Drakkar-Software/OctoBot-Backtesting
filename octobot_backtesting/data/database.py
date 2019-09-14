@@ -40,13 +40,29 @@ class DataBase:
 
         # Insert a row of data
         inserting_values = [f"'{value}'" for value in kwargs.values()]
-        self.__insert_values(table, timestamp, ', '.join(inserting_values))
+        self.__execute_insert(table, self.__insert_values(timestamp, ', '.join(inserting_values)))
+
+    def insert_all(self, table, timestamp, **kwargs):
+        if table.value not in self.tables:
+            self.__create_table(table, **kwargs)
+
+        insert_values = []
+
+        for i in range(len(timestamp)):
+            # Insert a row of data
+            inserting_values = [f"'{value if not isinstance(value, list) else value[i]}'" for value in kwargs.values()]
+            insert_values.append(self.__insert_values(timestamp[i], ', '.join(inserting_values)))
+
+        self.__execute_insert(table, ", ".join(insert_values))
+
+    def __insert_values(self, timestamp, inserting_values) -> str:
+        return f"({timestamp}, {inserting_values})"
+
+    def __execute_insert(self, table, insert_items) -> None:
+        self.cursor.execute(f"INSERT INTO {table.value} VALUES {insert_items}")
 
         # Save (commit) the changes
         self.connection.commit()
-
-    def __insert_values(self, table, timestamp, inserting_values):
-        self.cursor.execute(f"INSERT INTO {table.value} VALUES ({timestamp}, {inserting_values})")
 
     def select(self, table, size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, **kwargs):
         return self.__execute_select(table=table,
@@ -91,7 +107,7 @@ class DataBase:
                                 f"{additional_clauses}")
             return self.cursor.fetchall() if size == self.DEFAULT_SIZE else self.cursor.fetchmany(size)
         except sqlite3.OperationalError as e:
-            self.logger.error(f"Error occurred when executing select : {e}")
+            self.logger.error(f"An error occurred when executing select : {e}")
         return []
 
     def __check_table_exists(self, table) -> bool:

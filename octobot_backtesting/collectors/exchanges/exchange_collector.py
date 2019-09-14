@@ -13,9 +13,11 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import json
 import logging
 import time
 
+from octobot_backtesting.enums import ExchangeDataTables
 from octobot_commons.constants import CONFIG_TIME_FRAME
 
 from octobot_backtesting.collectors.data_collector import DataCollector
@@ -43,3 +45,26 @@ class ExchangeDataCollector(DataCollector):
         self.config[CONFIG_TIME_FRAME] = self.time_frames
         self.config[CONFIG_EXCHANGES] = {self.exchange_name: {}}
         self.config[CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {CONFIG_CRYPTO_PAIRS: self.symbols}}
+
+    def save_ticker(self, timestamp, exchange, symbol, ticker):
+        self.database.insert(ExchangeDataTables.TICKER, timestamp, exchange_name=exchange, symbol=symbol, ticker=ticker)
+
+    def save_order_book(self, timestamp, exchange, symbol, asks, bids):
+        self.database.insert(ExchangeDataTables.ORDER_BOOK, timestamp,
+                             exchange_name=exchange, symbol=symbol, asks=asks, bids=bids)
+
+    def save_recent_trades(self, timestamp, exchange, symbol, recent_trades):
+        self.database.insert(ExchangeDataTables.RECENT_TRADES, timestamp,
+                             exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
+
+    def save_ohlcv(self, exchange, symbol, time_frame, candle=None, timestamp=None, candles=None, timestamps=None):
+        if candle is not None and timestamp is not None:
+            self.database.insert(ExchangeDataTables.OHLCV, timestamp,
+                                 exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candle)
+        elif candles is not None and timestamps is not None:
+            self.database.insert_all(ExchangeDataTables.OHLCV, timestamp=timestamps,
+                                     exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candles)
+
+    def save_kline(self, timestamp, exchange, symbol, time_frame, kline):
+        self.database.insert(ExchangeDataTables.KLINE, timestamp,
+                             exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, kline=kline)

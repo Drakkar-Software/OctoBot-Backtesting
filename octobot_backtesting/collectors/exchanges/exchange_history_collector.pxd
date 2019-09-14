@@ -18,4 +18,5 @@
 from octobot_backtesting.collectors.exchanges.exchange_collector cimport ExchangeDataCollector
 
 cdef class ExchangeHistoryDataCollector(ExchangeDataCollector):
-    pass
+    cdef public object exchange
+    cdef public object exchange_manager

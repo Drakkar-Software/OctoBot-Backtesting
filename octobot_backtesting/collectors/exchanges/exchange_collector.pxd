@@ -23,3 +23,9 @@ cdef class ExchangeDataCollector(DataCollector):
 
     cdef public list symbols
     cdef public list time_frames
+
+    cpdef void save_ticker(self, float timestamp, str exchange, str symbol, object ticker)
+    cpdef void save_order_book(self, float timestamp, str exchange, str symbol, object asks, object bids)
+    cpdef void save_recent_trades(self, float timestamp, str exchange, str symbol, object recent_trades)
+    cpdef void save_ohlcv(self, str exchange, str symbol, object time_frame, candle=*, timestamp=*, candles=*, timestamps=*)
+    cpdef void save_kline(self, float timestamp, str exchange, str symbol, object time_frame, object kline)

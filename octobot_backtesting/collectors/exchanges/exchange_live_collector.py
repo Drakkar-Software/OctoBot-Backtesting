@@ -14,20 +14,17 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 import asyncio
-import json
 import logging
 import time
 
-from octobot_commons.channels_name import OctoBotTradingChannelsName
-
 from octobot_backtesting.collectors.exchanges.exchange_collector import ExchangeDataCollector
-from octobot_backtesting.enums import ExchangeDataTables
+from octobot_commons.channels_name import OctoBotTradingChannelsName
 
 try:
     from octobot_trading.channels.exchange_channel import get_chan
     from octobot_trading.api.exchange import create_new_exchange
 except ImportError:
-    logging.error("ExchangeDataCollector requires OctoBot-Trading package installed")
+    logging.error("ExchangeLiveDataCollector requires OctoBot-Trading package installed")
 
 
 class ExchangeLiveDataCollector(ExchangeDataCollector):
@@ -51,25 +48,20 @@ class ExchangeLiveDataCollector(ExchangeDataCollector):
 
     async def ticker_callback(self, exchange, symbol, ticker):
         self.logger.info(f"TICKER : SYMBOL = {symbol} || TICKER = {ticker}")
-        self.database.insert(ExchangeDataTables.TICKER, time.time(),
-                             exchange_name=exchange, symbol=symbol, ticker=ticker)
+        self.save_ticker(timestamp=time.time(), exchange=exchange, symbol=symbol, ticker=ticker)
 
     async def order_book_callback(self, exchange, symbol, asks, bids):
         self.logger.info(f"ORDERBOOK : SYMBOL = {symbol} || ASKS = {asks} || BIDS = {bids}")
-        self.database.insert(ExchangeDataTables.ORDER_BOOK, time.time(),
-                             exchange_name=exchange, symbol=symbol, asks=asks, bids=bids)
-
-    async def ohlcv_callback(self, exchange, symbol, time_frame, candle):
-        self.logger.info(f"OHLCV : SYMBOL = {symbol} || TIME FRAME = {time_frame} || CANDLE = {candle}")
-        self.database.insert(ExchangeDataTables.OHLCV, time.time(),
-                             exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candle)
+        self.save_order_book(timestamp=time.time(), exchange=exchange, symbol=symbol, asks=asks, bids=bids)
 
     async def recent_trades_callback(self, exchange, symbol, recent_trades):
         self.logger.info(f"RECENT TRADE : SYMBOL = {symbol} || RECENT TRADE = {recent_trades}")
-        self.database.insert(ExchangeDataTables.RECENT_TRADES, time.time(),
-                             exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
+        self.save_recent_trades(timestamp=time.time(), exchange=exchange, symbol=symbol, recent_trades=recent_trades)
+
+    async def ohlcv_callback(self, exchange, symbol, time_frame, candle):
+        self.logger.info(f"OHLCV : SYMBOL = {symbol} || TIME FRAME = {time_frame} || CANDLE = {candle}")
+        self.save_ohlcv(timestamp=time.time(), exchange=exchange, symbol=symbol, time_frame=time_frame, candle=candle)
 
     async def kline_callback(self, exchange, symbol, time_frame, kline):
         self.logger.info(f"KLINE : SYMBOL = {symbol} || TIME FRAME = {time_frame} || KLINE = {kline}")
-        self.database.insert(ExchangeDataTables.KLINE, time.time(),
-                             exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, kline=kline)
+        self.save_kline(timestamp=time.time(), exchange=exchange, symbol=symbol, time_frame=time_frame, kline=kline)

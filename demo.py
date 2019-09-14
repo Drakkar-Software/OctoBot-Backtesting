@@ -17,6 +17,7 @@ import asyncio
 import logging
 import os
 
+from octobot_backtesting.collectors.exchanges.exchange_history_collector import ExchangeHistoryDataCollector
 from octobot_commons.enums import TimeFrames
 from octobot_commons.logging.logging_util import get_logger
 
@@ -28,6 +29,12 @@ async def import_exchange_live_collector(config, file_path):
     importer = ExchangeDataImporter(config, file_path)
     importer.initialize()
     print(importer.get_ohlcv("binance", "BTC/USDT"))
+
+
+async def run_exchange_history_collector(config, exchange_name, symbols, time_frames):
+    collector = ExchangeHistoryDataCollector(config, exchange_name, symbols, time_frames)
+    await collector.initialize()
+    await collector.start()
 
 
 async def run_exchange_live_collector(config, exchange_name, symbols, time_frames):
@@ -43,4 +50,7 @@ if __name__ == '__main__':
     asyncio.set_event_loop(main_loop)
 
     # main_loop.run_until_complete(run_exchange_live_collector({}, "binance", ["BTC/USDT"], [TimeFrames.ONE_MINUTE]))
-    main_loop.run_until_complete(import_exchange_live_collector({}, os.getenv('BACKTESTING-FILE')))
+    main_loop.run_until_complete(run_exchange_history_collector({}, "binance",
+                                                                ["BTC/USDT", "ETH/USDT", "LTC/USDT"],
+                                                                [TimeFrames.ONE_MINUTE, TimeFrames.FIVE_MINUTES, TimeFrames.ONE_HOUR]))
+    # main_loop.run_until_complete(import_exchange_live_collector({}, os.getenv('BACKTESTING-FILE')))

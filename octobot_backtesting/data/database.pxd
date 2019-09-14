@@ -26,7 +26,8 @@ cdef class DataBase:
 
     cdef void stop(self)
 
-    cdef void __insert_values(self, object table, int timestamp, str inserting_values)
+    cdef str __insert_values(self, int timestamp, str inserting_values)
+    cdef void __execute_insert(self, object table, str insert_items)
     cdef bint __check_table_exists(self, object table)
     cdef str __select_order_by(self, str order_by, str sort)
     cdef str __where_clauses_from_operations(self, list keys, list values, list operations)
