@@ -23,7 +23,17 @@ from octobot_backtesting import PROJECT_NAME, VERSION
 
 PACKAGES = find_packages(exclude=["tests"])
 
-packages_list = []
+packages_list = ["octobot_backtesting.backtesting",
+                 "octobot_backtesting.collectors.data_collector",
+                 "octobot_backtesting.collectors.exchanges.exchange_collector",
+                 "octobot_backtesting.collectors.exchanges.exchange_live_collector",
+                 "octobot_backtesting.collectors.exchanges.exchange_history_collector",
+                 "octobot_backtesting.collectors.social.social_collector",
+                 "octobot_backtesting.data.data_file_manager",
+                 "octobot_backtesting.data.database",
+                 "octobot_backtesting.importers.data_importer",
+                 "octobot_backtesting.importers.exchanges.exchange_importer",
+                 "octobot_backtesting.importers.social.social_importer"]
 
 ext_modules = [
     Extension(package, [f"{package.replace('.', '/')}.py"])

@@ -20,6 +20,10 @@ import time
 
 from octobot_commons.pretty_printer import PrettyPrinter
 
+from octobot_backtesting import CONFIG_BACKTESTING, CONFIG_ANALYSIS_ENABLED_OPTION
+from octobot_trading.constants import CONFIG_CRYPTO_CURRENCIES, CONFIG_CRYPTO_PAIRS
+
+
 class Backtesting:
     def __init__(self, config, exchange_simulator, exit_at_end=True):
         self.config = config
@@ -30,7 +34,7 @@ class Backtesting:
         self.ended_symbols = set()
         self.symbols_to_test = set()
 
-        self._init_symbols_to_test()
+        self.__init_symbols_to_test()
 
     def get_is_finished(self, symbols=None):
         if symbols is None:
@@ -44,14 +48,10 @@ class Backtesting:
             try:
                 self.logger.info(" **** Backtesting report ****")
                 self.logger.info(" ========= Trades =========")
-                self.print_trades_history()
 
                 self.logger.info(" ========= Symbols price evolution =========")
-                for symbol_to_test in self.symbols_to_test:
-                    await self.print_symbol_report(symbol_to_test)
 
                 self.logger.info(" ========= Octobot end state =========")
-                await self.print_global_report()
             except AttributeError:
                 self.logger.info(" *** Backtesting ended ****")
 
@@ -62,37 +62,6 @@ class Backtesting:
                                      "from the web interface. ***")
                 else:
                     os._exit(0)
-
-    def print_trades_history(self):
-        trader = self.get_trader()
-        trades_history = trader.get_trades_manager().get_trade_history()
-        trades_history_string = ""
-        for trade in trades_history:
-            trades_history_string += PrettyPrinter.trade_pretty_printer(trade) + "\n"
-        self.logger.info(trades_history_string.strip())
-
-    async def print_global_report(self):
-        try:
-            trader = self.get_trader()
-
-            profitability, market_average_profitability = await self.get_profitability(trader)
-            reference_market = self.get_reference_market(trader)
-            end_portfolio = self.get_portfolio(trader)
-            starting_portfolio = self.get_origin_portfolio(trader)
-
-            self.logger.info(f"End portfolio: "
-                             f"{PrettyPrinter.global_portfolio_pretty_print(end_portfolio,' | ')}")
-
-            self.logger.info(f"Starting portfolio: "
-                             f"{PrettyPrinter.global_portfolio_pretty_print(starting_portfolio,' | ')}")
-
-            self.logger.info(f"Global market profitability (vs {reference_market}) : "
-                             f"{market_average_profitability}% | Octobot : {profitability}%")
-
-            backtesting_time = time.time() - self.begin_time
-            self.logger.info(f"Simulation lasted {backtesting_time} sec")
-        except Exception as e:
-            self.logger.exception(e)
 
     async def _get_symbol_report(self, symbol, trader):
         market_data = self.exchange_simulator.get_ohlcv(symbol)[self.exchange_simulator.MIN_ENABLED_TIME_FRAME.value]
@@ -105,58 +74,7 @@ class Backtesting:
         # vs market
         return self.get_market_delta(market_data)
 
-    async def print_symbol_report(self, symbol):
-        symbol_report = await self._get_symbol_report(symbol, self.get_trader())
-        self.logger.info(f"{symbol} Profitability : Market {symbol_report * 100}%")
-
-    async def get_dict_formatted_report(self):
-        report = {
-            BacktestingReportFormat.SYMBOL_REPORT.value: [],
-            BacktestingReportFormat.BOT_REPORT.value: {},
-            BacktestingReportFormat.SYMBOLS_WITH_TF.value: {}
-        }
-
-        trader = self.get_trader()
-
-        profitability, market_average_profitability = await self.get_profitability(trader)
-
-        for symbol in self.symbols_to_test:
-            symbol_report = await self._get_symbol_report(symbol, trader)
-            report[BacktestingReportFormat.SYMBOL_REPORT.value].append({symbol: symbol_report * 100})
-            report[BacktestingReportFormat.SYMBOLS_WITH_TF.value][symbol] = self.exchange_simulator.get_min_time_frame(symbol)
-
-        report[BacktestingReportFormat.BOT_REPORT.value] = {
-            "profitability": profitability,
-            "market_average_profitability": market_average_profitability,
-            "reference_market": Backtesting.get_reference_market(trader),
-            "end_portfolio": Backtesting.get_portfolio(trader),
-            "starting_portfolio": Backtesting.get_origin_portfolio(trader),
-            "trading_mode": ",".join([t.get_name() for t in trader.trading_modes])
-        }
-        return report
-
-    def get_trader(self):
-        return self.exchange_simulator.get_exchange_manager().get_trader()
-
-    @staticmethod
-    def get_reference_market(trader: Trader) -> str:
-        return trader.get_trades_manager().get_reference()
-
-    @staticmethod
-    def get_portfolio(trader: Trader) -> Portfolio:
-        return trader.get_portfolio().get_portfolio()
-
-    @staticmethod
-    def get_origin_portfolio(trader: Trader) -> Portfolio:
-        return trader.get_trades_manager().get_origin_portfolio()
-
-    @staticmethod
-    async def get_profitability(trader):
-        trade_manager = trader.get_trades_manager()
-        _, profitability, _, market_average_profitability, _ = await trade_manager.get_profitability(True)
-        return profitability, market_average_profitability
-
-    def _init_symbols_to_test(self):
+    def __init_symbols_to_test(self):
         for crypto_currency_data in self.config[CONFIG_CRYPTO_CURRENCIES].values():
             for symbol in crypto_currency_data[CONFIG_CRYPTO_PAIRS]:
                 if symbol in self.exchange_simulator.symbols:

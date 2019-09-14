@@ -15,20 +15,13 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_trading.traders.trader cimport Trader
-from octobot_trading.exchanges.exchange_simulator cimport ExchangeSimulator
-
 cdef class Backtesting:
     cdef public object config
     cdef public float begin_time
     cdef public bint force_exit_at_end
-    cdef ExchangeSimulator exchange_simulator
     cdef public set ended_symbols
     cdef public set symbols_to_test
 
     cdef object logger
 
-    cpdef void print_trades_history(self)
-    cpdef Trader get_trader(self)
-
-    cdef void _init_symbols_to_test(self)
+    cdef void __init_symbols_to_test(self)

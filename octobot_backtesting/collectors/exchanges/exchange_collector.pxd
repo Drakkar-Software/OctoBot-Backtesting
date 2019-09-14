@@ -18,7 +18,7 @@
 from octobot_backtesting.collectors.data_collector cimport DataCollector
 
 
-class ExchangeDataCollector(DataCollector):
+cdef class ExchangeDataCollector(DataCollector):
     cdef public str exchange_name
 
     cdef public list symbols
