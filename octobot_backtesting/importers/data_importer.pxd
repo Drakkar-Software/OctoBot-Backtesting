@@ -23,6 +23,7 @@ cdef class DataImporter:
 
     cdef public bint should_stop
 
+    cdef public str version
     cdef public str file_path
 
     cdef public DataBase database

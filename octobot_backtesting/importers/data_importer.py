@@ -26,6 +26,7 @@ class DataImporter:
 
         self.should_stop = False
 
+        self.version = None
         self.database = None
 
     async def initialize(self) -> None:

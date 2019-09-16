@@ -15,11 +15,12 @@
 #  License along with this library.
 import json
 import logging
+import time
 
 from octobot_commons.constants import CONFIG_TIME_FRAME
 
 from octobot_backtesting.collectors.data_collector import DataCollector
-from octobot_backtesting.enums import ExchangeDataTables
+from octobot_backtesting.enums import ExchangeDataTables, DataTables
 from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 
 try:
@@ -29,6 +30,7 @@ except ImportError:
 
 
 class ExchangeDataCollector(DataCollector):
+    VERSION = "1.0"
     IMPORTER = ExchangeDataImporter
 
     def __init__(self, config, exchange_name, symbols, time_frames):
@@ -45,6 +47,14 @@ class ExchangeDataCollector(DataCollector):
         self.config[CONFIG_TIME_FRAME] = self.time_frames
         self.config[CONFIG_EXCHANGES] = {self.exchange_name: {}}
         self.config[CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {CONFIG_CRYPTO_PAIRS: self.symbols}}
+
+        # create description
+        self.database.insert(DataTables.DESCRIPTION,
+                             timestamp=time.time(),
+                             version=self.VERSION,
+                             exchange=self.exchange_name,
+                             symbols=json.dumps(self.symbols),
+                             time_frames=json.dumps([tf.value for tf in self.time_frames]))
 
     def save_ticker(self, timestamp, exchange, symbol, ticker):
         self.database.insert(ExchangeDataTables.TICKER, timestamp, exchange_name=exchange, symbol=symbol, ticker=ticker)

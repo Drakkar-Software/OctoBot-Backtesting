@@ -13,17 +13,35 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import time
-import timeit
+import json
 
 from octobot_backtesting.data.database import DataBase
-from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataBaseOrderBy
+from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataBaseOrderBy, DataTables
 from octobot_backtesting.importers.data_importer import DataImporter
 
 
 class ExchangeDataImporter(DataImporter):
+    def __init__(self, config, file_path):
+        super().__init__(config, file_path)
+
+        self.exchange_name = None
+        self.symbols = []
+        self.time_frames = []
+
     async def initialize(self) -> None:
         self.load_database()
+
+        # load description
+        description = self.database.select(DataTables.DESCRIPTION, size=1)[0]
+
+        version = description[1]
+        if version == "1.0":
+            self.exchange_name = description[2]
+            self.symbols = json.loads(description[3])
+            self.time_frames = json.loads(description[4])
+
+        self.logger.info(f"Loaded {self.exchange_name} data file with "
+                         f"{', '.join(self.symbols)} on {', '.join(self.time_frames)}")
 
     async def start(self) -> None:
         pass

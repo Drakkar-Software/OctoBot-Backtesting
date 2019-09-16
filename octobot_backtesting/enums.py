@@ -40,6 +40,10 @@ class DataBaseOrderBy(Enum):
     DESC = "DESC"
 
 
+class DataTables(Enum):
+    DESCRIPTION = "description"
+
+
 class ExchangeDataTables(Enum):
     RECENT_TRADES = "recent_trades"
     ORDER_BOOK = "order_book"

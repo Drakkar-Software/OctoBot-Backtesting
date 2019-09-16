@@ -17,6 +17,11 @@
 from octobot_backtesting.importers.data_importer cimport DataImporter
 
 cdef class ExchangeDataImporter(DataImporter):
+    cdef public str exchange_name
+
+    cdef public list symbols
+    cdef public list time_frames
+
     cdef tuple __get_operations_from_timestamps(self, float superior_timestamp, float inferior_timestamp)
 
     cpdef list get_ohlcv(self, exchange_name=*, symbol=*, time_frame=*, limit=*)
