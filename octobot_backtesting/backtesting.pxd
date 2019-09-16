@@ -17,11 +17,10 @@
 
 cdef class Backtesting:
     cdef public object config
-    cdef public float begin_time
+
+    cdef public list backtesting_files
+
     cdef public bint force_exit_at_end
-    cdef public set ended_symbols
-    cdef public set symbols_to_test
 
     cdef object logger
 
-    cdef void __init_symbols_to_test(self)

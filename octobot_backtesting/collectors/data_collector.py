@@ -18,18 +18,23 @@ from os.path import join
 
 from octobot_commons.logging.logging_util import get_logger
 
-from octobot_backtesting.constants import BACKTESTING_DATA_FILE_EXT, BACKTESTING_FILE_PATH
+from octobot_backtesting.constants import BACKTESTING_DATA_FILE_EXT, BACKTESTING_FILE_PATH, \
+    BACKTESTING_DATA_FILE_SEPARATOR
 from octobot_backtesting.data.database import DataBase
+from octobot_backtesting.importers.data_importer import DataImporter
 
 
 class DataCollector:
+    IMPORTER = DataImporter
+
     def __init__(self, config, path=BACKTESTING_FILE_PATH):
         self.config = config
         self.path = path
         self.logger = get_logger(self.__class__.__name__)
 
         self.should_stop = False
-        self.file_name = f"{time.time()}{BACKTESTING_DATA_FILE_EXT}"
+        self.file_name = f"{self.__class__.__name__}{BACKTESTING_DATA_FILE_SEPARATOR}" \
+                         f"{time.time()}{BACKTESTING_DATA_FILE_EXT}"
 
         self.database = None
         self.file_path = None

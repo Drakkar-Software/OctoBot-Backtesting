@@ -15,13 +15,12 @@
 #  License along with this library.
 import json
 import logging
-import time
 
-from octobot_backtesting.enums import ExchangeDataTables
 from octobot_commons.constants import CONFIG_TIME_FRAME
 
 from octobot_backtesting.collectors.data_collector import DataCollector
-from octobot_backtesting.constants import BACKTESTING_DATA_FILE_EXT
+from octobot_backtesting.enums import ExchangeDataTables
+from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 
 try:
     from octobot_trading.constants import CONFIG_EXCHANGES, CONFIG_CRYPTO_CURRENCIES, CONFIG_CRYPTO_PAIRS
@@ -30,12 +29,13 @@ except ImportError:
 
 
 class ExchangeDataCollector(DataCollector):
+    IMPORTER = ExchangeDataImporter
+
     def __init__(self, config, exchange_name, symbols, time_frames):
         super().__init__(config)
         self.exchange_name = exchange_name
         self.symbols = symbols if symbols else []
         self.time_frames = time_frames if time_frames else []
-        self.file_name = f"{exchange_name}_{time.time()}{BACKTESTING_DATA_FILE_EXT}"
         self.set_file_path()
 
     async def initialize(self):

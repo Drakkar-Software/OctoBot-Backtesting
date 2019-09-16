@@ -28,7 +28,7 @@ class DataImporter:
 
         self.database = None
 
-    def initialize(self) -> None:
+    async def initialize(self) -> None:
         pass
 
     def get_data_timestamp_interval(self) -> float:

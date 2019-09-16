@@ -13,13 +13,16 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import time
+import timeit
+
 from octobot_backtesting.data.database import DataBase
 from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataBaseOrderBy
 from octobot_backtesting.importers.data_importer import DataImporter
 
 
 class ExchangeDataImporter(DataImporter):
-    def initialize(self) -> None:
+    async def initialize(self) -> None:
         self.load_database()
 
     async def start(self) -> None:

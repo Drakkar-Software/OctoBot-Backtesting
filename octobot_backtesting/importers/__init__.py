@@ -15,3 +15,4 @@
 #  License along with this library.
 
 from .exchanges import *
+from .social import *

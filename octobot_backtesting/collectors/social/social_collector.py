@@ -20,10 +20,11 @@ from octobot_backtesting.constants import BACKTESTING_DATA_FILE_EXT
 
 
 class SocialDataCollector(DataCollector):
+    # IMPORTER = SocialDataImporter
+
     def __init__(self, config, social_name):
         super().__init__(config)
         self.social_name = social_name
-        self.file_name = f"{social_name}_{time.time()}{BACKTESTING_DATA_FILE_EXT}"
         self.set_file_path()
 
     async def initialize(self):
