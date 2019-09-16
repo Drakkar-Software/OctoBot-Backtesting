@@ -33,7 +33,7 @@ packages_list = ["octobot_backtesting.backtesting",
                  "octobot_backtesting.data.database",
                  "octobot_backtesting.importers.data_importer",
                  "octobot_backtesting.importers.exchanges.exchange_importer",
-                 "octobot_backtesting.importers.social.social_importer,"
+                 "octobot_backtesting.importers.social.social_importer",
                  "octobot_backtesting.util.backtesting_util"]
 
 ext_modules = [
