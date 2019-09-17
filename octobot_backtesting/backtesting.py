@@ -13,8 +13,15 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.channels import TIME_CHANNEL
+from octobot_backtesting.channels.time import TimeChannel
+from octobot_channels.channels.channel import get_chan, set_chan
+
+from octobot_backtesting.producers.time_updater import TimeUpdater
+from octobot_channels.util import create_channel_instance
 from octobot_commons.logging.logging_util import get_logger
 
+from octobot_backtesting.data_manager.time_manager import TimeManager
 from octobot_backtesting.util.backtesting_util import create_importer_from_backtesting_file_name
 
 
@@ -26,7 +33,24 @@ class Backtesting:
         self.logger = get_logger(self.__class__.__name__)
 
         self.importers = []
+        self.time_manager = None
+
+    async def initialize(self):
+        try:
+            self.time_manager = TimeManager(self.config)
+            await self.time_manager.initialize()
+
+            await create_channel_instance(TimeChannel, set_chan)
+
+            await TimeUpdater(get_chan(TIME_CHANNEL), self).run()
+        except Exception as e:
+            self.logger.error(f"Error when initializing backtesting : {e}.")
+            self.logger.exception(e)
 
     async def create_importers(self):
         self.importers = [await create_importer_from_backtesting_file_name(self.config, backtesting_file)
                           for backtesting_file in self.backtesting_files]
+
+    async def handle_time_update(self, timestamp):
+        # TODO check if initialized
+        return self.time_manager.set_timestamp(timestamp)

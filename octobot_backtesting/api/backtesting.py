@@ -1,4 +1,4 @@
-#  Drakkar-Software OctoBot-Trading
+#  Drakkar-Software OctoBot-Backtesting
 #  Copyright (c) Drakkar-Software, All rights reserved.
 #
 #  This library is free software; you can redistribute it and/or
@@ -76,5 +76,6 @@ from octobot_backtesting.backtesting import Backtesting
 
 async def initialize_backtesting(config, data_files) -> Backtesting:
     backtesting_instance = Backtesting(config, data_files)
+    await backtesting_instance.initialize()
     await backtesting_instance.create_importers()
     return backtesting_instance
