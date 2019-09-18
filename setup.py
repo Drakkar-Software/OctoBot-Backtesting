@@ -37,6 +37,8 @@ packages_list = ["octobot_backtesting.backtesting",
                  "octobot_backtesting.importers.data_importer",
                  "octobot_backtesting.importers.exchanges.exchange_importer",
                  "octobot_backtesting.importers.social.social_importer",
+                 "octobot_backtesting.converters.data_converter",
+                 "octobot_backtesting.converters.exchanges.legacy_data_converter",
                  "octobot_backtesting.util.backtesting_util"]
 
 ext_modules = [
