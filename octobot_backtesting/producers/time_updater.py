@@ -19,43 +19,19 @@ from octobot_backtesting.channels.time import TimeProducer
 
 
 class TimeUpdater(TimeProducer):
-    TIME_INTERVAL = 1000000
-    DEFAULT_FINISH_TIME_DELTA = 1000
-
     def __init__(self, channel, backtesting):
         super().__init__(channel, backtesting)
-        self.starting_timestamp = None
-        self.finishing_timestamp = None
-        self.current_timestamp = None
-        self.starting_time = None
-
-    def set_minimum_timestamp(self, minimum_timestamp):
-        if self.starting_timestamp is None or self.starting_timestamp > minimum_timestamp:
-            self.starting_timestamp = minimum_timestamp
-            self.logger.info(f"Set minimum timestamp to : {minimum_timestamp}")
-
-    def set_maximum_timestamp(self, maximum_timestamp):
-        if self.finishing_timestamp is None or self.finishing_timestamp < maximum_timestamp:
-            self.finishing_timestamp = maximum_timestamp
-            self.logger.info(f"Set maximum timestamp to : {maximum_timestamp}")
-
-    async def start(self):
-        if self.starting_timestamp is None:
-            self.starting_timestamp = time.time()
-
-        if self.finishing_timestamp is None:
-            self.finishing_timestamp = self.starting_timestamp + self.DEFAULT_FINISH_TIME_DELTA
-
-        self.current_timestamp = self.starting_timestamp
+        self.time_manager = backtesting.time_manager
         self.starting_time = time.time()
 
+    async def start(self):
         while not self.should_stop:
             try:
-                await self.push(timestamp=self.current_timestamp)
-                self.current_timestamp += self.TIME_INTERVAL
+                await self.push(timestamp=self.time_manager.current_timestamp)
+                self.time_manager.next_timestamp()
                 await self.wait_for_processing()
 
-                if self.current_timestamp >= self.finishing_timestamp:
+                if self.time_manager.has_finished():
                     self.logger.warning("Maximum timestamp hit, stopping...")
                     self.logger.warning(f"Last {time.time() - self.starting_time}s")
                     await self.stop()
@@ -64,12 +40,11 @@ class TimeUpdater(TimeProducer):
 
     async def modify(self, set_timestamp=None, minimum_timestamp=None, maximum_timestamp=None) -> None:
         if set_timestamp is not None:
-            self.current_timestamp = set_timestamp
-            self.logger.info(f"Set timestamp to : {set_timestamp}")
+            self.time_manager.set_current_timestamp(set_timestamp)
 
         if minimum_timestamp is not None:
-            self.set_minimum_timestamp(minimum_timestamp)
-            self.current_timestamp = minimum_timestamp
+            self.time_manager.set_minimum_timestamp(minimum_timestamp)
+            self.time_manager.set_current_timestamp(minimum_timestamp)
 
         if maximum_timestamp is not None:
-            self.set_maximum_timestamp(maximum_timestamp)
+            self.time_manager.set_maximum_timestamp(maximum_timestamp)

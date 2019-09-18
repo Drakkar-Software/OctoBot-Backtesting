@@ -39,7 +39,7 @@ class Backtesting:
     async def initialize(self):
         try:
             self.time_manager = TimeManager(self.config)
-            await self.time_manager.initialize()
+            self.time_manager.initialize()
 
             await create_channel_instance(TimeChannel, set_chan)
 
@@ -53,18 +53,15 @@ class Backtesting:
                           for backtesting_file in self.backtesting_files]
 
     async def handle_time_update(self, timestamp):
-        # TODO check if initialized
-        return self.time_manager.set_timestamp(timestamp)
+        if self.time_manager:
+            self.time_manager.set_current_timestamp(timestamp)
 
     def get_importers(self, importer_parent_class=None) -> list:
         return [importer
                 for importer in self.importers
                 if default_parents_inspection(importer.__class__, importer_parent_class)] if importer_parent_class is not None else self.importers
 
-    def get_progress(self):  # TODO (with time_manager)
-        # if not self.min_time_frame_to_consider:
-        #     return 0
-        # else:
-        #     progresses = []
-        #     return int(DataUtil.mean(progresses) * 100)
-        pass
+    def get_progress(self):
+        if not self.time_manager:
+            return 0
+        return self.time_manager.get_remaining_iteration() / self.time_manager.get_total_iteration()

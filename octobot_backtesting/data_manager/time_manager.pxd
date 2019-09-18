@@ -18,11 +18,22 @@
 cdef class TimeManager:
     cdef object logger
 
-    cdef public int timestamp
-
     cdef dict config
+    
+    cdef public float starting_timestamp
+    cdef public float finishing_timestamp
+    cdef public float current_timestamp
 
     cdef public bint time_initialized
 
-    cdef void _reset_time(self)
-    cdef void set_timestamp(self, int timestamp)
+    cdef void __reset_time(self)
+
+    cpdef void initialize(self)
+    cpdef void start(self)
+    cpdef bint has_finished(self)
+    cpdef void next_timestamp(self)
+    cpdef void set_minimum_timestamp(self, float minimum_timestamp)
+    cpdef void set_maximum_timestamp(self, float maximum_timestamp)
+    cpdef void set_current_timestamp(self, float timestamp)
+    cpdef float get_total_iteration(self)
+    cpdef float get_remaining_iteration(self)

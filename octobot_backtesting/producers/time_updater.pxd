@@ -14,7 +14,11 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.data_manager.time_manager cimport TimeManager
+
 from octobot_backtesting.channels.time cimport TimeProducer
 
 cdef class TimeUpdater(TimeProducer):
-    cdef void set_minimum_timestamp(self, float minimum_timestamp)
+    cdef public TimeManager time_manager
+
+    cdef public float starting_time
