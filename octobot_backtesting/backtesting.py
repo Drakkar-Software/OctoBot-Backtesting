@@ -64,4 +64,4 @@ class Backtesting:
     def get_progress(self):
         if not self.time_manager:
             return 0
-        return self.time_manager.get_remaining_iteration() / self.time_manager.get_total_iteration()
+        return 1 - (self.time_manager.get_remaining_iteration() / self.time_manager.get_total_iteration())

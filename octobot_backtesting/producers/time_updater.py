@@ -31,6 +31,8 @@ class TimeUpdater(TimeProducer):
                 self.time_manager.next_timestamp()
                 await self.wait_for_processing()
 
+                self.logger.info(f"Progress : {round(self.backtesting.get_progress() * 100, 2)}%")
+
                 if self.time_manager.has_finished():
                     self.logger.warning("Maximum timestamp hit, stopping...")
                     self.logger.warning(f"Last {time.time() - self.starting_time}s")

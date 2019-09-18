@@ -67,7 +67,6 @@ class TimeManager:
 
     def set_current_timestamp(self, timestamp):
         self.current_timestamp = timestamp
-        self.logger.info(f"Set timestamp to : {timestamp}")
 
     def get_total_iteration(self):
         return (self.finishing_timestamp - self.starting_timestamp) / self.TIME_INTERVAL
