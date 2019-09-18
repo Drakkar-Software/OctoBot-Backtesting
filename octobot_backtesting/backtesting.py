@@ -23,6 +23,7 @@ from octobot_commons.logging.logging_util import get_logger
 
 from octobot_backtesting.data_manager.time_manager import TimeManager
 from octobot_backtesting.util.backtesting_util import create_importer_from_backtesting_file_name
+from octobot_commons.tentacles_management import default_parents_inspection
 
 
 class Backtesting:
@@ -54,3 +55,16 @@ class Backtesting:
     async def handle_time_update(self, timestamp):
         # TODO check if initialized
         return self.time_manager.set_timestamp(timestamp)
+
+    def get_importers(self, importer_parent_class=None) -> list:
+        return [importer
+                for importer in self.importers
+                if default_parents_inspection(importer.__class__, importer_parent_class)] if importer_parent_class is not None else self.importers
+
+    def get_progress(self):  # TODO (with time_manager)
+        # if not self.min_time_frame_to_consider:
+        #     return 0
+        # else:
+        #     progresses = []
+        #     return int(DataUtil.mean(progresses) * 100)
+        pass

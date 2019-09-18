@@ -24,3 +24,5 @@ cdef class Backtesting:
 
     cdef object logger
 
+    cpdef list get_importers(self, object importer_parent_class=*)
+    cpdef float get_progress(self)
