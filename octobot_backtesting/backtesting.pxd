@@ -14,13 +14,15 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.data_manager.time_manager cimport TimeManager
 
 cdef class Backtesting:
     cdef public object config
 
     cdef public list backtesting_files
+    cdef public list importers
 
-    cdef public bint force_exit_at_end
+    cdef public TimeManager time_manager
 
     cdef object logger
 

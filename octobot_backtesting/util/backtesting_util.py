@@ -18,7 +18,7 @@ import os
 from octobot_commons.tentacles_management import get_deep_class_from_string
 
 from octobot_backtesting import BACKTESTING_DATA_FILE_SEPARATOR, collectors
-from octobot_backtesting.importers import DataImporter
+from octobot_backtesting.importers.data_importer import DataImporter
 
 
 async def create_importer_from_backtesting_file_name(config, backtesting_file) -> DataImporter:

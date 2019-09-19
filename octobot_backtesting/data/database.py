@@ -103,9 +103,9 @@ class DataBase:
 
     def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", size=DEFAULT_SIZE):
         try:
-            self.cursor.execute(f"SELECT {select_items} FROM {table.value} "
-                                f"{'WHERE' if where_clauses else ''} {where_clauses} "
-                                f"{additional_clauses}")
+            self.connection.execute(f"SELECT {select_items} FROM {table.value} "
+                                    f"{'WHERE' if where_clauses else ''} {where_clauses} "
+                                    f"{additional_clauses}")
             return self.cursor.fetchall() if size == self.DEFAULT_SIZE else self.cursor.fetchmany(size)
         except sqlite3.OperationalError as e:
             self.logger.error(f"An error occurred when executing select : {e}")

@@ -27,10 +27,9 @@ from octobot_commons.tentacles_management import default_parents_inspection
 
 
 class Backtesting:
-    def __init__(self, config, backtesting_files, exit_at_end=True):
+    def __init__(self, config, backtesting_files):
         self.config = config
         self.backtesting_files = backtesting_files
-        self.force_exit_at_end = exit_at_end
         self.logger = get_logger(self.__class__.__name__)
 
         self.importers = []

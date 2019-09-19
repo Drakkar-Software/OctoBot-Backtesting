@@ -18,7 +18,6 @@ import logging
 import os
 
 from octobot_backtesting.collectors.exchanges.exchange_history_collector import ExchangeHistoryDataCollector
-from octobot_commons.enums import TimeFrames
 from octobot_commons.logging.logging_util import get_logger
 
 from octobot_backtesting.collectors.exchanges.exchange_live_collector import ExchangeLiveDataCollector
