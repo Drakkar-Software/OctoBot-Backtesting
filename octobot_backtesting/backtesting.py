@@ -61,6 +61,6 @@ class Backtesting:
                 if default_parents_inspection(importer.__class__, importer_parent_class)] if importer_parent_class is not None else self.importers
 
     def get_progress(self):
-        if not self.time_manager:
+        if not self.time_manager or self.time_manager.get_total_iteration() == 0:
             return 0
         return 1 - (self.time_manager.get_remaining_iteration() / self.time_manager.get_total_iteration())

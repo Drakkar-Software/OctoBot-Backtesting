@@ -15,13 +15,12 @@
 #  License along with this library.
 import asyncio
 import logging
-import os
 
-from octobot_backtesting.collectors.exchanges.exchange_history_collector import ExchangeHistoryDataCollector
+from tentacles.collectors.exchanges.exchange_history_collector import ExchangeHistoryDataCollector
 from octobot_commons.enums import TimeFrames
 from octobot_commons.logging.logging_util import get_logger
 
-from octobot_backtesting.collectors.exchanges.exchange_live_collector import ExchangeLiveDataCollector
+from tentacles.collectors.exchanges.exchange_live_collector import ExchangeLiveDataCollector
 from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 
 

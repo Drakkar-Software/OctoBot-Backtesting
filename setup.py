@@ -26,8 +26,6 @@ PACKAGES = find_packages(exclude=["tests"])
 packages_list = ["octobot_backtesting.backtesting",
                  "octobot_backtesting.collectors.data_collector",
                  "octobot_backtesting.collectors.exchanges.exchange_collector",
-                 "octobot_backtesting.collectors.exchanges.exchange_live_collector",
-                 "octobot_backtesting.collectors.exchanges.exchange_history_collector",
                  "octobot_backtesting.collectors.social.social_collector",
                  "octobot_backtesting.data.data_file_manager",
                  "octobot_backtesting.data.database",

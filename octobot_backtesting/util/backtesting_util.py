@@ -15,14 +15,15 @@
 #  License along with this library.
 import os
 
+import tentacles
 from octobot_commons.tentacles_management import get_deep_class_from_string
 
-from octobot_backtesting import BACKTESTING_DATA_FILE_SEPARATOR, collectors
+from octobot_backtesting import BACKTESTING_DATA_FILE_SEPARATOR
 from octobot_backtesting.importers.data_importer import DataImporter
 
 
 async def create_importer_from_backtesting_file_name(config, backtesting_file) -> DataImporter:
-    collector_klass = get_deep_class_from_string(parse_class_name_from_backtesting_file(backtesting_file), collectors)
+    collector_klass = get_deep_class_from_string(parse_class_name_from_backtesting_file(backtesting_file), tentacles)
     importer = collector_klass.IMPORTER(config, backtesting_file) if collector_klass else None
     await importer.initialize()
     return importer
