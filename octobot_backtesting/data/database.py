@@ -24,6 +24,7 @@ class DataBase:
     DEFAULT_SORT = DataBaseOrderBy.DESC.value
     DEFAULT_WHERE_OPERATION = "="
     DEFAULT_SIZE = -1
+    CACHE_SIZE = 50
 
     def __init__(self, file_name):
         self.file_name = file_name
@@ -32,7 +33,14 @@ class DataBase:
         self.connection = sqlite3.connect(self.file_name)
         self.cursor = self.connection.cursor()
         self.tables = []
+        self.cache = {}
         self.__init_tables_list()
+
+    def create_index(self, table, column):
+        self.__execute_index_creation(table, column)
+
+    def __execute_index_creation(self, table, column):
+        self.cursor.execute(f"CREATE INDEX index_{table.value}_{column} ON {table.value} ({column})")
 
     def insert(self, table, timestamp, **kwargs):
         if table.value not in self.tables:
@@ -72,7 +80,8 @@ class DataBase:
                                      size=size)
 
     def select_from_timestamp(self, table, timestamps: list, operations: list,
-                              size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, **kwargs):
+                              size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, use_cache=False,
+                              **kwargs):
         timestamps_where_clauses = self.__where_clauses_from_operations(keys=[self.TIMESTAMP_COLUMN] * len(timestamps),
                                                                         values=timestamps,
                                                                         operations=operations)
@@ -103,9 +112,9 @@ class DataBase:
 
     def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", size=DEFAULT_SIZE):
         try:
-            self.connection.execute(f"SELECT {select_items} FROM {table.value} "
-                                    f"{'WHERE' if where_clauses else ''} {where_clauses} "
-                                    f"{additional_clauses}")
+            self.cursor.execute(f"SELECT {select_items} FROM {table.value} "
+                                f"{'WHERE' if where_clauses else ''} {where_clauses} "
+                                f"{additional_clauses}")
             return self.cursor.fetchall() if size == self.DEFAULT_SIZE else self.cursor.fetchmany(size)
         except sqlite3.OperationalError as e:
             self.logger.error(f"An error occurred when executing select : {e}")
@@ -115,10 +124,13 @@ class DataBase:
         self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
         return self.cursor.fetchall() != []
 
-    def __create_table(self, table, **kwargs) -> None:
+    def __create_table(self, table, with_index_on_timestamp=True, **kwargs) -> None:
         try:
             self.cursor.execute(
                 f"CREATE TABLE {table.value} ({self.TIMESTAMP_COLUMN} datetime, {' text, '.join([col for col in kwargs.keys()])})")
+
+            if with_index_on_timestamp:
+                self.create_index(table, self.TIMESTAMP_COLUMN)
         except sqlite3.OperationalError:
             self.logger.error(f"{table} already exists")
         finally:

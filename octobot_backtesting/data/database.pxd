@@ -24,8 +24,11 @@ cdef class DataBase:
 
     cdef list tables
 
+    cdef dict cache
+
     cdef void stop(self)
 
+    cdef void __execute_index_creation(self, object table, str column)
     cdef str __insert_values(self, int timestamp, str inserting_values)
     cdef void __execute_insert(self, object table, str insert_items)
     cdef bint __check_table_exists(self, object table)
