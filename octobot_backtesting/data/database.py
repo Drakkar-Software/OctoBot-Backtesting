@@ -15,9 +15,10 @@
 #  License along with this library.
 from sqlite3 import OperationalError
 
+import aiosqlite
+
 from octobot_backtesting.enums import DataBaseOrderBy
 from octobot_commons.logging.logging_util import get_logger
-import aiosqlite
 
 
 class DataBase:
@@ -43,11 +44,11 @@ class DataBase:
         self.cursor = await self.connection.cursor()
         await self.__init_tables_list()
 
-    async def create_index(self, table, column):
-        await self.__execute_index_creation(table, column)
+    async def create_index(self, table, columns):
+        await self.__execute_index_creation(table, '_'.join(columns), ', '.join(columns))
 
-    async def __execute_index_creation(self, table, column):
-        await self.cursor.execute(f"CREATE INDEX index_{table.value}_{column} ON {table.value} ({column})")
+    async def __execute_index_creation(self, table, name, columns):
+        await self.cursor.execute(f"CREATE INDEX index_{table.value}_{name} ON {table.value} ({columns})")
 
     async def insert(self, table, timestamp, **kwargs):
         if table.value not in self.tables:
@@ -134,11 +135,16 @@ class DataBase:
 
     async def __create_table(self, table, with_index_on_timestamp=True, **kwargs) -> None:
         try:
+            columns: list = list(kwargs.keys())
             await self.cursor.execute(
-                f"CREATE TABLE {table.value} ({self.TIMESTAMP_COLUMN} datetime, {' text, '.join([col for col in kwargs.keys()])})")
+                f"CREATE TABLE {table.value} ({self.TIMESTAMP_COLUMN} datetime, {' text, '.join([col for col in columns])})")
 
             if with_index_on_timestamp:
-                await self.create_index(table, self.TIMESTAMP_COLUMN)
+                await self.create_index(table, [self.TIMESTAMP_COLUMN])
+
+                for i in range(1, round(len(columns) / 2) + 1):
+                    await self.create_index(table, [self.TIMESTAMP_COLUMN] + [columns[u] for u in range(0, i)])
+
         except OperationalError:
             self.logger.error(f"{table} already exists")
         finally:
