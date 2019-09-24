@@ -26,14 +26,7 @@ cdef class DataBase:
 
     cdef dict cache
 
-    cdef void stop(self)
-
-    cdef void __execute_index_creation(self, object table, str column)
-    cdef str __insert_values(self, int timestamp, str inserting_values)
-    cdef void __execute_insert(self, object table, str insert_items)
-    cdef bint __check_table_exists(self, object table)
+    cdef str __insert_values(self, float timestamp, str inserting_values)
     cdef str __select_order_by(self, str order_by, str sort)
     cdef str __where_clauses_from_operations(self, list keys, list values, list operations)
     cdef str __where_clauses_from_operation(self, str key, str value, str operation=*)
-    # cdef list __execute_select(self, object table, str select_items=*, str where_clauses=*, str additional_clauses=*, int size=*)
-    cdef void __init_tables_list(self)

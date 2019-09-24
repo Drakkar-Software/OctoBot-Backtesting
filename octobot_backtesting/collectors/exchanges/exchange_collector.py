@@ -42,6 +42,7 @@ class ExchangeDataCollector(DataCollector):
 
     async def initialize(self):
         self.create_database()
+        await self.database.initialize()
 
         # set config from params
         self.config[CONFIG_TIME_FRAME] = self.time_frames
@@ -49,32 +50,35 @@ class ExchangeDataCollector(DataCollector):
         self.config[CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {CONFIG_CRYPTO_PAIRS: self.symbols}}
 
         # create description
-        self.database.insert(DataTables.DESCRIPTION,
-                             timestamp=time.time(),
-                             version=self.VERSION,
-                             exchange=self.exchange_name,
-                             symbols=json.dumps(self.symbols),
-                             time_frames=json.dumps([tf.value for tf in self.time_frames]))
+        await self.database.insert(DataTables.DESCRIPTION,
+                                   timestamp=time.time(),
+                                   version=self.VERSION,
+                                   exchange=self.exchange_name,
+                                   symbols=json.dumps(self.symbols),
+                                   time_frames=json.dumps([tf.value for tf in self.time_frames]))
 
-    def save_ticker(self, timestamp, exchange, symbol, ticker):
-        self.database.insert(ExchangeDataTables.TICKER, timestamp, exchange_name=exchange, symbol=symbol, ticker=ticker)
+    async def save_ticker(self, timestamp, exchange, symbol, ticker):
+        await self.database.insert(ExchangeDataTables.TICKER, timestamp, exchange_name=exchange, symbol=symbol,
+                                   ticker=json.dumps(ticker))
 
-    def save_order_book(self, timestamp, exchange, symbol, asks, bids):
-        self.database.insert(ExchangeDataTables.ORDER_BOOK, timestamp,
-                             exchange_name=exchange, symbol=symbol, asks=asks, bids=bids)
+    async def save_order_book(self, timestamp, exchange, symbol, asks, bids):
+        await self.database.insert(ExchangeDataTables.ORDER_BOOK, timestamp,
+                                   exchange_name=exchange, symbol=symbol, asks=asks, bids=bids)
 
-    def save_recent_trades(self, timestamp, exchange, symbol, recent_trades):
-        self.database.insert(ExchangeDataTables.RECENT_TRADES, timestamp,
-                             exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
+    async def save_recent_trades(self, timestamp, exchange, symbol, recent_trades):
+        await self.database.insert(ExchangeDataTables.RECENT_TRADES, timestamp,
+                                   exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
 
-    def save_ohlcv(self, timestamp, exchange, symbol, time_frame, candle, multiple=False):
+    async def save_ohlcv(self, timestamp, exchange, symbol, time_frame, candle, multiple=False):
         if not multiple:
-            self.database.insert(ExchangeDataTables.OHLCV, timestamp,
-                                 exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candle)
+            await self.database.insert(ExchangeDataTables.OHLCV, timestamp,
+                                       exchange_name=exchange, symbol=symbol, time_frame=time_frame.value,
+                                       candle=candle)
         else:
-            self.database.insert_all(ExchangeDataTables.OHLCV, timestamp=timestamp,
-                                     exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, candle=candle)
+            await self.database.insert_all(ExchangeDataTables.OHLCV, timestamp=timestamp,
+                                           exchange_name=exchange, symbol=symbol, time_frame=time_frame.value,
+                                           candle=candle)
 
-    def save_kline(self, timestamp, exchange, symbol, time_frame, kline):
-        self.database.insert(ExchangeDataTables.KLINE, timestamp,
-                             exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, kline=kline)
+    async def save_kline(self, timestamp, exchange, symbol, time_frame, kline):
+        await self.database.insert(ExchangeDataTables.KLINE, timestamp,
+                                   exchange_name=exchange, symbol=symbol, time_frame=time_frame.value, kline=kline)

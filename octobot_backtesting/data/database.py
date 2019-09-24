@@ -13,9 +13,11 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from sqlite3 import OperationalError
+
 from octobot_backtesting.enums import DataBaseOrderBy
 from octobot_commons.logging.logging_util import get_logger
-import sqlite3
+import aiosqlite
 
 
 class DataBase:
@@ -30,30 +32,35 @@ class DataBase:
         self.file_name = file_name
         self.logger = get_logger(self.__class__.__name__)
 
-        self.connection = sqlite3.connect(self.file_name)
-        self.cursor = self.connection.cursor()
         self.tables = []
         self.cache = {}
-        self.__init_tables_list()
 
-    def create_index(self, table, column):
-        self.__execute_index_creation(table, column)
+        self.connection = None
+        self.cursor = None
 
-    def __execute_index_creation(self, table, column):
-        self.cursor.execute(f"CREATE INDEX index_{table.value}_{column} ON {table.value} ({column})")
+    async def initialize(self):
+        self.connection = await aiosqlite.connect(self.file_name)
+        self.cursor = await self.connection.cursor()
+        await self.__init_tables_list()
 
-    def insert(self, table, timestamp, **kwargs):
+    async def create_index(self, table, column):
+        await self.__execute_index_creation(table, column)
+
+    async def __execute_index_creation(self, table, column):
+        await self.cursor.execute(f"CREATE INDEX index_{table.value}_{column} ON {table.value} ({column})")
+
+    async def insert(self, table, timestamp, **kwargs):
         if table.value not in self.tables:
-            self.__create_table(table, **kwargs)
+            await self.__create_table(table, **kwargs)
 
         # Insert a row of data
         inserting_values = [f"'{value}'" for value in kwargs.values()]
-        self.__execute_insert(table, self.__insert_values(timestamp, ', '.join(inserting_values)))
+        await self.__execute_insert(table, self.__insert_values(timestamp, ', '.join(inserting_values)))
 
-    def insert_all(self, table, timestamp, **kwargs):
+    async def insert_all(self, table, timestamp, **kwargs):
         # TODO refactor with : cursor.executemany("INSERT INTO my_table VALUES (?,?)", values)
         if table.value not in self.tables:
-            self.__create_table(table, **kwargs)
+            await self.__create_table(table, **kwargs)
 
         insert_values = []
 
@@ -62,35 +69,35 @@ class DataBase:
             inserting_values = [f"'{value if not isinstance(value, list) else value[i]}'" for value in kwargs.values()]
             insert_values.append(self.__insert_values(timestamp[i], ', '.join(inserting_values)))
 
-        self.__execute_insert(table, ", ".join(insert_values))
+        await self.__execute_insert(table, ", ".join(insert_values))
 
     def __insert_values(self, timestamp, inserting_values) -> str:
         return f"({timestamp}, {inserting_values})"
 
-    def __execute_insert(self, table, insert_items) -> None:
-        self.cursor.execute(f"INSERT INTO {table.value} VALUES {insert_items}")
+    async def __execute_insert(self, table, insert_items) -> None:
+        await self.cursor.execute(f"INSERT INTO {table.value} VALUES {insert_items}")
 
         # Save (commit) the changes
-        self.connection.commit()
+        await self.connection.commit()
 
-    def select(self, table, size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, **kwargs):
-        return self.__execute_select(table=table,
-                                     where_clauses=self.__where_clauses_from_kwargs(**kwargs),
-                                     additional_clauses=self.__select_order_by(order_by, sort),
-                                     size=size)
+    async def select(self, table, size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, **kwargs):
+        return await self.__execute_select(table=table,
+                                           where_clauses=self.__where_clauses_from_kwargs(**kwargs),
+                                           additional_clauses=self.__select_order_by(order_by, sort),
+                                           size=size)
 
-    def select_from_timestamp(self, table, timestamps: list, operations: list,
-                              size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, use_cache=False,
-                              **kwargs):
+    async def select_from_timestamp(self, table, timestamps: list, operations: list,
+                                    size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, use_cache=False,
+                                    **kwargs):
         timestamps_where_clauses = self.__where_clauses_from_operations(keys=[self.TIMESTAMP_COLUMN] * len(timestamps),
                                                                         values=timestamps,
                                                                         operations=operations)
-        return self.__execute_select(table=table,
-                                     where_clauses=f"{self.__where_clauses_from_kwargs(**kwargs)} "
-                                                   f"AND "
-                                                   f"{timestamps_where_clauses}",
-                                     additional_clauses=self.__select_order_by(order_by, sort),
-                                     size=size)
+        return await self.__execute_select(table=table,
+                                           where_clauses=f"{self.__where_clauses_from_kwargs(**kwargs)} "
+                                                         f"AND "
+                                                         f"{timestamps_where_clauses}",
+                                           additional_clauses=self.__select_order_by(order_by, sort),
+                                           size=size)
 
     def __where_clauses_from_kwargs(self, **kwargs) -> str:
         return self.__where_clauses_from_operations(list(kwargs.keys()), list(kwargs.values()), [])
@@ -110,35 +117,36 @@ class DataBase:
                f"{order_by if order_by is not None else self.DEFAULT_ORDER_BY} " \
                f"{sort if sort is not None else self.DEFAULT_SORT}"
 
-    def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", size=DEFAULT_SIZE):
+    async def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="",
+                               size=DEFAULT_SIZE):
         try:
-            self.cursor.execute(f"SELECT {select_items} FROM {table.value} "
-                                f"{'WHERE' if where_clauses else ''} {where_clauses} "
-                                f"{additional_clauses}")
-            return self.cursor.fetchall() if size == self.DEFAULT_SIZE else self.cursor.fetchmany(size)
-        except sqlite3.OperationalError as e:
+            await self.cursor.execute(f"SELECT {select_items} FROM {table.value} "
+                                      f"{'WHERE' if where_clauses else ''} {where_clauses} "
+                                      f"{additional_clauses}")
+            return await self.cursor.fetchall() if size == self.DEFAULT_SIZE else await self.cursor.fetchmany(size)
+        except OperationalError as e:
             self.logger.error(f"An error occurred when executing select : {e}")
         return []
 
-    def __check_table_exists(self, table) -> bool:
-        self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
-        return self.cursor.fetchall() != []
+    async def __check_table_exists(self, table) -> bool:
+        await self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
+        return await self.cursor.fetchall() != []
 
-    def __create_table(self, table, with_index_on_timestamp=True, **kwargs) -> None:
+    async def __create_table(self, table, with_index_on_timestamp=True, **kwargs) -> None:
         try:
-            self.cursor.execute(
+            await self.cursor.execute(
                 f"CREATE TABLE {table.value} ({self.TIMESTAMP_COLUMN} datetime, {' text, '.join([col for col in kwargs.keys()])})")
 
             if with_index_on_timestamp:
-                self.create_index(table, self.TIMESTAMP_COLUMN)
-        except sqlite3.OperationalError:
+                await self.create_index(table, self.TIMESTAMP_COLUMN)
+        except OperationalError:
             self.logger.error(f"{table} already exists")
         finally:
             self.tables.append(table.value)
 
-    def __init_tables_list(self):
-        self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
-        self.tables = self.cursor.fetchall()
+    async def __init_tables_list(self):
+        await self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
+        self.tables = await self.cursor.fetchall()
 
-    def stop(self):
-        self.connection.close()
+    async def stop(self):
+        await self.connection.close()

@@ -2,3 +2,5 @@
 OctoBot-Commons
 
 cython
+
+aiosqlite

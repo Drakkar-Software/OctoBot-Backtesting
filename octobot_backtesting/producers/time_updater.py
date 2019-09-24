@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import asyncio
 import time
 
 from octobot_backtesting.channels.time import TimeProducer
@@ -25,6 +26,7 @@ class TimeUpdater(TimeProducer):
         self.starting_time = time.time()
 
     async def start(self):
+        await asyncio.sleep(0.1)  # TODO
         while not self.should_stop:
             try:
                 await self.push(timestamp=self.time_manager.current_timestamp)
