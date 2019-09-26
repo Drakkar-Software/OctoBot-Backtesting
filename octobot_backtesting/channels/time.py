@@ -31,7 +31,7 @@ class TimeProducer(Producer):
     async def perform(self, timestamp):
         try:
             await self.backtesting.handle_time_update(timestamp)
-            await self.send(timestamp=timestamp)
+            await self.send(timestamp)
         except CancelledError:
             self.logger.info("Update tasks cancelled.")
         except Exception as e:

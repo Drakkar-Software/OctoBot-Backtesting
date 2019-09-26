@@ -29,7 +29,7 @@ class TimeUpdater(TimeProducer):
         await asyncio.sleep(0.1)  # TODO
         while not self.should_stop:
             try:
-                await self.push(timestamp=self.time_manager.current_timestamp)
+                await self.push(self.time_manager.current_timestamp)
                 self.time_manager.next_timestamp()
                 await self.wait_for_processing()
 
