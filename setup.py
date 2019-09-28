@@ -55,6 +55,7 @@ ext_modules = [
 
 REQUIRED = open('requirements.txt').readlines()
 REQUIRES_PYTHON = '>=3.7'
+CYTHON_DEBUG = False if not os.getenv('CYTHON_DEBUG') else os.getenv('CYTHON_DEBUG')
 
 setup(
     name=PROJECT_NAME,
@@ -74,7 +75,7 @@ setup(
     data_files=[],
     setup_requires=REQUIRED,
     install_requires=[],
-    ext_modules=ext_modules,
+    ext_modules=cythonize(ext_modules, gdb_debug=CYTHON_DEBUG),
     python_requires=REQUIRES_PYTHON,
     classifiers=[
         'Development Status :: 3 - Alpha',
