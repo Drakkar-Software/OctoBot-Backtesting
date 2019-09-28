@@ -38,7 +38,7 @@ class TimeProducer(Producer):
             self.logger.error(f"exception when triggering time update: {e}")
             self.logger.exception(e)
 
-    async def send(self, timestamp):
+    async def send(self, timestamp, **kwargs):
         for consumer in self.channel.get_consumer_from_filters({}):
             await consumer.queue.put({
                 "timestamp": timestamp

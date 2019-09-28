@@ -51,4 +51,4 @@ if __name__ == '__main__':
     main_loop.run_until_complete(run_exchange_history_collector({}, "binance",
                                                                 ["BTC/USDT", "ETH/USDT", "LTC/USDT"],
                                                                 [TimeFrames.ONE_MINUTE, TimeFrames.FIVE_MINUTES, TimeFrames.ONE_HOUR]))
-    # main_loop.run_until_complete(import_exchange_live_collector({}, os.getenv('BACKTESTING-FILE')))
+    # main_loop.run_until_complete(import_exchange_live_collector({}, os.getenv('BACKTESTING_FILE')))

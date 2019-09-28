@@ -29,4 +29,3 @@ cdef class DataImporter:
     cdef public DataBase database
 
     cpdef void load_database(self)
-    cpdef tuple get_data_timestamp_interval(self)
