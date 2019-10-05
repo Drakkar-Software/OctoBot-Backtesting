@@ -16,7 +16,7 @@
 from octobot_commons.enums import TimeFrames
 
 PROJECT_NAME = "OctoBot-Backtesting"
-VERSION = "1.1.1"  # major.minor.revision
+VERSION = "1.2.0"  # major.minor.revision
 
 # Backtesting
 CONFIG_BACKTESTING = "backtesting"
