@@ -65,9 +65,15 @@ class ExchangeDataCollector(DataCollector):
         await self.database.insert(ExchangeDataTables.ORDER_BOOK, timestamp,
                                    exchange_name=exchange, symbol=symbol, asks=asks, bids=bids)
 
-    async def save_recent_trades(self, timestamp, exchange, symbol, recent_trades):
-        await self.database.insert(ExchangeDataTables.RECENT_TRADES, timestamp,
-                                   exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
+    async def save_recent_trades(self, timestamp, exchange, symbol, recent_trades, multiple=False):
+        if not multiple:
+            await self.database.insert(ExchangeDataTables.RECENT_TRADES, timestamp,
+                                       exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
+        else:
+            await self.database.insert_all(ExchangeDataTables.RECENT_TRADES, timestamp,
+                                           exchange_name=exchange, symbol=symbol, recent_trades=[json.dumps(rt)
+                                                                                                 for rt in
+                                                                                                 recent_trades])
 
     async def save_ohlcv(self, timestamp, exchange, symbol, time_frame, candle, multiple=False):
         if not multiple:

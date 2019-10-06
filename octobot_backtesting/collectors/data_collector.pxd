@@ -21,6 +21,7 @@ cdef class DataCollector:
     cdef public dict config
 
     cdef public object logger
+    cdef public object aiohttp_session
 
     cdef public bint should_stop
 
@@ -31,4 +32,5 @@ cdef class DataCollector:
     cdef public DataBase database
 
     cpdef void create_database(self)
+    cpdef void create_aiohttp_session(self)
     cpdef void set_file_path(self)

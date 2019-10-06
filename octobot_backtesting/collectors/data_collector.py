@@ -13,8 +13,12 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import asyncio
+import json
 import time
 from os.path import join
+
+from aiohttp import ClientSession
 
 from octobot_commons.logging.logging_util import get_logger
 
@@ -37,6 +41,7 @@ class DataCollector:
                          f"{time.time()}{BACKTESTING_DATA_FILE_EXT}"
 
         self.database = None
+        self.aiohttp_session = None
         self.file_path = None
         self.set_file_path()
 
@@ -55,3 +60,40 @@ class DataCollector:
     def create_database(self) -> None:
         if not self.database:
             self.database = DataBase(self.file_path)
+
+    def create_aiohttp_session(self) -> None:
+        if not self.aiohttp_session:
+            self.aiohttp_session = ClientSession()
+
+    async def stop_aiohttp_session(self) -> None:
+        if self.aiohttp_session:
+            await self.aiohttp_session.close()
+
+    async def execute_request(self, url, params=None, headers=None):
+        response = await self.aiohttp_session.get(url, params=params, headers=headers)
+        if response.status != 200:
+            if response.status == 502:  # bad gateway (should retry)
+                self.logger.warning("Got a bad gateway error, retrying...")
+                await asyncio.sleep(60)
+                return await self.execute_request(url, params=params, headers=headers)
+            else:
+                try:
+                    message = json.loads(await response.text())['message']
+                except json.JSONDecodeError:
+                    message = await response.text()
+                self.logger.error(f"Error when requesting url {url} / "
+                                  f"message : {message} / "
+                                  f"code : {response.status} / "
+                                  f"reason : {response.reason}")
+            return None
+        return json.loads(await response.text())
+
+    async def fetch_with_continuation(self, continuation_url_key, json_answer, headers, callback):
+        if continuation_url_key in json_answer:
+            answer = await self.execute_request(json_answer[continuation_url_key], headers=headers)
+            if answer is None:
+                return
+
+            await callback(answer["data"])
+
+            await self.fetch_with_continuation(continuation_url_key, answer, headers, callback)
