@@ -17,6 +17,7 @@ from sqlite3 import OperationalError
 
 import aiosqlite
 
+from octobot_backtesting.data import DataBaseNotExists
 from octobot_backtesting.enums import DataBaseOrderBy
 from octobot_commons.logging.logging_util import get_logger
 
@@ -126,6 +127,8 @@ class DataBase:
                                       f"{additional_clauses}")
             return await self.cursor.fetchall() if size == self.DEFAULT_SIZE else await self.cursor.fetchmany(size)
         except OperationalError as e:
+            if not await self.__check_table_exists(table):
+                raise DataBaseNotExists(e)
             self.logger.error(f"An error occurred when executing select : {e}")
         return []
 

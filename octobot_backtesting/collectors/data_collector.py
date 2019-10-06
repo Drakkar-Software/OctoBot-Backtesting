@@ -18,7 +18,7 @@ import json
 import time
 from os.path import join
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientPayloadError
 
 from octobot_commons.logging.logging_util import get_logger
 
@@ -86,7 +86,11 @@ class DataCollector:
                                   f"code : {response.status} / "
                                   f"reason : {response.reason}")
             return None
-        return json.loads(await response.text())
+        try:
+            return json.loads(await response.text())
+        except ClientPayloadError as e:
+            self.logger.error(f"Failed to extract payload text : {e}")
+            return None
 
     async def fetch_with_continuation(self, continuation_url_key, json_answer, headers, callback):
         if continuation_url_key in json_answer:
