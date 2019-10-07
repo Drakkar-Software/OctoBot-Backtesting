@@ -15,6 +15,7 @@
 #  License along with this library.
 import logging
 
-from .constants import *
+PROJECT_NAME = "OctoBot-Backtesting"
+VERSION = "1.2.2"  # ma
 
 logging.getLogger('aiosqlite').setLevel(logging.ERROR)

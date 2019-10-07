@@ -15,7 +15,7 @@
 #  License along with this library.
 import os
 
-from octobot_backtesting import BACKTESTING_DATA_FILE_SEPARATOR
+from octobot_backtesting.constants import BACKTESTING_DATA_FILE_SEPARATOR
 from octobot_backtesting.collectors.data_collector import DataCollector
 from octobot_backtesting.importers.data_importer import DataImporter
 from octobot_commons.tentacles_management import get_deep_class_from_parent_subclasses

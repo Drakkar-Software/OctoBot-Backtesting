@@ -13,12 +13,9 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
 from octobot_commons.enums import TimeFrames
 
-PROJECT_NAME = "OctoBot-Backtesting"
-VERSION = "1.2.1"  # major.minor.revision
-
-# Backtesting
 CONFIG_BACKTESTING = "backtesting"
 CONFIG_BACKTESTING_DATA_FILES = "files"
 CONFIG_ANALYSIS_ENABLED_OPTION = "post_analysis_enabled"

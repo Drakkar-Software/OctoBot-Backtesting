@@ -1,5 +1,6 @@
 # Drakkar-Software requirements
 OctoBot-Commons
+OctoBot-Channels
 
 cython
 
