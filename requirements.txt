@@ -1,8 +1,10 @@
+# Setup requirements
+cython==0.29.13
+
 # Drakkar-Software requirements
-OctoBot-Commons
-OctoBot-Channels
+OctoBot-Commons==1.1.46
+OctoBot-Channels==1.3.13
 
-cython
-
-aiosqlite
-aiohttp
+# Backtesting core requirements
+aiosqlite==0.10.0
+aiohttp==3.6.2
