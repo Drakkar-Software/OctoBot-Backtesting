@@ -14,8 +14,7 @@ env:
     - secure: YUc+y1D9Qdm/KTl7dDBiYUp3kx7brZ4nFnBiGgcRB9MxEn5XKv3yeri9P6UEDgtRNYzfd3CBKCZxFTwz49GYfsLcCP+Kp1eXzSJ+KaeKk1mmnOXz0s2bMSM/BxhSfSaQ2eXNz+wME+YHQclN9DHfC8EIXmYsWi/TgNuqi9ExPkUZzFyvMIcSZwrchvs9BFNSfQrHA7OZP2kyfNS0QyaElmleqwYBLlS3A2MxE72tUcElAlaW+yGMueJtCsMhoc/fy2Q1n379UY+j5zr1LFX+RVluB64P1m/ubIKCceYMCF4KQzO+HxajBPAtBagxO0FJhTVyXp3LRq1XjIidmS1a9speScrNr6AGZO7ybCneKfsuJSCzeANwMYAUVlJ/D8seBWJmAAvShiQZLqNuWRYf9OM0n39KtBxblpVUeGp+hGxaveWeEKsxmx1woAwSE03kZWpgAJCSj4LdOI2We9srp2nM7J9f8RDXLURXOxvF08M95ml83AiDLCKbcfzlRU3kwiqzHZRyP1N1pVyIVMoNHoXtupqDv581S8oMNHkgxlO9nPRoIa2nPcBJdFl7Rmxo+J+bpECMPZ9kEg53K88u5MbpqT/vYzOt1GqZumAyJ+N97fdooeeoRV46qqDubLsFMGsRfs3XVd9QMM51R9gVdf37J3rLIySCoQq0vCo8Td8=
 
 install:
-  - python3 -m pip install --upgrade -r dev_requirements.txt
-  - python3 -m pip install --upgrade -r requirements.txt
+  - python3 -m pip install --prefer-binary -r dev_requirements.txt -r requirements.txt
 
 matrix:
   include:
@@ -74,10 +73,35 @@ matrix:
             tags: true
             condition: "$TRAVIS_OS_NAME = 'linux'"
         - provider: script
-          script: docker run -it -e PYPI_USERNAME=$PYPI_USERNAME -e PYPI_PASSWORD=$PYPI_PASSWORD -v $(pwd):/project drakkarsoftware/octobot-pypi-deploy:x86_x64 "x86_64" "cp37-cp37m" "cp37"
+          script: docker run -it -e PYPI_USERNAME=$PYPI_USERNAME -e PYPI_PASSWORD=$PYPI_PASSWORD -v $(pwd):/project drakkarsoftware/octobot-pypi-deploy:x86_64 "x86_64" "cp37-cp37m" "cp37"
           skip_cleanup: true
           on:
             repo: "$GH_REPO"
             branch: "$DEPLOY_BRANCH"
             tags: true
             condition: "$TRAVIS_OS_NAME = 'linux'"
+
+    - name: "OSX - Python 3.7 - Deploy"
+      stage: deploy
+      os: osx
+      osx_image: xcode11    # Python 3.7.2 running on macOS 10.14.3
+      language: shell       # 'language: python' is an error on Travis CI macOS
+      # python: 3.7         # 'python:' is ignored on Travis CI macOS
+      before_install: python3 --version ; pip3 --version ; sw_vers
+      before_cache:
+        - rm -f "$HOME/Library/Caches/pip/log/debug.log"
+      cache:
+        directories:
+          - "$HOME/Library/Caches/pip"
+      script:
+        - python3 setup.py build_ext --inplace
+        - pytest tests
+      deploy:
+        - provider: script
+          script: python3 setup.py bdist_wheel && python3 -m twine upload dist/* -u $PYPI_USERNAME -p $PYPI_PASSWORD --skip-existing
+          skip_cleanup: true
+          on:
+            repo: "$GH_REPO"
+            branch: "$DEPLOY_BRANCH"
+            tags: true
+            condition: "$TRAVIS_OS_NAME = 'osx'"
