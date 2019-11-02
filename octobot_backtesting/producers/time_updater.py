@@ -31,7 +31,11 @@ class TimeUpdater(TimeProducer):
             try:
                 await self.push(self.time_manager.current_timestamp)
                 self.time_manager.next_timestamp()
-                await self.wait_for_processing()
+
+                try:
+                    await self.wait_for_processing()
+                except asyncio.CancelledError:
+                    self.logger.warning("Stopped during processing")
 
                 self.logger.info(f"Progress : {round(self.backtesting.get_progress() * 100, 2)}%")
 
