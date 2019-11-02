@@ -88,6 +88,18 @@ class DataBase:
                                            additional_clauses=self.__select_order_by(order_by, sort),
                                            size=size)
 
+    async def select_max(self, table, max_columns, group_by=None, **kwargs):
+        return await self.__execute_select(table=table,
+                                           select_items=self.__max(max_columns),
+                                           where_clauses=self.__where_clauses_from_kwargs(**kwargs),
+                                           group_by=self.__select_group_by(group_by) if group_by else "")
+
+    async def select_min(self, table, min_columns, group_by=None, **kwargs):
+        return await self.__execute_select(table=table,
+                                           select_items=self.__min(min_columns),
+                                           where_clauses=self.__where_clauses_from_kwargs(**kwargs),
+                                           group_by=self.__select_group_by(group_by) if group_by else "")
+
     async def select_from_timestamp(self, table, timestamps: list, operations: list,
                                     size=DEFAULT_SIZE, order_by=DEFAULT_ORDER_BY, sort=DEFAULT_SORT, use_cache=False,
                                     **kwargs):
@@ -119,12 +131,21 @@ class DataBase:
                f"{order_by if order_by is not None else self.DEFAULT_ORDER_BY} " \
                f"{sort if sort is not None else self.DEFAULT_SORT}"
 
-    async def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="",
+    def __select_group_by(self, group_by):
+        return f"GROUP BY {group_by}"
+
+    def __max(self, columns):
+        return f"MAX({','.join(columns)})"
+
+    def __min(self, columns):
+        return f"MIN({','.join(columns)})"
+
+    async def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", group_by="",
                                size=DEFAULT_SIZE):
         try:
             await self.cursor.execute(f"SELECT {select_items} FROM {table.value} "
                                       f"{'WHERE' if where_clauses else ''} {where_clauses} "
-                                      f"{additional_clauses}")
+                                      f"{additional_clauses} {group_by}")
             return await self.cursor.fetchall() if size == self.DEFAULT_SIZE else await self.cursor.fetchmany(size)
         except OperationalError as e:
             if not await self.__check_table_exists(table):

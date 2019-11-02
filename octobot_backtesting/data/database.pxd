@@ -28,5 +28,8 @@ cdef class DataBase:
 
     cdef str __insert_values(self, float timestamp, str inserting_values)
     cdef str __select_order_by(self, str order_by, str sort)
+    cdef str __select_group_by(self, str group_by)
+    cdef str __max(self, list columns)
+    cdef str __min(self, list columns)
     cdef str __where_clauses_from_operations(self, list keys, list values, list operations)
     cdef str __where_clauses_from_operation(self, str key, str value, str operation=*)
