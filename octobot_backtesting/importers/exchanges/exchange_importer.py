@@ -15,7 +15,8 @@
 #  License along with this library.
 import json
 
-from octobot_commons.enums import TimeFrames
+from octobot_commons.constants import CONFIG_TIME_FRAME
+from octobot_commons.enums import TimeFrames, TimeFramesMinutes
 
 from octobot_backtesting.data import DataBaseNotExists
 from octobot_backtesting.data.database import DataBase
@@ -53,18 +54,40 @@ class ExchangeDataImporter(DataImporter):
     async def get_data_timestamp_interval(self):
         minimum_timestamp: float = 0.0
         maximum_timestamp: float = 0.0
-        for table in ExchangeDataTables:
+
+        min_ohlcv_timestamp: float = 0.0
+        max_ohlcv_timestamp: float = 0.0
+
+        for table in [ExchangeDataTables.KLINE, ExchangeDataTables.ORDER_BOOK, ExchangeDataTables.RECENT_TRADES,
+                      ExchangeDataTables.TICKER]:
             try:
-                min_timestamp = (await self.database.select(table, size=1, sort=DataBaseOrderBy.ASC.value))[0][0]
+                min_timestamp = (await self.database.select_min(table, [DataBase.TIMESTAMP_COLUMN]))[0][0]
                 if not minimum_timestamp or minimum_timestamp > min_timestamp:
                     minimum_timestamp = min_timestamp
 
-                max_timestamp = (await self.database.select(table, size=1, sort=DataBaseOrderBy.DESC.value))[0][0]
-                if not maximum_timestamp or maximum_timestamp > max_timestamp:
+                max_timestamp = (await self.database.select_max(table, [DataBase.TIMESTAMP_COLUMN]))[0][0]
+                if not maximum_timestamp or maximum_timestamp < max_timestamp:
                     maximum_timestamp = max_timestamp
             except (IndexError, DataBaseNotExists):
                 pass
-        return minimum_timestamp, maximum_timestamp
+
+        # OHLCV timestamps
+        try:
+            ohlcv_min_timestamps = (await self.database.select_min(ExchangeDataTables.OHLCV,
+                                                                   [DataBase.TIMESTAMP_COLUMN],
+                                                                   [CONFIG_TIME_FRAME],
+                                                                   group_by=CONFIG_TIME_FRAME))
+
+            ohlcv_timestamp = max(ohlcv_min_timestamps)[0]
+            ohlcv_max_time_frame = max([TimeFramesMinutes[tf] for tf in self.time_frames])
+            min_ohlcv_timestamp = ohlcv_timestamp - ohlcv_max_time_frame
+
+            max_ohlcv_timestamp = (await self.database.select_max(ExchangeDataTables.OHLCV,
+                                                                  [DataBase.TIMESTAMP_COLUMN]))[0][0]
+        except (IndexError, DataBaseNotExists):
+            pass
+
+        return max(minimum_timestamp, min_ohlcv_timestamp), max(maximum_timestamp, max_ohlcv_timestamp) # TODO min(max_t, ohlcv_max) when !=0
 
     def __get_operations_from_timestamps(self, superior_timestamp, inferior_timestamp):
         operations: list = []

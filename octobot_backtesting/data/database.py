@@ -88,15 +88,19 @@ class DataBase:
                                            additional_clauses=self.__select_order_by(order_by, sort),
                                            size=size)
 
-    async def select_max(self, table, max_columns, group_by=None, **kwargs):
+    async def select_max(self, table, max_columns, selected_items=None, group_by=None, **kwargs):
         return await self.__execute_select(table=table,
-                                           select_items=self.__max(max_columns),
+                                           select_items=f"{self.__max(max_columns)}"
+                                                        f"{', ' if selected_items else ''}"
+                                                        f"{self.__selected_columns(selected_items)}",
                                            where_clauses=self.__where_clauses_from_kwargs(**kwargs),
                                            group_by=self.__select_group_by(group_by) if group_by else "")
 
-    async def select_min(self, table, min_columns, group_by=None, **kwargs):
+    async def select_min(self, table, min_columns, selected_items=None, group_by=None, **kwargs):
         return await self.__execute_select(table=table,
-                                           select_items=self.__min(min_columns),
+                                           select_items=f"{self.__min(min_columns)}"
+                                                        f"{', ' if selected_items else ''}"
+                                                        f"{self.__selected_columns(selected_items)}",
                                            where_clauses=self.__where_clauses_from_kwargs(**kwargs),
                                            group_by=self.__select_group_by(group_by) if group_by else "")
 
@@ -135,10 +139,13 @@ class DataBase:
         return f"GROUP BY {group_by}"
 
     def __max(self, columns):
-        return f"MAX({','.join(columns)})"
+        return f"MAX({self.__selected_columns(columns)})"
 
     def __min(self, columns):
-        return f"MIN({','.join(columns)})"
+        return f"MIN({self.__selected_columns(columns)})"
+
+    def __selected_columns(self, columns=None):
+        return ','.join(columns) if columns else ""
 
     async def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", group_by="",
                                size=DEFAULT_SIZE):

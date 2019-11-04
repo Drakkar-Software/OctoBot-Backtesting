@@ -31,5 +31,6 @@ cdef class DataBase:
     cdef str __select_group_by(self, str group_by)
     cdef str __max(self, list columns)
     cdef str __min(self, list columns)
+    cdef str __selected_columns(self, list columns)
     cdef str __where_clauses_from_operations(self, list keys, list values, list operations)
     cdef str __where_clauses_from_operation(self, str key, str value, str operation=*)
