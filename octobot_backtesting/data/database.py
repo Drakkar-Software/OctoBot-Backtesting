@@ -109,7 +109,8 @@ class DataBase:
                                     **kwargs):
         timestamps_where_clauses = self.__where_clauses_from_operations(keys=[self.TIMESTAMP_COLUMN] * len(timestamps),
                                                                         values=timestamps,
-                                                                        operations=operations)
+                                                                        operations=operations,
+                                                                        should_quote_value=False)
         return await self.__execute_select(table=table,
                                            where_clauses=f"{self.__where_clauses_from_kwargs(**kwargs)} "
                                                          f"AND "
@@ -117,16 +118,19 @@ class DataBase:
                                            additional_clauses=self.__select_order_by(order_by, sort),
                                            size=size)
 
-    def __where_clauses_from_kwargs(self, **kwargs) -> str:
-        return self.__where_clauses_from_operations(list(kwargs.keys()), list(kwargs.values()), [])
+    def __where_clauses_from_kwargs(self, should_quote_value=True, **kwargs) -> str:
+        return self.__where_clauses_from_operations(list(kwargs.keys()), list(kwargs.values()), [],
+                                                    should_quote_value=should_quote_value)
 
-    def __where_clauses_from_operation(self, key, value, operation=DEFAULT_WHERE_OPERATION):
-        return f"{key} {operation if operation is not None else self.DEFAULT_WHERE_OPERATION} '{value}'"
+    def __where_clauses_from_operation(self, key, value, operation=DEFAULT_WHERE_OPERATION, should_quote_value=True):
+        return f"{key} {operation if operation is not None else self.DEFAULT_WHERE_OPERATION} " \
+               f"{self.__quote_value(value) if should_quote_value else value}"
 
-    def __where_clauses_from_operations(self, keys, values, operations):
+    def __where_clauses_from_operations(self, keys, values, operations, should_quote_value=True):
         return " AND ".join([self.__where_clauses_from_operation(keys[i],
                                                                  values[i],
-                                                                 operations[i] if len(operations) > i else None)
+                                                                 operations[i] if len(operations) > i else None,
+                                                                 should_quote_value=should_quote_value)
                              for i in range(len(keys))
                              if values[i] is not None])
 
@@ -137,6 +141,9 @@ class DataBase:
 
     def __select_group_by(self, group_by):
         return f"GROUP BY {group_by}"
+
+    def __quote_value(self, value):
+        return f"'{value}'"
 
     def __max(self, columns):
         return f"MAX({self.__selected_columns(columns)})"
