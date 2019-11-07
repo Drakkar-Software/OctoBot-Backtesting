@@ -93,11 +93,11 @@ class ExchangeDataImporter(DataImporter):
         operations: list = []
         timestamps: list = []
         if superior_timestamp != -1:
-            timestamps.append(str(superior_timestamp))
-            operations.append(DataBaseOperations.SUP_EQUALS.value)
-        if inferior_timestamp != -1:
-            timestamps.append(str(inferior_timestamp))
+            timestamps.append(superior_timestamp)
             operations.append(DataBaseOperations.INF_EQUALS.value)
+        if inferior_timestamp != -1:
+            timestamps.append(inferior_timestamp)
+            operations.append(DataBaseOperations.SUP_EQUALS.value)
 
         return timestamps, operations
 
@@ -115,7 +115,7 @@ class ExchangeDataImporter(DataImporter):
 
     async def get_ohlcv_from_timestamps(self, exchange_name=None, symbol=None, time_frame=None,
                                         limit=DataBase.DEFAULT_SIZE,
-                                        inferior_timestamp=-1, superior_timestamp=-1):
+                                        inferior_timestamp=-1, superior_timestamp=-1) -> list:
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
         return self.import_ohlcvs(await self.database.select_from_timestamp(ExchangeDataTables.OHLCV, size=limit,
                                                                             exchange_name=exchange_name, symbol=symbol,

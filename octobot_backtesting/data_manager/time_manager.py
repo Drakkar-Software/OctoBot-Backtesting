@@ -21,7 +21,7 @@ from octobot_commons.logging.logging_util import get_logger
 class TimeManager:
     TIMESTAMP_INIT_VALUE = -1
     DEFAULT_FINISH_TIME_DELTA = 1000
-    TIME_INTERVAL = 1000000
+    TIME_INTERVAL = 50000
 
     def __init__(self, config):
         self.logger = get_logger(self.__class__.__name__)
