@@ -18,14 +18,6 @@ install:
 
 matrix:
   include:
-    - name: "Linux - Python 3 nightly - Cython compilation"
-      stage: build
-      os: linux
-      python: nightly
-      language: python
-      script:
-        - python3 setup.py build_ext --inplace
-
     - name: "Linux - Python 3 nightly - Python sources"
       stage: test
       os: linux
