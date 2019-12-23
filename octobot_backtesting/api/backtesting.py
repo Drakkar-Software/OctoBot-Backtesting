@@ -13,8 +13,10 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_commons.constants import CONFIG_ENABLED_OPTION
 
 from octobot_backtesting.backtesting import Backtesting
+from octobot_backtesting.constants import CONFIG_BACKTESTING
 
 
 async def initialize_backtesting(config, data_files) -> Backtesting:
@@ -26,3 +28,8 @@ async def initialize_backtesting(config, data_files) -> Backtesting:
         raise ValueError("No importers created")
 
     return backtesting_instance
+
+
+def is_backtesting_enabled(config):
+    return CONFIG_BACKTESTING in config and CONFIG_ENABLED_OPTION in config[CONFIG_BACKTESTING] \
+           and config[CONFIG_BACKTESTING][CONFIG_ENABLED_OPTION]
