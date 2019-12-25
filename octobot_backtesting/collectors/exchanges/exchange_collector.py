@@ -19,14 +19,14 @@ from abc import abstractmethod
 
 import time
 
-from octobot_commons.constants import CONFIG_TIME_FRAME
+from octobot_commons.constants import CONFIG_TIME_FRAME, CONFIG_CRYPTO_CURRENCIES, CONFIG_CRYPTO_PAIRS
 
 from octobot_backtesting.collectors.data_collector import DataCollector
 from octobot_backtesting.enums import ExchangeDataTables, DataTables
 from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 
 try:
-    from octobot_trading.constants import CONFIG_EXCHANGES, CONFIG_CRYPTO_CURRENCIES, CONFIG_CRYPTO_PAIRS
+    from octobot_trading.constants import CONFIG_EXCHANGES
 except ImportError:
     logging.error("ExchangeDataCollector requires OctoBot-Trading package installed")
 
