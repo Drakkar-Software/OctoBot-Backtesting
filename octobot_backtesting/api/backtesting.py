@@ -19,6 +19,20 @@ from octobot_backtesting.backtesting import Backtesting
 from octobot_backtesting.constants import CONFIG_BACKTESTING
 
 
+def create_backtesting(config, data_files) -> Backtesting:
+    return Backtesting(config, data_files)
+
+
+async def initialize_created_backtesting(backtesting_instance) -> Backtesting:
+    await backtesting_instance.initialize()
+    await backtesting_instance.create_importers()
+
+    if not backtesting_instance.importers:
+        raise ValueError("No importers created")
+
+    return backtesting_instance
+
+
 async def initialize_backtesting(config, data_files) -> Backtesting:
     backtesting_instance = Backtesting(config, data_files)
     await backtesting_instance.initialize()
@@ -28,6 +42,20 @@ async def initialize_backtesting(config, data_files) -> Backtesting:
         raise ValueError("No importers created")
 
     return backtesting_instance
+
+
+def is_backtesting_in_progress(backtesting):
+    return backtesting.is_in_progress()
+
+
+def get_backtesting_progress(backtesting):
+    return backtesting.get_progress()
+
+
+def get_backtesting_run_report(backtesting):
+    # TODO: add backtesting report handling
+    # return backtesting.get_report()
+    return {}
 
 
 def is_backtesting_enabled(config):

@@ -1,4 +1,3 @@
-# cython: language_level=3
 #  Drakkar-Software OctoBot-Backtesting
 #  Copyright (c) Drakkar-Software, All rights reserved.
 #
@@ -10,24 +9,21 @@
 #  This library is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General License for more details.
+#  Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.data_manager.time_manager cimport TimeManager
+from octobot_backtesting.constants import BACKTESTING_FILE_PATH
+from octobot_backtesting.data import data_file_manager as data_manager
 
-cdef class Backtesting:
-    cdef public object config
 
-    cdef public list backtesting_files
-    cdef public list importers
+def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH):
+    return data_manager.get_file_description(data_path, file_name)
 
-    cdef public TimeManager time_manager
 
-    cdef object logger
+def get_all_available_data_files(data_path=BACKTESTING_FILE_PATH):
+    return data_manager.get_all_available_data_files(data_path)
 
-    cpdef list get_importers(self, object importer_parent_class=*)
-    cpdef float get_progress(self)
-    cpdef bool is_in_progress(self)
 
-    cdef bool _has_nothing_to_do(self)
+def delete_data_file(file_name, data_path=BACKTESTING_FILE_PATH):
+    return data_manager.delete_data_file(data_path, file_name)

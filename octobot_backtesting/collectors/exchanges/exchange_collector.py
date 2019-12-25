@@ -15,6 +15,8 @@
 #  License along with this library.
 import json
 import logging
+from abc import abstractmethod
+
 import time
 
 from octobot_commons.constants import CONFIG_TIME_FRAME
@@ -56,6 +58,10 @@ class ExchangeDataCollector(DataCollector):
                                    exchange=self.exchange_name,
                                    symbols=json.dumps(self.symbols),
                                    time_frames=json.dumps([tf.value for tf in self.time_frames]))
+
+    @abstractmethod
+    def use_all_available_timeframes(self):
+        raise NotImplementedError("use_all_available_timeframes is not implemented")
 
     async def save_ticker(self, timestamp, exchange, symbol, ticker, multiple=False):
         if not multiple:
