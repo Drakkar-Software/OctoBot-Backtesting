@@ -18,7 +18,6 @@ from enum import Enum
 
 class DataFormats(Enum):
     REGULAR_COLLECTOR_DATA = 0
-    KAIKO_DATA = 1
 
 
 class DataFormatKeys(Enum):
