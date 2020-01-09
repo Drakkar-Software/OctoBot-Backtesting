@@ -15,16 +15,18 @@
 #  License along with this library.
 import json
 import logging
+from abc import abstractmethod
+
 import time
 
-from octobot_commons.constants import CONFIG_TIME_FRAME
+from octobot_commons.constants import CONFIG_TIME_FRAME, CONFIG_CRYPTO_CURRENCIES, CONFIG_CRYPTO_PAIRS
 
 from octobot_backtesting.collectors.data_collector import DataCollector
 from octobot_backtesting.enums import ExchangeDataTables, DataTables
 from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 
 try:
-    from octobot_trading.constants import CONFIG_EXCHANGES, CONFIG_CRYPTO_CURRENCIES, CONFIG_CRYPTO_PAIRS
+    from octobot_trading.constants import CONFIG_EXCHANGES
 except ImportError:
     logging.error("ExchangeDataCollector requires OctoBot-Trading package installed")
 
@@ -56,6 +58,10 @@ class ExchangeDataCollector(DataCollector):
                                    exchange=self.exchange_name,
                                    symbols=json.dumps(self.symbols),
                                    time_frames=json.dumps([tf.value for tf in self.time_frames]))
+
+    @abstractmethod
+    def use_all_available_timeframes(self):
+        raise NotImplementedError("use_all_available_timeframes is not implemented")
 
     async def save_ticker(self, timestamp, exchange, symbol, ticker, multiple=False):
         if not multiple:

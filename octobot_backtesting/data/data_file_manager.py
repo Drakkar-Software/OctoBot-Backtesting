@@ -21,11 +21,11 @@ from os.path import basename, isfile, join, splitext
 from os import listdir, remove
 
 from octobot_commons.symbol_util import merge_currencies
-from octobot_commons.time_frame_manager import TimeFrameManager
+from octobot_commons.time_frame_manager import find_min_time_frame
 
-from octobot_trading.constants import BACKTESTING_TIME_FRAMES_TO_DISPLAY, BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT, \
+from octobot_backtesting.constants import BACKTESTING_TIME_FRAMES_TO_DISPLAY, BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT, \
     BACKTESTING_DATA_FILE_TIME_READ_FORMAT, BACKTESTING_DATA_FILE_EXT, BACKTESTING_DATA_FILE_TIME_WRITE_FORMAT
-from octobot_trading.enums import BacktestingDataFormatKeys, BacktestingDataFormats
+from octobot_backtesting.enums import DataFormatKeys, DataFormats
 
 
 def interpret_file_name(file_name):
@@ -70,29 +70,29 @@ def read_data_file(file_name):
 
 def get_data_type(file_name):
     if file_name.endswith(BACKTESTING_DATA_FILE_EXT):
-        return BacktestingDataFormats.REGULAR_COLLECTOR_DATA
+        return DataFormats.REGULAR_COLLECTOR_DATA
 
 
 def get_file_ending(data_type):
-    if data_type == BacktestingDataFormats.REGULAR_COLLECTOR_DATA:
+    if data_type == DataFormats.REGULAR_COLLECTOR_DATA:
         return BACKTESTING_DATA_FILE_EXT
 
 
 def get_time_frames(file_path, content):
     data_type = get_data_type(file_path)
-    if data_type == BacktestingDataFormats.REGULAR_COLLECTOR_DATA:
+    if data_type == DataFormats.REGULAR_COLLECTOR_DATA:
         return content.keys()
 
 
 def get_ohlcv_per_timeframe(file_path, content):
     data_type = get_data_type(file_path)
-    if data_type == BacktestingDataFormats.REGULAR_COLLECTOR_DATA:
+    if data_type == DataFormats.REGULAR_COLLECTOR_DATA:
         return content
 
 
 def get_candles_count(file_path, tf_content):
     data_type = get_data_type(file_path)
-    if data_type == BacktestingDataFormats.REGULAR_COLLECTOR_DATA:
+    if data_type == DataFormats.REGULAR_COLLECTOR_DATA:
         return len(tf_content[0])
 
 
@@ -102,7 +102,7 @@ def get_number_of_candles(file_path):
         if content:
             candles_info = []
             time_frames = get_time_frames(file_path, content)
-            min_time_frame = TimeFrameManager.find_min_time_frame(time_frames)
+            min_time_frame = find_min_time_frame(time_frames)
             additional_time_frames = [min_time_frame.value]
             for tf in BACKTESTING_TIME_FRAMES_TO_DISPLAY:
                 if tf not in additional_time_frames:
@@ -129,11 +129,11 @@ def get_date(time_info):
 def get_file_description(data_collector_path, file_name):
     exchange_name, symbol, time_info, data_type = interpret_file_name(file_name)
     return {
-        BacktestingDataFormatKeys.SYMBOL.value: symbol,
-        BacktestingDataFormatKeys.EXCHANGE.value: exchange_name,
-        BacktestingDataFormatKeys.DATE.value: get_date(time_info),
-        BacktestingDataFormatKeys.CANDLES.value: get_number_of_candles(join(data_collector_path, file_name)),
-        BacktestingDataFormatKeys.TYPE.value: data_type.name
+        DataFormatKeys.SYMBOL.value: symbol,
+        DataFormatKeys.EXCHANGE.value: exchange_name,
+        DataFormatKeys.DATE.value: get_date(time_info),
+        DataFormatKeys.CANDLES.value: get_number_of_candles(join(data_collector_path, file_name)),
+        DataFormatKeys.TYPE.value: data_type.name
     }
 
 

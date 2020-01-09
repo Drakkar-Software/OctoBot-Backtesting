@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2020-01-02
+### Added
+- Backtesting, data_file and exchange_data_collector API
+- is_in_progress method in Backtesting
+- use_all_available_timeframes in exchange collector
+
+### Updated
+- data_file_manager imports
+- Commons version to 1.2.1
+
 ## [1.3.2] - 2019-12-21
 ### Updated
 **Requirements**

@@ -13,9 +13,15 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import logging
+from octobot_backtesting.collectors.exchanges.exchange_collector import ExchangeDataCollector
+from octobot_commons.tentacles_management.advanced_manager import get_single_deepest_child_class
 
-PROJECT_NAME = "OctoBot-Backtesting"
-VERSION = "1.3.3"
 
-logging.getLogger('aiosqlite').setLevel(logging.ERROR)
+async def collect_exchange_historical_data(config, exchange_name, symbols, time_frames=None):
+    collector_class = get_single_deepest_child_class(ExchangeDataCollector)
+    collector_instance = collector_class(config, exchange_name, symbols, time_frames)
+    if time_frames is None:
+        collector_instance.use_all_available_timeframes()
+    collector_instance.initialize()
+    await collector_instance.start()
+    return collector_instance.file_path
