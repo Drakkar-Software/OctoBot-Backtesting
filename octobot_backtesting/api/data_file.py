@@ -13,12 +13,28 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from os import path
 from octobot_backtesting.constants import BACKTESTING_FILE_PATH
-from octobot_backtesting.data import data_file_manager as data_manager
+from octobot_backtesting.data import data_file_manager as data_manager, DataBaseNotExists
+from octobot_backtesting.data.database import DataBase
 
 
-def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH):
-    return data_manager.get_file_description(data_path, file_name)
+async def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH):
+    database = None
+    try:
+        database = DataBase(path.join(data_path, file_name))
+        await database.initialize()
+        description = await data_manager.get_file_description(database)
+    except DataBaseNotExists as e:
+        print(e)
+        description = None
+    except TypeError as e:
+        print(e)
+        description = None
+    finally:
+        if database is not None:
+            await database.stop()
+    return description
 
 
 def get_all_available_data_files(data_path=BACKTESTING_FILE_PATH):

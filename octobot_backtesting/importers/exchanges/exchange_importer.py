@@ -15,12 +15,13 @@
 #  License along with this library.
 import json
 
+from octobot_backtesting.data.data_file_manager import get_database_description
 from octobot_commons.constants import CONFIG_TIME_FRAME
-from octobot_commons.enums import TimeFrames, TimeFramesMinutes
+from octobot_commons.enums import TimeFramesMinutes
 
 from octobot_backtesting.data import DataBaseNotExists
 from octobot_backtesting.data.database import DataBase
-from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataBaseOrderBy, DataTables
+from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataFormatKeys
 from octobot_backtesting.importers.data_importer import DataImporter
 
 
@@ -37,13 +38,10 @@ class ExchangeDataImporter(DataImporter):
         await self.database.initialize()
 
         # load description
-        description = (await self.database.select(DataTables.DESCRIPTION, size=1))[0]
-
-        version = description[1]
-        if version == "1.0":
-            self.exchange_name = description[2]
-            self.symbols = json.loads(description[3])
-            self.time_frames = [TimeFrames(tf) for tf in json.loads(description[4])]
+        description = await get_database_description(self.database)
+        self.exchange_name = description[DataFormatKeys.EXCHANGE.value]
+        self.symbols = description[DataFormatKeys.SYMBOLS.value]
+        self.time_frames = description[DataFormatKeys.TIME_FRAMES.value]
 
         self.logger.info(f"Loaded {self.exchange_name} data file with "
                          f"{', '.join(self.symbols)} on {', '.join([tf.value for tf in self.time_frames])}")

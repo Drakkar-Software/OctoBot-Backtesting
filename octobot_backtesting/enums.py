@@ -21,11 +21,13 @@ class DataFormats(Enum):
 
 
 class DataFormatKeys(Enum):
-    SYMBOL = "symbol"
+    SYMBOLS = "symbols"
     EXCHANGE = "exchange"
     DATE = "date"
     CANDLES = "candles"
+    TIME_FRAMES = "time_frames"
     TYPE = "type"
+    VERSION = "version"
 
 
 class ReportFormat(Enum):
