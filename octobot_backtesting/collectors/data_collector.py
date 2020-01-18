@@ -16,33 +16,36 @@
 import asyncio
 import json
 import time
-from os.path import join
+from os.path import join, isdir
+from os import makedirs
 
 from aiohttp import ClientSession, ClientPayloadError
 
+from octobot_backtesting.enums import DataFormats
 from octobot_commons.logging.logging_util import get_logger
 
-from octobot_backtesting.constants import BACKTESTING_DATA_FILE_EXT, BACKTESTING_FILE_PATH, \
-    BACKTESTING_DATA_FILE_SEPARATOR
+from octobot_backtesting.constants import BACKTESTING_FILE_PATH, BACKTESTING_DATA_FILE_SEPARATOR
 from octobot_backtesting.data.database import DataBase
+from octobot_backtesting.data.data_file_manager import get_file_ending
 from octobot_backtesting.importers.data_importer import DataImporter
 
 
 class DataCollector:
     IMPORTER = DataImporter
 
-    def __init__(self, config, path=BACKTESTING_FILE_PATH):
+    def __init__(self, config, path=BACKTESTING_FILE_PATH, data_format=DataFormats.REGULAR_COLLECTOR_DATA):
         self.config = config
         self.path = path
         self.logger = get_logger(self.__class__.__name__)
 
         self.should_stop = False
         self.file_name = f"{self.__class__.__name__}{BACKTESTING_DATA_FILE_SEPARATOR}" \
-                         f"{time.time()}{BACKTESTING_DATA_FILE_EXT}"
+                         f"{time.time()}{get_file_ending(data_format)}"
 
         self.database = None
         self.aiohttp_session = None
         self.file_path = None
+        self._ensure_file_path()
         self.set_file_path()
 
     async def initialize(self) -> None:
@@ -53,6 +56,10 @@ class DataCollector:
 
     async def start(self) -> None:
         raise NotImplementedError("Start is not implemented")
+
+    def _ensure_file_path(self):
+        if not isdir(self.path):
+            makedirs(self.path)
 
     def set_file_path(self) -> None:
         self.file_path = join(self.path, self.file_name) if self.path else self.file_name

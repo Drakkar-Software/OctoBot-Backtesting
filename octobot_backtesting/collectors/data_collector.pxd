@@ -34,3 +34,5 @@ cdef class DataCollector:
     cpdef void create_database(self)
     cpdef void create_aiohttp_session(self)
     cpdef void set_file_path(self)
+
+    cdef void _ensure_file_path(self)

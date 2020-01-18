@@ -22,7 +22,7 @@ import time
 from octobot_commons.constants import CONFIG_TIME_FRAME, CONFIG_CRYPTO_CURRENCIES, CONFIG_CRYPTO_PAIRS
 
 from octobot_backtesting.collectors.data_collector import DataCollector
-from octobot_backtesting.enums import ExchangeDataTables, DataTables
+from octobot_backtesting.enums import ExchangeDataTables, DataTables, DataFormats
 from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 
 try:
@@ -35,12 +35,18 @@ class ExchangeDataCollector(DataCollector):
     VERSION = "1.0"
     IMPORTER = ExchangeDataImporter
 
-    def __init__(self, config, exchange_name, symbols, time_frames):
-        super().__init__(config)
+    def __init__(self, config, exchange_name, symbols, time_frames, use_all_available_timeframes=False,
+                 data_format=DataFormats.REGULAR_COLLECTOR_DATA):
+        super().__init__(config, data_format=data_format)
         self.exchange_name = exchange_name
         self.symbols = symbols if symbols else []
         self.time_frames = time_frames if time_frames else []
+        self.use_all_available_timeframes = use_all_available_timeframes
         self.set_file_path()
+
+    @abstractmethod
+    def _load_all_available_timeframes(self):
+        raise NotImplementedError("_load_all_available_timeframes is not implemented")
 
     async def initialize(self):
         self.create_database()
@@ -51,17 +57,18 @@ class ExchangeDataCollector(DataCollector):
         self.config[CONFIG_EXCHANGES] = {self.exchange_name: {}}
         self.config[CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {CONFIG_CRYPTO_PAIRS: self.symbols}}
 
-        # create description
+    def _load_timeframes_if_necessary(self):
+        if self.use_all_available_timeframes:
+            self._load_all_available_timeframes()
+        self.config[CONFIG_TIME_FRAME] = self.time_frames
+
+    async def _create_description(self):
         await self.database.insert(DataTables.DESCRIPTION,
                                    timestamp=time.time(),
                                    version=self.VERSION,
                                    exchange=self.exchange_name,
                                    symbols=json.dumps(self.symbols),
                                    time_frames=json.dumps([tf.value for tf in self.time_frames]))
-
-    @abstractmethod
-    def use_all_available_timeframes(self):
-        raise NotImplementedError("use_all_available_timeframes is not implemented")
 
     async def save_ticker(self, timestamp, exchange, symbol, ticker, multiple=False):
         if not multiple:

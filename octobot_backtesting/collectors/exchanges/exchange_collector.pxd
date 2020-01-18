@@ -23,3 +23,8 @@ cdef class ExchangeDataCollector(DataCollector):
 
     cdef public list symbols
     cdef public list time_frames
+
+    cdef bint use_all_available_timeframes
+
+    cdef void _load_timeframes_if_necessary(self)
+    cdef void _load_all_available_timeframes(self)
