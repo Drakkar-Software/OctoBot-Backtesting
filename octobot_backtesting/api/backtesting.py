@@ -48,6 +48,10 @@ def is_backtesting_in_progress(backtesting):
     return backtesting.is_in_progress()
 
 
+def get_backtesting_current_time(backtesting):
+    return backtesting.time_manager.current_timestamp
+
+
 def get_backtesting_progress(backtesting):
     return backtesting.get_progress()
 
