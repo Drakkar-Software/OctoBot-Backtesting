@@ -13,6 +13,10 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from os import path
+
+from octobot_backtesting.constants import BACKTESTING_FILE_PATH
+from octobot_backtesting.data import BacktestingFileNotFound
 from octobot_commons.logging.logging_util import get_logger
 
 from octobot_backtesting.data.database import DataBase
@@ -42,5 +46,15 @@ class DataImporter:
         raise NotImplementedError("Start is not implemented")
 
     def load_database(self) -> None:
+        file_path = self.adapt_file_path_if_necessary()
         if not self.database:
-            self.database = DataBase(self.file_path)
+            self.database = DataBase(file_path)
+
+    def adapt_file_path_if_necessary(self):
+        if path.isfile(self.file_path):
+            return self.file_path
+        else:
+            candidate_path = path.join(BACKTESTING_FILE_PATH, self.file_path)
+            if path.isfile(candidate_path):
+                return candidate_path
+        raise BacktestingFileNotFound(f"File {self.file_path} not found")

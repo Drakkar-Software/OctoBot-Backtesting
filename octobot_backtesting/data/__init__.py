@@ -17,3 +17,7 @@
 
 class DataBaseNotExists(Exception):
     pass
+
+
+class BacktestingFileNotFound(Exception):
+    pass

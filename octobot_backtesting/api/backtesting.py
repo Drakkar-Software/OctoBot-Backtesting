@@ -16,7 +16,7 @@
 from octobot_commons.constants import CONFIG_ENABLED_OPTION
 
 from octobot_backtesting.backtesting import Backtesting
-from octobot_backtesting.constants import CONFIG_BACKTESTING
+from octobot_backtesting.constants import CONFIG_BACKTESTING, CONFIG_BACKTESTING_DATA_FILES
 
 
 def create_backtesting(config, data_files) -> Backtesting:
@@ -24,8 +24,8 @@ def create_backtesting(config, data_files) -> Backtesting:
 
 
 async def initialize_created_backtesting(backtesting_instance) -> Backtesting:
-    await backtesting_instance.initialize()
     await backtesting_instance.create_importers()
+    await backtesting_instance.initialize()
 
     if not backtesting_instance.importers:
         raise ValueError("No importers created")
@@ -35,8 +35,8 @@ async def initialize_created_backtesting(backtesting_instance) -> Backtesting:
 
 async def initialize_backtesting(config, data_files) -> Backtesting:
     backtesting_instance = Backtesting(config, data_files)
-    await backtesting_instance.initialize()
     await backtesting_instance.create_importers()
+    await backtesting_instance.initialize()
 
     if not backtesting_instance.importers:
         raise ValueError("No importers created")
@@ -61,3 +61,9 @@ def get_backtesting_run_report(backtesting):
 def is_backtesting_enabled(config):
     return CONFIG_BACKTESTING in config and CONFIG_ENABLED_OPTION in config[CONFIG_BACKTESTING] \
            and config[CONFIG_BACKTESTING][CONFIG_ENABLED_OPTION]
+
+
+def get_backtesting_data_files(config):
+    if CONFIG_BACKTESTING in config and CONFIG_BACKTESTING_DATA_FILES in config[CONFIG_BACKTESTING]:
+        return config[CONFIG_BACKTESTING][CONFIG_BACKTESTING_DATA_FILES]
+    return []
