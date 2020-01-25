@@ -19,7 +19,7 @@ from octobot_backtesting.data import data_file_manager as data_manager, DataBase
 from octobot_backtesting.data.database import DataBase
 
 
-async def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH):
+async def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH) -> dict:
     database = None
     try:
         database = DataBase(path.join(data_path, file_name))
@@ -37,9 +37,9 @@ async def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH):
     return description
 
 
-def get_all_available_data_files(data_path=BACKTESTING_FILE_PATH):
+def get_all_available_data_files(data_path=BACKTESTING_FILE_PATH) -> list:
     return data_manager.get_all_available_data_files(data_path)
 
 
-def delete_data_file(file_name, data_path=BACKTESTING_FILE_PATH):
+def delete_data_file(file_name, data_path=BACKTESTING_FILE_PATH) -> tuple:
     return data_manager.delete_data_file(data_path, file_name)

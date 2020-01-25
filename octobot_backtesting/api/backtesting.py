@@ -44,30 +44,41 @@ async def initialize_backtesting(config, data_files) -> Backtesting:
     return backtesting_instance
 
 
-def is_backtesting_in_progress(backtesting):
+async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
+                                        minimum_timestamp=None, maximum_timestamp=None) -> None:
+    await backtesting.time_updater.modify(set_timestamp=set_timestamp,
+                                          minimum_timestamp=minimum_timestamp,
+                                          maximum_timestamp=maximum_timestamp)
+
+
+async def start_backtesting(backtesting) -> None:
+    await backtesting.start_time_updater()
+
+
+def is_backtesting_in_progress(backtesting) -> bool:
     return backtesting.is_in_progress()
 
 
-def get_backtesting_current_time(backtesting):
+def get_backtesting_current_time(backtesting) -> float:
     return backtesting.time_manager.current_timestamp
 
 
-def get_backtesting_progress(backtesting):
+def get_backtesting_progress(backtesting) -> float:
     return backtesting.get_progress()
 
 
-def get_backtesting_run_report(backtesting):
+def get_backtesting_run_report(backtesting) -> dict:
     # TODO: add backtesting report handling
     # return backtesting.get_report()
     return {}
 
 
-def is_backtesting_enabled(config):
+def is_backtesting_enabled(config) -> bool:
     return CONFIG_BACKTESTING in config and CONFIG_ENABLED_OPTION in config[CONFIG_BACKTESTING] \
            and config[CONFIG_BACKTESTING][CONFIG_ENABLED_OPTION]
 
 
-def get_backtesting_data_files(config):
+def get_backtesting_data_files(config) -> list:
     if CONFIG_BACKTESTING in config and CONFIG_BACKTESTING_DATA_FILES in config[CONFIG_BACKTESTING]:
         return config[CONFIG_BACKTESTING][CONFIG_BACKTESTING_DATA_FILES]
     return []
