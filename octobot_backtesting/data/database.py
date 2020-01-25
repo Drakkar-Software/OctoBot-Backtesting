@@ -162,12 +162,12 @@ class DataBase:
                                       f"{additional_clauses} {group_by}")
             return await self.cursor.fetchall() if size == self.DEFAULT_SIZE else await self.cursor.fetchmany(size)
         except OperationalError as e:
-            if not await self.__check_table_exists(table):
+            if not await self.check_table_exists(table):
                 raise DataBaseNotExists(e)
             self.logger.error(f"An error occurred when executing select : {e}")
         return []
 
-    async def __check_table_exists(self, table) -> bool:
+    async def check_table_exists(self, table) -> bool:
         await self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
         return await self.cursor.fetchall() != []
 

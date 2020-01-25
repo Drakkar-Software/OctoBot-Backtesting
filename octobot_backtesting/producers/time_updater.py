@@ -26,7 +26,6 @@ class TimeUpdater(TimeProducer):
         self.starting_time = time.time()
 
     async def start(self):
-        await asyncio.sleep(0.1)  # TODO
         while not self.should_stop:
             try:
                 await self.push(self.time_manager.current_timestamp)
@@ -37,11 +36,11 @@ class TimeUpdater(TimeProducer):
                 except asyncio.CancelledError:
                     self.logger.warning("Stopped during processing")
 
-                self.logger.info(f"Progress : {round(self.backtesting.get_progress() * 100, 2)}%")
+                self.logger.info(f"Progress : {round(min(self.backtesting.get_progress(), 1) * 100, 2)}%")
 
                 if self.time_manager.has_finished():
                     self.logger.warning("Maximum timestamp hit, stopping...")
-                    self.logger.warning(f"Last {time.time() - self.starting_time}s")
+                    self.logger.warning(f"Lasted {round(time.time() - self.starting_time, 3)}s")
                     await self.stop()
             except Exception as e:
                 self.logger.exception(f"Fail to update time : {e}")
