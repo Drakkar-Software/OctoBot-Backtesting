@@ -171,6 +171,11 @@ class DataBase:
         await self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
         return await self.cursor.fetchall() != []
 
+    async def check_table_not_empty(self, table) -> bool:
+        await self.cursor.execute(f"SELECT count(*) FROM '{table.value}'")
+        row_count = await self.cursor.fetchone()
+        return row_count[0] != 0
+
     async def __create_table(self, table, with_index_on_timestamp=True, **kwargs) -> None:
         try:
             columns: list = list(kwargs.keys())
