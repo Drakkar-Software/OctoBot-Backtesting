@@ -92,7 +92,8 @@ class ExchangeDataImporter(DataImporter):
 
     async def _init_available_data_types(self):
         self.available_data_types = [table for table in ExchangeDataTables
-                                     if await self.database.check_table_exists(table)]
+                                     if await self.database.check_table_exists(table)
+                                     and await self.database.check_table_not_empty(table)]
 
     def __get_operations_from_timestamps(self, superior_timestamp, inferior_timestamp):
         operations: list = []
