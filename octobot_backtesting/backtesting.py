@@ -34,6 +34,7 @@ class Backtesting:
 
         self.importers = []
         self.time_manager = None
+        self.time_updater = None
 
     async def initialize(self):
         try:
@@ -42,10 +43,13 @@ class Backtesting:
 
             await create_channel_instance(TimeChannel, set_chan)
 
-            await TimeUpdater(get_chan(TIME_CHANNEL), self).run()
+            self.time_updater = TimeUpdater(get_chan(TIME_CHANNEL), self)
         except Exception as e:
             self.logger.error(f"Error when initializing backtesting : {e}.")
             self.logger.exception(e)
+
+    async def start_time_updater(self):
+        await self.time_updater.run()
 
     async def create_importers(self):
         self.importers = [await create_importer_from_backtesting_file_name(self.config, backtesting_file)

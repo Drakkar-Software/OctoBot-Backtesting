@@ -32,6 +32,7 @@ class ExchangeDataImporter(DataImporter):
         self.exchange_name = None
         self.symbols = []
         self.time_frames = []
+        self.available_data_types = []
 
     async def initialize(self) -> None:
         self.load_database()
@@ -42,6 +43,7 @@ class ExchangeDataImporter(DataImporter):
         self.exchange_name = description[DataFormatKeys.EXCHANGE.value]
         self.symbols = description[DataFormatKeys.SYMBOLS.value]
         self.time_frames = description[DataFormatKeys.TIME_FRAMES.value]
+        await self._init_available_data_types()
 
         self.logger.info(f"Loaded {self.exchange_name} data file with "
                          f"{', '.join(self.symbols)} on {', '.join([tf.value for tf in self.time_frames])}")
@@ -58,16 +60,17 @@ class ExchangeDataImporter(DataImporter):
 
         for table in [ExchangeDataTables.KLINE, ExchangeDataTables.ORDER_BOOK, ExchangeDataTables.RECENT_TRADES,
                       ExchangeDataTables.TICKER]:
-            try:
-                min_timestamp = (await self.database.select_min(table, [DataBase.TIMESTAMP_COLUMN]))[0][0]
-                if not minimum_timestamp or minimum_timestamp > min_timestamp:
-                    minimum_timestamp = min_timestamp
+            if table in self.available_data_types:
+                try:
+                    min_timestamp = (await self.database.select_min(table, [DataBase.TIMESTAMP_COLUMN]))[0][0]
+                    if not minimum_timestamp or minimum_timestamp > min_timestamp:
+                        minimum_timestamp = min_timestamp
 
-                max_timestamp = (await self.database.select_max(table, [DataBase.TIMESTAMP_COLUMN]))[0][0]
-                if not maximum_timestamp or maximum_timestamp < max_timestamp:
-                    maximum_timestamp = max_timestamp
-            except (IndexError, DataBaseNotExists):
-                pass
+                    max_timestamp = (await self.database.select_max(table, [DataBase.TIMESTAMP_COLUMN]))[0][0]
+                    if not maximum_timestamp or maximum_timestamp < max_timestamp:
+                        maximum_timestamp = max_timestamp
+                except (IndexError, DataBaseNotExists):
+                    pass
 
         # OHLCV timestamps
         try:
@@ -86,6 +89,10 @@ class ExchangeDataImporter(DataImporter):
             pass
 
         return max(minimum_timestamp, min_ohlcv_timestamp), max(maximum_timestamp, max_ohlcv_timestamp) # TODO min(max_t, ohlcv_max) when !=0
+
+    async def _init_available_data_types(self):
+        self.available_data_types = [table for table in ExchangeDataTables
+                                     if await self.database.check_table_exists(table)]
 
     def __get_operations_from_timestamps(self, superior_timestamp, inferior_timestamp):
         operations: list = []
