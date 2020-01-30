@@ -23,6 +23,7 @@ cdef class TimeManager:
     cdef public float starting_timestamp
     cdef public float finishing_timestamp
     cdef public float current_timestamp
+    cdef public float time_interval
 
     cdef public bint time_initialized
 

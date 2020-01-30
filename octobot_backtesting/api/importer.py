@@ -17,3 +17,12 @@
 
 def get_available_data_types(importer) -> list:
     return importer.available_data_types
+
+
+def get_available_time_frames(exchange_importer) -> list:
+    return exchange_importer.time_frames
+
+
+async def get_data_timestamp_interval(exchange_importer, time_frame=None) -> (float, float):
+    time_frame_value = time_frame.value if time_frame is not None else None
+    return await exchange_importer.get_data_timestamp_interval(time_frame=time_frame_value)
