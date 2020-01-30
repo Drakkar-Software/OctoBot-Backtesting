@@ -51,7 +51,7 @@ class ExchangeDataImporter(DataImporter):
     async def start(self) -> None:
         pass
 
-    async def get_data_timestamp_interval(self):
+    async def get_data_timestamp_interval(self, time_frame=None):
         minimum_timestamp: float = 0.0
         maximum_timestamp: float = 0.0
 
@@ -74,21 +74,24 @@ class ExchangeDataImporter(DataImporter):
 
         # OHLCV timestamps
         try:
+            ohlcv_kwargs = {"time_frame": time_frame} if time_frame else {}
             ohlcv_min_timestamps = (await self.database.select_min(ExchangeDataTables.OHLCV,
                                                                    [DataBase.TIMESTAMP_COLUMN],
                                                                    [CONFIG_TIME_FRAME],
-                                                                   group_by=CONFIG_TIME_FRAME))
+                                                                   group_by=CONFIG_TIME_FRAME,
+                                                                   **ohlcv_kwargs
+                                                                   ))
 
-            ohlcv_timestamp = max(ohlcv_min_timestamps)[0]
-            ohlcv_max_time_frame = max([TimeFramesMinutes[tf] for tf in self.time_frames])
-            min_ohlcv_timestamp = ohlcv_timestamp - ohlcv_max_time_frame
-
+            min_ohlcv_timestamp = max(ohlcv_min_timestamps)[0]
             max_ohlcv_timestamp = (await self.database.select_max(ExchangeDataTables.OHLCV,
-                                                                  [DataBase.TIMESTAMP_COLUMN]))[0][0]
+                                                                  [DataBase.TIMESTAMP_COLUMN],
+                                                                  **ohlcv_kwargs))[0][0]
         except (IndexError, DataBaseNotExists):
             pass
 
-        return max(minimum_timestamp, min_ohlcv_timestamp), max(maximum_timestamp, max_ohlcv_timestamp) # TODO min(max_t, ohlcv_max) when !=0
+        if minimum_timestamp > 0 and maximum_timestamp > 0:
+            return max(minimum_timestamp, min_ohlcv_timestamp), max(maximum_timestamp, max_ohlcv_timestamp)
+        return min_ohlcv_timestamp, max_ohlcv_timestamp
 
     async def _init_available_data_types(self):
         self.available_data_types = [table for table in ExchangeDataTables

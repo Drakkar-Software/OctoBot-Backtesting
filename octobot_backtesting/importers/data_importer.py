@@ -36,7 +36,7 @@ class DataImporter:
     async def initialize(self) -> None:
         pass
 
-    async def get_data_timestamp_interval(self):
+    async def get_data_timestamp_interval(self, time_frame=None):
         raise NotImplementedError("get_data_timestamp_interval is not implemented")
 
     async def stop(self) -> None:
