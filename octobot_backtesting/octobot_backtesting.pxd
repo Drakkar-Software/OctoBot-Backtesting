@@ -15,18 +15,22 @@
 #  License along with this library.
 
 
-def get_available_data_types(importer) -> list:
-    return importer.available_data_types
+cdef class OctoBotBacktesting:
+    cdef public dict backtesting_config
 
+    cdef object logger
 
-def get_available_time_frames(exchange_importer) -> list:
-    return exchange_importer.time_frames
+    cdef public str matrix_id
+    cdef public list exchange_manager_ids
+    cdef public dict symbols_to_create_exchange_classes
+    cdef public list evaluators
+    cdef public dict fees_config
+    cdef public list backtesting_files
+    cdef public list backtestings
 
+    cpdef void memory_leak_checkup(self, list to_check_elements)
+    cpdef void check_remaining_objects(self)
 
-async def get_data_timestamp_interval(exchange_importer, time_frame=None) -> (float, float):
-    time_frame_value = time_frame.value if time_frame is not None else None
-    return await exchange_importer.get_data_timestamp_interval(time_frame=time_frame_value)
-
-
-async def stop_importer(importer) -> None:
-    await importer.stop()
+    cdef void _log_remaining_object_error(self, object obj, int expected, int actual)
+    cdef void _register_backtesting(self, object exchange_manager)
+    cdef void _log_import_error(self)

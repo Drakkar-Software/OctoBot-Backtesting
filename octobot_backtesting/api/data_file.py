@@ -15,26 +15,22 @@
 #  License along with this library.
 from os import path
 from octobot_backtesting.constants import BACKTESTING_FILE_PATH
-from octobot_backtesting.data import data_file_manager as data_manager, DataBaseNotExists
-from octobot_backtesting.data.database import DataBase
+from octobot_backtesting.data import data_file_manager as data_manager
+from octobot_backtesting.enums import DataFormatKeys
 
 
 async def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH) -> dict:
-    database = None
-    try:
-        database = DataBase(path.join(data_path, file_name))
-        await database.initialize()
-        description = await data_manager.get_file_description(database)
-    except DataBaseNotExists as e:
-        print(e)
-        description = None
-    except TypeError as e:
-        print(e)
-        description = None
-    finally:
-        if database is not None:
-            await database.stop()
-    return description
+    description = await data_manager.get_file_description(path.join(data_path, file_name))
+    if description:
+        return {
+            DataFormatKeys.SYMBOLS.value: description[DataFormatKeys.SYMBOLS.value],
+            DataFormatKeys.EXCHANGE.value: description[DataFormatKeys.EXCHANGE.value],
+            DataFormatKeys.DATE.value: data_manager.get_date(description[DataFormatKeys.DATE.value]),
+            DataFormatKeys.TIME_FRAMES.value: [tf.value for tf in description[DataFormatKeys.TIME_FRAMES.value]],
+            DataFormatKeys.TYPE.value: "OctoBot data file"
+        }
+    else:
+        return description
 
 
 def get_all_available_data_files(data_path=BACKTESTING_FILE_PATH) -> list:

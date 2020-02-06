@@ -13,24 +13,19 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.independent_backtesting import IndependentBacktesting
 from octobot_commons.constants import CONFIG_ENABLED_OPTION
 
 from octobot_backtesting.backtesting import Backtesting
 from octobot_backtesting.constants import CONFIG_BACKTESTING, CONFIG_BACKTESTING_DATA_FILES
 
 
-def create_backtesting(config, data_files) -> Backtesting:
-    return Backtesting(config, data_files)
+def create_independent_backtesting(config, data_files) -> Backtesting:
+    return IndependentBacktesting(config, data_files)
 
 
-async def initialize_created_backtesting(backtesting_instance) -> Backtesting:
-    await backtesting_instance.create_importers()
-    await backtesting_instance.initialize()
-
-    if not backtesting_instance.importers:
-        raise ValueError("No importers created")
-
-    return backtesting_instance
+async def initialize_and_run_independent_backtesting(independent_backtesting) -> None:
+    await independent_backtesting.initialize_and_run()
 
 
 async def initialize_backtesting(config, data_files) -> Backtesting:
@@ -59,22 +54,40 @@ async def start_backtesting(backtesting) -> None:
     await backtesting.start_time_updater()
 
 
-def is_backtesting_in_progress(backtesting) -> bool:
-    return backtesting.is_in_progress()
+async def stop_backtesting(backtesting) -> None:
+    await backtesting.stop()
+
+
+async def stop_independent_backtesting(independent_backtesting) -> None:
+    await independent_backtesting.stop()
+
+
+def is_independent_backtesting_in_progress(independent_backtesting) -> bool:
+    return independent_backtesting.is_in_progress()
+
+
+def get_independent_backtesting_progress(independent_backtesting) -> float:
+    return independent_backtesting.get_progress()
+
+
+def is_independent_backtesting_finished(independent_backtesting) -> bool:
+    return independent_backtesting.get_progress() == 1.0
+
+
+async def get_independent_backtesting_report(independent_backtesting) -> float:
+    return await independent_backtesting.get_dict_formatted_report()
 
 
 def get_backtesting_current_time(backtesting) -> float:
     return backtesting.time_manager.current_timestamp
 
 
-def get_backtesting_progress(backtesting) -> float:
-    return backtesting.get_progress()
+def get_independent_backtesting_exchange_manager_ids(independent_backtesting) -> float:
+    return independent_backtesting.octobot_backtesting.exchange_manager_ids
 
 
-def get_backtesting_run_report(backtesting) -> dict:
-    # TODO: add backtesting report handling
-    # return backtesting.get_report()
-    return {}
+def get_backtesting_current_time(backtesting) -> float:
+    return backtesting.time_manager.current_timestamp
 
 
 def is_backtesting_enabled(config) -> bool:

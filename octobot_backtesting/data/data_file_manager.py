@@ -19,6 +19,8 @@ import json
 from os.path import isfile, join, splitext
 from os import listdir, remove
 
+from octobot_backtesting.data import DataBaseNotExists
+from octobot_backtesting.data.database import DataBase
 from octobot_commons.enums import TimeFrames
 
 from octobot_backtesting.constants import BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT, BACKTESTING_DATA_FILE_EXT
@@ -54,15 +56,20 @@ async def get_database_description(database):
         raise RuntimeError(f"Unknown datafile version: {version}")
 
 
-async def get_file_description(database):
-    description = await get_database_description(database)
-    return {
-        DataFormatKeys.SYMBOLS.value: description[DataFormatKeys.SYMBOLS.value],
-        DataFormatKeys.EXCHANGE.value: description[DataFormatKeys.EXCHANGE.value],
-        DataFormatKeys.DATE.value: get_date(description[DataFormatKeys.DATE.value]),
-        DataFormatKeys.TIME_FRAMES.value: [tf.value for tf in description[DataFormatKeys.TIME_FRAMES.value]],
-        DataFormatKeys.TYPE.value: "OctoBot data file"
-    }
+async def get_file_description(database_file):
+    database = None
+    try:
+        database = DataBase(database_file)
+        await database.initialize()
+        description = await get_database_description(database)
+    except DataBaseNotExists as e:
+        description = None
+    except TypeError as e:
+        description = None
+    finally:
+        if database is not None:
+            await database.stop()
+    return description
 
 
 def is_valid_ending(ending):

@@ -40,6 +40,8 @@ from octobot_backtesting import PROJECT_NAME, VERSION
 PACKAGES = find_packages(exclude=["tests"])
 
 packages_list = ["octobot_backtesting.backtesting",
+                 "octobot_backtesting.octobot_backtesting",
+                 "octobot_backtesting.independent_backtesting",
                  "octobot_backtesting.collectors.data_collector",
                  "octobot_backtesting.collectors.exchanges.exchange_collector",
                  "octobot_backtesting.collectors.social.social_collector",
