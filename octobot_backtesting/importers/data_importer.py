@@ -41,6 +41,7 @@ class DataImporter:
 
     async def stop(self) -> None:
         self.should_stop = True
+        await self.database.stop()
 
     async def start(self) -> None:
         raise NotImplementedError("Start is not implemented")

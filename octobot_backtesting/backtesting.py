@@ -15,7 +15,7 @@
 #  License along with this library.
 from octobot_backtesting.channels import TIME_CHANNEL
 from octobot_backtesting.channels.time import TimeChannel
-from octobot_channels.channels.channel import get_chan, set_chan
+from octobot_channels.channels.channel import get_chan, set_chan, del_chan
 
 from octobot_backtesting.producers.time_updater import TimeUpdater
 from octobot_channels.util import create_channel_instance
@@ -35,18 +35,31 @@ class Backtesting:
         self.importers = []
         self.time_manager = None
         self.time_updater = None
+        self.time_channel = None
 
     async def initialize(self):
         try:
             self.time_manager = TimeManager(self.config)
             self.time_manager.initialize()
 
-            await create_channel_instance(TimeChannel, set_chan)
+            self.time_channel = await create_channel_instance(TimeChannel, set_chan)
 
             self.time_updater = TimeUpdater(get_chan(TIME_CHANNEL), self)
         except Exception as e:
             self.logger.error(f"Error when initializing backtesting : {e}.")
             self.logger.exception(e)
+
+    async def stop(self):
+        await self.delete_time_channel()
+        self.time_channel.time_updater = None
+        self.time_updater.backtesting = None
+
+    async def delete_time_channel(self):
+        await self.time_channel.stop()
+        for consumer in self.time_channel.consumers:
+            await self.time_channel.remove_consumer(consumer)
+        self.time_channel.flush()
+        del_chan(self.time_channel.get_name())
 
     async def start_time_updater(self):
         await self.time_updater.run()

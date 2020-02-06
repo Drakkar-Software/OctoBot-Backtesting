@@ -28,6 +28,7 @@ class TimeUpdater(TimeProducer):
     async def start(self):
         while not self.should_stop:
             try:
+                current_timestamp = self.time_manager.current_timestamp
                 await self.push(self.time_manager.current_timestamp)
                 self.time_manager.next_timestamp()
 
@@ -36,7 +37,8 @@ class TimeUpdater(TimeProducer):
                 except asyncio.CancelledError:
                     self.logger.warning("Stopped during processing")
 
-                self.logger.info(f"Progress : {round(min(self.backtesting.get_progress(), 1) * 100, 2)}%")
+                self.logger.info(f"Progress : {round(min(self.backtesting.get_progress(), 1) * 100, 2)}% "
+                                 f"[{current_timestamp}]")
 
                 if self.time_manager.has_finished():
                     self.logger.warning("Maximum timestamp hit, stopping...")
@@ -44,6 +46,7 @@ class TimeUpdater(TimeProducer):
                     await self.stop()
             except Exception as e:
                 self.logger.exception(f"Fail to update time : {e}")
+        await self.backtesting.delete_time_channel()
 
     async def modify(self, set_timestamp=None, minimum_timestamp=None, maximum_timestamp=None) -> None:
         if set_timestamp is not None:
