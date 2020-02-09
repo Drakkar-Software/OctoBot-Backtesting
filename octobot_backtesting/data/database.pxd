@@ -26,7 +26,7 @@ cdef class DataBase:
 
     cdef dict cache
 
-    cdef str __insert_values(self, float timestamp, str inserting_values)
+    cdef str __insert_values(self, double timestamp, str inserting_values)
     cdef str __select_order_by(self, str order_by, str sort)
     cdef str __select_group_by(self, str group_by)
     cdef str __max(self, list columns)
