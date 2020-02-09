@@ -20,10 +20,10 @@ cdef class TimeManager:
 
     cdef dict config
     
-    cdef public float starting_timestamp
-    cdef public float finishing_timestamp
-    cdef public float current_timestamp
-    cdef public float time_interval
+    cdef public double starting_timestamp
+    cdef public double finishing_timestamp
+    cdef public double current_timestamp
+    cdef public double time_interval
 
     cdef public bint time_initialized
 
@@ -33,8 +33,8 @@ cdef class TimeManager:
     cpdef void start(self)
     cpdef bint has_finished(self)
     cpdef void next_timestamp(self)
-    cpdef void set_minimum_timestamp(self, float minimum_timestamp)
-    cpdef void set_maximum_timestamp(self, float maximum_timestamp)
-    cpdef void set_current_timestamp(self, float timestamp)
-    cpdef float get_total_iteration(self)
-    cpdef float get_remaining_iteration(self)
+    cpdef void set_minimum_timestamp(self, double minimum_timestamp)
+    cpdef void set_maximum_timestamp(self, double maximum_timestamp)
+    cpdef void set_current_timestamp(self, double timestamp)
+    cpdef double get_total_iteration(self)
+    cpdef double get_remaining_iteration(self)

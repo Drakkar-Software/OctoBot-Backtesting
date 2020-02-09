@@ -21,4 +21,4 @@ from octobot_backtesting.channels.time cimport TimeProducer
 cdef class TimeUpdater(TimeProducer):
     cdef public TimeManager time_manager
 
-    cdef public float starting_time
+    cdef public double starting_time
