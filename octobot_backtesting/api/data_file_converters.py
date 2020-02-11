@@ -1,4 +1,3 @@
-# cython: language_level=3
 #  Drakkar-Software OctoBot-Backtesting
 #  Copyright (c) Drakkar-Software, All rights reserved.
 #
@@ -10,12 +9,19 @@
 #  This library is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General License for more details.
+#  Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.converters.data_converter import DataConverter
+from octobot_commons.tentacles_management.advanced_manager import get_all_classes_from_parent
 
-cdef class DataConverter:
-    cdef object logger
-    cdef public str file_to_convert
-    cdef public str converted_file
+
+async def convert_data_file(data_file_path) -> str:
+    converter_classes = get_all_classes_from_parent(DataConverter)
+    for converter_class in converter_classes:
+        converter = converter_class(data_file_path)
+        if await converter.can_convert():
+            if await converter.convert():
+                return converter.converted_file
+    return None

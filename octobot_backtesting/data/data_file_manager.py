@@ -18,13 +18,20 @@ from datetime import datetime
 import json
 from os.path import isfile, join, splitext
 from os import listdir, remove
+from time import time
 
 from octobot_backtesting.data import DataBaseNotExists
 from octobot_backtesting.data.database import DataBase
 from octobot_commons.enums import TimeFrames
 
-from octobot_backtesting.constants import BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT, BACKTESTING_DATA_FILE_EXT
+from octobot_backtesting.constants import BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT, BACKTESTING_DATA_FILE_EXT, \
+    BACKTESTING_DATA_FILE_SEPARATOR
 from octobot_backtesting.enums import DataFormatKeys, DataFormats, DataTables
+
+
+def get_backtesting_file_name(clazz, data_format=DataFormats.REGULAR_COLLECTOR_DATA):
+    return f"{clazz.__name__}{BACKTESTING_DATA_FILE_SEPARATOR}" \
+           f"{time()}{get_file_ending(data_format)}"
 
 
 def get_data_type(file_name):
@@ -62,9 +69,7 @@ async def get_file_description(database_file):
         database = DataBase(database_file)
         await database.initialize()
         description = await get_database_description(database)
-    except DataBaseNotExists as e:
-        description = None
-    except TypeError as e:
+    except (DataBaseNotExists, TypeError):
         description = None
     finally:
         if database is not None:

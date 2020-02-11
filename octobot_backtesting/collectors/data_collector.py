@@ -15,7 +15,6 @@
 #  License along with this library.
 import asyncio
 import json
-import time
 from os.path import join, isdir
 from os import makedirs
 
@@ -24,9 +23,9 @@ from aiohttp import ClientSession, ClientPayloadError
 from octobot_backtesting.enums import DataFormats
 from octobot_commons.logging.logging_util import get_logger
 
-from octobot_backtesting.constants import BACKTESTING_FILE_PATH, BACKTESTING_DATA_FILE_SEPARATOR
+from octobot_backtesting.constants import BACKTESTING_FILE_PATH
 from octobot_backtesting.data.database import DataBase
-from octobot_backtesting.data.data_file_manager import get_file_ending
+from octobot_backtesting.data.data_file_manager import get_backtesting_file_name
 from octobot_backtesting.importers.data_importer import DataImporter
 
 
@@ -39,8 +38,7 @@ class DataCollector:
         self.logger = get_logger(self.__class__.__name__)
 
         self.should_stop = False
-        self.file_name = f"{self.__class__.__name__}{BACKTESTING_DATA_FILE_SEPARATOR}" \
-                         f"{time.time()}{get_file_ending(data_format)}"
+        self.file_name = get_backtesting_file_name(self.__class__, data_format)
 
         self.database = None
         self.aiohttp_session = None
