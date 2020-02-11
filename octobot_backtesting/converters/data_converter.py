@@ -13,14 +13,24 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from abc import abstractmethod
+from octobot_commons.logging.logging_util import get_logger
 
 
 class DataConverter:
     def __init__(self, backtesting_file_to_convert):
-        self.backtesting_file_to_convert = backtesting_file_to_convert
+        self.logger = get_logger(self.__class__.__name__)
+        self.file_to_convert = backtesting_file_to_convert
+        self.converted_file = ""
 
-    def initialize(self):
-        pass
+    @abstractmethod
+    async def can_convert(self) -> bool:
+        raise NotImplementedError("can_convert is not implemented")
 
-    def start_conversion(self):
-        raise NotImplementedError("start_conversion is not implemented")
+    @abstractmethod
+    async def convert(self) -> bool:
+        """
+        Converts self.backtesting_file_to_convert and saves the output into self.converted_file_path
+        :return: True when conversion is successful, False otherwise
+        """
+        raise NotImplementedError("convert is not implemented")

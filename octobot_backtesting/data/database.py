@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from sqlite3 import OperationalError
+from sqlite3 import OperationalError, DatabaseError
 
 import aiosqlite
 
@@ -41,9 +41,12 @@ class DataBase:
         self.cursor = None
 
     async def initialize(self):
-        self.connection = await aiosqlite.connect(self.file_name)
-        self.cursor = await self.connection.cursor()
-        await self.__init_tables_list()
+        try:
+            self.connection = await aiosqlite.connect(self.file_name)
+            self.cursor = await self.connection.cursor()
+            await self.__init_tables_list()
+        except (OperationalError, DatabaseError) as e:
+            raise DataBaseNotExists(e)
 
     async def create_index(self, table, columns):
         await self.__execute_index_creation(table, '_'.join(columns), ', '.join(columns))
@@ -198,4 +201,5 @@ class DataBase:
         self.tables = await self.cursor.fetchall()
 
     async def stop(self):
-        await self.connection.close()
+        if self.connection is not None:
+            await self.connection.close()
