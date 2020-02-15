@@ -22,3 +22,4 @@ cdef class TimeUpdater(TimeProducer):
     cdef public TimeManager time_manager
 
     cdef public double starting_time
+    cdef public object finished_event
