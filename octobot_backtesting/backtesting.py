@@ -75,7 +75,8 @@ class Backtesting:
     def get_importers(self, importer_parent_class=None) -> list:
         return [importer
                 for importer in self.importers
-                if default_parents_inspection(importer.__class__, importer_parent_class)] if importer_parent_class is not None else self.importers
+                if default_parents_inspection(importer.__class__, importer_parent_class)] \
+            if importer_parent_class is not None else self.importers
 
     def get_progress(self):
         if self._has_nothing_to_do():

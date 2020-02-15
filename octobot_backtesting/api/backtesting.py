@@ -17,11 +17,12 @@ from octobot_backtesting.independent_backtesting import IndependentBacktesting
 from octobot_commons.constants import CONFIG_ENABLED_OPTION
 
 from octobot_backtesting.backtesting import Backtesting
-from octobot_backtesting.constants import CONFIG_BACKTESTING, CONFIG_BACKTESTING_DATA_FILES
+from octobot_backtesting.constants import CONFIG_BACKTESTING, CONFIG_BACKTESTING_DATA_FILES, BACKTESTING_FILE_PATH, \
+    BACKTESTING_DEFAULT_JOIN_TIMEOUT
 
 
-def create_independent_backtesting(config, data_files) -> Backtesting:
-    return IndependentBacktesting(config, data_files)
+def create_independent_backtesting(config, data_files, data_file_path=BACKTESTING_FILE_PATH) -> IndependentBacktesting:
+    return IndependentBacktesting(config, data_files, data_file_path)
 
 
 async def initialize_and_run_independent_backtesting(independent_backtesting) -> None:
