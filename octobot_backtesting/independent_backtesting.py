@@ -27,19 +27,22 @@ from octobot_commons.errors import ConfigTradingError
 from octobot_commons.logging.logging_util import get_logger
 from octobot_commons.symbol_util import split_symbol
 from octobot_commons.time_frame_manager import find_min_time_frame
+from octobot_evaluators.constants import CONFIG_FORCED_TIME_FRAME, CONFIG_FORCED_EVALUATOR
 
 
 class IndependentBacktesting:
-    def __init__(self, config, backtesting_files):
+    def __init__(self, config, backtesting_files, data_file_path=BACKTESTING_FILE_PATH):
         self.octobot_origin_config = config
         self.backtesting_config = {}
         self.backtesting_files = backtesting_files
         self.logger = get_logger(self.__class__.__name__)
-        self.data_file_path = BACKTESTING_FILE_PATH
+        self.data_file_path = data_file_path
         self.symbols_to_create_exchange_classes = {}
         self.risk = 0.1
         self.starting_portfolio = {}
         self.fees_config = {}
+        self.forced_time_frames = []
+        self.forced_evaluators = []
         try:
             self._init_default_config_values()
 
@@ -52,8 +55,8 @@ class IndependentBacktesting:
 
     async def initialize_and_run(self):
         try:
-            await self._register_available_data()
-            self._adapt_config()
+            await self.initialize_config()
+            self._add_crypto_currencies_config()
             await self.octobot_backtesting.initialize_and_run()
 
         except ImportError as e:
@@ -63,6 +66,11 @@ class IndependentBacktesting:
             self.logger.error(f"Error when running backtesting: {e}")
             self.logger.exception(e)
             raise e
+
+    async def initialize_config(self):
+        await self._register_available_data()
+        self._adapt_config()
+        return self.backtesting_config
 
     async def join(self, timeout):
         finished_events = [asyncio.wait_for(backtesting.time_updater.finished_event.wait(), timeout)
@@ -114,6 +122,10 @@ class IndependentBacktesting:
         self.risk = deepcopy(self.octobot_origin_config[CONFIG_TRADING][CONFIG_TRADER_RISK])
         self.starting_portfolio = deepcopy(self.octobot_origin_config[CONFIG_SIMULATOR][CONFIG_STARTING_PORTFOLIO])
         self.fees_config = deepcopy(self.octobot_origin_config[CONFIG_SIMULATOR][CONFIG_SIMULATOR_FEES])
+        if CONFIG_FORCED_TIME_FRAME in self.octobot_origin_config:
+            self.forced_time_frames = deepcopy(self.octobot_origin_config[CONFIG_FORCED_TIME_FRAME])
+        if CONFIG_FORCED_EVALUATOR in self.octobot_origin_config:
+            self.forced_evaluators = deepcopy(self.octobot_origin_config[CONFIG_FORCED_EVALUATOR])
         self.backtesting_config = {
             CONFIG_BACKTESTING: {},
             CONFIG_CRYPTO_CURRENCIES: {},
@@ -189,8 +201,11 @@ class IndependentBacktesting:
         self.backtesting_config[CONFIG_TRADING][CONFIG_TRADER_REFERENCE_MARKET] = self._find_reference_market()
         self.backtesting_config[CONFIG_SIMULATOR][CONFIG_STARTING_PORTFOLIO] = self.starting_portfolio
         self.backtesting_config[CONFIG_SIMULATOR][CONFIG_SIMULATOR_FEES] = self.fees_config
+        if self.forced_time_frames:
+            self.backtesting_config[CONFIG_FORCED_TIME_FRAME] = self.forced_time_frames
+        if self.forced_evaluators:
+            self.backtesting_config[CONFIG_FORCED_EVALUATOR] = self.forced_evaluators
         self._add_config_default_backtesting_values()
-        self._add_crypto_currencies_config()
 
     def _find_reference_market(self):
         ref_market_candidate = None
