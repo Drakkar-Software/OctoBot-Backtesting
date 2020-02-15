@@ -32,3 +32,5 @@ BACKTESTING_TIME_FRAMES_TO_DISPLAY = [TimeFrames.THIRTY_MINUTES.value,
                                       TimeFrames.ONE_HOUR.value,
                                       TimeFrames.FOUR_HOURS.value,
                                       TimeFrames.ONE_DAY.value]
+
+BACKTESTING_DEFAULT_JOIN_TIMEOUT = 1800  # 30min

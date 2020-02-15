@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import asyncio
 from copy import deepcopy
 from os import path
 
@@ -62,6 +63,11 @@ class IndependentBacktesting:
             self.logger.error(f"Error when running backtesting: {e}")
             self.logger.exception(e)
             raise e
+
+    async def join(self, timeout):
+        finished_events = [asyncio.wait_for(backtesting.time_updater.finished_event.wait(), timeout)
+                           for backtesting in self.octobot_backtesting.backtestings]
+        await asyncio.gather(*finished_events)
 
     async def stop(self):
         await self.octobot_backtesting.stop()

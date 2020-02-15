@@ -28,6 +28,10 @@ async def initialize_and_run_independent_backtesting(independent_backtesting) ->
     await independent_backtesting.initialize_and_run()
 
 
+async def join_independent_backtesting(independent_backtesting, timeout=BACKTESTING_DEFAULT_JOIN_TIMEOUT) -> None:
+    await independent_backtesting.join(timeout)
+
+
 async def initialize_backtesting(config, data_files) -> Backtesting:
     backtesting_instance = Backtesting(config, data_files)
     await backtesting_instance.create_importers()

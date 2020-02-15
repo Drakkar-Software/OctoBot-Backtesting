@@ -24,6 +24,7 @@ class TimeUpdater(TimeProducer):
         super().__init__(channel, backtesting)
         self.time_manager = backtesting.time_manager
         self.starting_time = time.time()
+        self.finished_event = asyncio.Event()
 
     async def start(self):
         while not self.should_stop:
@@ -47,6 +48,7 @@ class TimeUpdater(TimeProducer):
             except Exception as e:
                 self.logger.exception(f"Fail to update time : {e}")
         await self.backtesting.delete_time_channel()
+        self.finished_event.set()
 
     async def modify(self, set_timestamp=None, minimum_timestamp=None, maximum_timestamp=None) -> None:
         if set_timestamp is not None:
