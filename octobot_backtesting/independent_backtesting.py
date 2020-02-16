@@ -53,7 +53,7 @@ class IndependentBacktesting:
                                                       self.symbols_to_create_exchange_classes,
                                                       self.backtesting_files)
 
-    async def initialize_and_run(self):
+    async def initialize_and_run(self, log_errors=True):
         try:
             await self.initialize_config()
             self._add_crypto_currencies_config()
@@ -63,8 +63,9 @@ class IndependentBacktesting:
             self._log_import_error()
             raise e
         except Exception as e:
-            self.logger.error(f"Error when running backtesting: {e}")
-            self.logger.exception(e)
+            if log_errors:
+                self.logger.error(f"Error when running backtesting: {e}")
+                self.logger.exception(e)
             raise e
 
     async def initialize_config(self):

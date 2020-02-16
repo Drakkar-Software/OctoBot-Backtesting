@@ -25,8 +25,8 @@ def create_independent_backtesting(config, data_files, data_file_path=BACKTESTIN
     return IndependentBacktesting(config, data_files, data_file_path)
 
 
-async def initialize_and_run_independent_backtesting(independent_backtesting) -> None:
-    await independent_backtesting.initialize_and_run()
+async def initialize_and_run_independent_backtesting(independent_backtesting, log_errors=True) -> None:
+    await independent_backtesting.initialize_and_run(log_errors=log_errors)
 
 
 async def join_independent_backtesting(independent_backtesting, timeout=BACKTESTING_DEFAULT_JOIN_TIMEOUT) -> None:
