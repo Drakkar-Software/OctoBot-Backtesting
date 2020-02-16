@@ -19,7 +19,7 @@ from octobot_backtesting.data.data_file_manager import get_database_description
 from octobot_commons.constants import CONFIG_TIME_FRAME
 from octobot_commons.enums import TimeFramesMinutes
 
-from octobot_backtesting.data import DataBaseNotExists
+from octobot_backtesting.data import DataBaseNotExists, MissingTimeFrame
 from octobot_backtesting.data.database import DataBase
 from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataFormatKeys
 from octobot_backtesting.importers.data_importer import DataImporter
@@ -82,10 +82,15 @@ class ExchangeDataImporter(DataImporter):
                                                                    **ohlcv_kwargs
                                                                    ))
 
-            min_ohlcv_timestamp = max(ohlcv_min_timestamps)[0]
-            max_ohlcv_timestamp = (await self.database.select_max(ExchangeDataTables.OHLCV,
-                                                                  [DataBase.TIMESTAMP_COLUMN],
-                                                                  **ohlcv_kwargs))[0][0]
+            if ohlcv_min_timestamps:
+                # if the required time frame is not included in this database, ohlcv_min_timestamps is empty: ignore it
+                min_ohlcv_timestamp = max(ohlcv_min_timestamps)[0]
+                max_ohlcv_timestamp = (await self.database.select_max(ExchangeDataTables.OHLCV,
+                                                                      [DataBase.TIMESTAMP_COLUMN],
+                                                                      **ohlcv_kwargs))[0][0]
+            elif time_frame:
+                raise MissingTimeFrame(f"Missing time frame in data file: {time_frame}")
+
         except (IndexError, DataBaseNotExists):
             pass
 

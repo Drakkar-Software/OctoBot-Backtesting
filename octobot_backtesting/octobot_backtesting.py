@@ -134,19 +134,22 @@ class OctoBotBacktesting:
                 time_frames=exchange_configuration.time_frames)
 
     async def _init_exchanges(self):
-        from octobot_trading.api.exchange import create_exchange_builder
+        from octobot_trading.api.exchange import create_exchange_builder, get_exchange_manager_id
         from tools.logger import init_exchange_chan_logger
 
         for exchange_class_string in self.symbols_to_create_exchange_classes.keys():
-            exchange_manager = await create_exchange_builder(self.backtesting_config, exchange_class_string) \
+            exchange_builder = create_exchange_builder(self.backtesting_config, exchange_class_string) \
                 .has_matrix(self.matrix_id) \
                 .is_simulated() \
                 .is_rest_only() \
-                .is_backtesting(self.backtesting_files) \
-                .build()
-            await init_exchange_chan_logger(exchange_manager.id)
-            self.exchange_manager_ids.append(exchange_manager.id)
-            self._register_backtesting(exchange_manager)
+                .is_backtesting(self.backtesting_files)
+            try:
+                exchange_manager = await exchange_builder.build()
+                await init_exchange_chan_logger(exchange_manager.id)
+            finally:
+                # always save exchange manager ids and backtesting instances
+                self.exchange_manager_ids.append(get_exchange_manager_id(exchange_builder.exchange_manager))
+                self._register_backtesting(exchange_builder.exchange_manager)
 
     def _register_backtesting(self, exchange_manager):
         from octobot_trading.api.exchange import get_backtesting_instance
