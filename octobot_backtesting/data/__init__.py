@@ -19,5 +19,9 @@ class DataBaseNotExists(Exception):
     pass
 
 
+class MissingTimeFrame(Exception):
+    pass
+
+
 class BacktestingFileNotFound(Exception):
     pass
