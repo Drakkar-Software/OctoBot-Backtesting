@@ -27,7 +27,6 @@ from octobot_commons.errors import ConfigTradingError
 from octobot_commons.logging.logging_util import get_logger
 from octobot_commons.symbol_util import split_symbol
 from octobot_commons.time_frame_manager import find_min_time_frame
-from octobot_evaluators.constants import CONFIG_FORCED_TIME_FRAME, CONFIG_FORCED_EVALUATOR
 
 
 class IndependentBacktesting:
@@ -120,6 +119,7 @@ class IndependentBacktesting:
     def _init_default_config_values(self):
         from octobot_trading.constants import CONFIG_TRADER_RISK, CONFIG_TRADING, CONFIG_SIMULATOR, \
             CONFIG_STARTING_PORTFOLIO, CONFIG_SIMULATOR_FEES, CONFIG_EXCHANGES, CONFIG_TRADER
+        from octobot_evaluators.constants import CONFIG_FORCED_TIME_FRAME, CONFIG_FORCED_EVALUATOR
         self.risk = deepcopy(self.octobot_origin_config[CONFIG_TRADING][CONFIG_TRADER_RISK])
         self.starting_portfolio = deepcopy(self.octobot_origin_config[CONFIG_SIMULATOR][CONFIG_STARTING_PORTFOLIO])
         self.fees_config = deepcopy(self.octobot_origin_config[CONFIG_SIMULATOR][CONFIG_SIMULATOR_FEES])
@@ -198,6 +198,7 @@ class IndependentBacktesting:
     def _adapt_config(self):
         from octobot_trading.constants import CONFIG_TRADER_RISK, CONFIG_TRADING, CONFIG_SIMULATOR, \
             CONFIG_STARTING_PORTFOLIO, CONFIG_SIMULATOR_FEES,CONFIG_TRADER_REFERENCE_MARKET
+        from octobot_evaluators.constants import CONFIG_FORCED_TIME_FRAME, CONFIG_FORCED_EVALUATOR
         self.backtesting_config[CONFIG_TRADING][CONFIG_TRADER_RISK] = self.risk
         self.backtesting_config[CONFIG_TRADING][CONFIG_TRADER_REFERENCE_MARKET] = self._find_reference_market()
         self.backtesting_config[CONFIG_SIMULATOR][CONFIG_STARTING_PORTFOLIO] = self.starting_portfolio
