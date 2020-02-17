@@ -45,9 +45,13 @@ class OctoBotBacktesting:
             from octobot_trading.api.exchange import get_exchange_managers_from_exchange_ids, stop_exchange
             from octobot_evaluators.api.matrix import del_matrix
             from octobot_evaluators.api.evaluators import stop_evaluator
-            for exchange_manager in get_exchange_managers_from_exchange_ids(self.exchange_manager_ids):
-                exchange_managers.append(exchange_manager)
-                await stop_exchange(exchange_manager)
+            try:
+                for exchange_manager in get_exchange_managers_from_exchange_ids(self.exchange_manager_ids):
+                    exchange_managers.append(exchange_manager)
+                    await stop_exchange(exchange_manager)
+            except KeyError:
+                # exchange managers are not added in global exchange list when an exception occurred
+                pass
             for evaluators in self.evaluators:
                 # evaluators by type
                 for evaluator in evaluators:
