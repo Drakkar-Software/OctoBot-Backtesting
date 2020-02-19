@@ -120,11 +120,11 @@ class OctoBotBacktesting:
         self.logger.error(f"Too many remaining on {obj.__name__}: expected: {expected} actual {actual}")
 
     async def _init_evaluators(self):
-        from octobot_evaluators.api import initialize_evaluators
+        from octobot_evaluators.api.evaluators import initialize_evaluators
         self.matrix_id = await initialize_evaluators(self.backtesting_config)
 
     async def _create_evaluators(self):
-        from octobot_evaluators.api import create_all_type_evaluators
+        from octobot_evaluators.api.evaluators import create_all_type_evaluators
         from octobot_trading.api.exchange import get_exchange_configuration_from_exchange_id
 
         for exchange_id in self.exchange_manager_ids:
