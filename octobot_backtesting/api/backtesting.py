@@ -44,6 +44,10 @@ async def initialize_backtesting(config, data_files) -> Backtesting:
     return backtesting_instance
 
 
+async def initialize_independent_backtesting_config(independent_backtesting) -> dict:
+    return await independent_backtesting.initialize_config()
+
+
 async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
                                         minimum_timestamp=None, maximum_timestamp=None) -> None:
     await backtesting.time_updater.modify(set_timestamp=set_timestamp,
@@ -68,6 +72,10 @@ async def stop_independent_backtesting(independent_backtesting) -> None:
 
 
 def is_independent_backtesting_in_progress(independent_backtesting) -> bool:
+    return independent_backtesting.is_in_progress()
+
+
+def is_independent_backtesting_computing(independent_backtesting) -> bool:
     return independent_backtesting.is_in_progress()
 
 
