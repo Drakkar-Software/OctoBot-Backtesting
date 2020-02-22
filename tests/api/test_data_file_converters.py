@@ -13,18 +13,10 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from os.path import isfile
-
-from octobot_backtesting.converters.data_converter import DataConverter
-from octobot_commons.tentacles_management.advanced_manager import get_all_classes_from_parent
+import pytest
+from octobot_backtesting.api.data_file_converters import convert_data_file
 
 
-async def convert_data_file(data_file_path) -> str:
-    if data_file_path and isfile(data_file_path):
-        converter_classes = get_all_classes_from_parent(DataConverter)
-        for converter_class in converter_classes:
-            converter = converter_class(data_file_path)
-            if await converter.can_convert():
-                if await converter.convert():
-                    return converter.converted_file
-    return None
+@pytest.mark.asyncio
+async def test_convert_data_file_without_converter():
+    assert await convert_data_file(None) is None
