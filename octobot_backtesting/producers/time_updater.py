@@ -46,7 +46,7 @@ class TimeUpdater(TimeProducer):
                     self.logger.warning(f"Lasted {round(time.time() - self.starting_time, 3)}s")
                     await self.stop()
             except Exception as e:
-                self.logger.exception(f"Fail to update time : {e}")
+                self.logger.exception(e, True, f"Fail to update time : {e}")
         await self.backtesting.delete_time_channel()
         self.finished_event.set()
 

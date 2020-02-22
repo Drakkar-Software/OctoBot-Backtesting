@@ -46,8 +46,7 @@ class Backtesting:
 
             self.time_updater = TimeUpdater(get_chan(TIME_CHANNEL), self)
         except Exception as e:
-            self.logger.error(f"Error when initializing backtesting : {e}.")
-            self.logger.exception(e)
+            self.logger.exception(e, True, f"Error when initializing backtesting : {e}.")
 
     async def stop(self):
         await self.delete_time_channel()

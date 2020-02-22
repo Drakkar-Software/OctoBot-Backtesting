@@ -35,8 +35,7 @@ class TimeProducer(Producer):
         except CancelledError:
             self.logger.info("Update tasks cancelled.")
         except Exception as e:
-            self.logger.error(f"exception when triggering time update: {e}")
-            self.logger.exception(e)
+            self.logger.exception(e, True, f"Exception when triggering time update: {e}")
 
     async def send(self, timestamp, **kwargs):
         for consumer in self.channel.get_consumer_from_filters({}):

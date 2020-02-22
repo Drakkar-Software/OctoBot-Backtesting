@@ -63,8 +63,7 @@ class IndependentBacktesting:
             raise e
         except Exception as e:
             if log_errors:
-                self.logger.error(f"Error when running backtesting: {e}")
-                self.logger.exception(e)
+                self.logger.exception(e, True, f"Error when running backtesting: {e}")
             raise e
 
     async def initialize_config(self):
