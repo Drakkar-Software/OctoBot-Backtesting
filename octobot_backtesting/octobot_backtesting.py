@@ -69,8 +69,7 @@ class OctoBotBacktesting:
             self._log_import_error()
             raise e
         except Exception as e:
-            self.logger.exception(e)
-            self.logger.error(f"Error when stopping independent backtesting: {e}")
+            self.logger.exception(e, True, f"Error when stopping independent backtesting: {e}")
 
     def memory_leak_checkup(self, to_check_elements):
         self.logger.debug(f"Memory leak checking {[e.__class__.__name__ for e in to_check_elements]}")
