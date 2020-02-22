@@ -19,6 +19,9 @@
 from octobot_backtesting.octobot_backtesting cimport OctoBotBacktesting
 
 cdef class IndependentBacktesting:
+    cdef list forced_time_frames
+    cdef list forced_evaluators
+
     cdef public dict octobot_origin_config
     cdef public dict backtesting_config
     cdef public list backtesting_files
