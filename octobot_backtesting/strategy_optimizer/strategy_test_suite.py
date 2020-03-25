@@ -118,7 +118,10 @@ class StrategyTestSuite(AbstractBacktestingTest):
         independent_backtesting = None
         try:
             config_to_use = deepcopy(self.config)
-            independent_backtesting = create_independent_backtesting(config_to_use, [data_file_to_use], "")
+            independent_backtesting = create_independent_backtesting(config_to_use,
+                                                                     self.tentacles_setup_config,
+                                                                     [data_file_to_use],
+                                                                     "")
             await initialize_and_run_independent_backtesting(independent_backtesting, log_errors=False)
             await join_independent_backtesting(independent_backtesting)
             return independent_backtesting

@@ -16,8 +16,8 @@
 from octobot_backtesting.strategy_optimizer.strategy_optimizer import StrategyOptimizer
 
 
-def create_strategy_optimizer(config, strategy_name) -> StrategyOptimizer:
-    return StrategyOptimizer(config, strategy_name)
+def create_strategy_optimizer(config, tentacles_setup_config, strategy_name) -> StrategyOptimizer:
+    return StrategyOptimizer(config, tentacles_setup_config, strategy_name)
 
 
 def find_optimal_configuration(strategy_optimizer, TAs=None, time_frames=None, risks=None) -> None:

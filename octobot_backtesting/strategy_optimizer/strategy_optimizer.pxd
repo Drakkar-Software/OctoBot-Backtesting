@@ -18,6 +18,7 @@
 cdef class StrategyOptimizer:
     cdef object logger
     cdef dict config
+    cdef object tentacles_setup_config
     cdef dict sorted_results_by_time_frame
     cdef dict sorted_results_through_all_time_frame
     cdef object current_test_suite
@@ -44,3 +45,4 @@ cdef class StrategyOptimizer:
 
     cdef void _run_test_suite(self, dict config)
     cdef void _find_optimal_configuration_using_results(self)
+    cdef list _get_all_TA(self)

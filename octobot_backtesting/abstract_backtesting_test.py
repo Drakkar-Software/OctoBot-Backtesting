@@ -21,7 +21,7 @@ from octobot_backtesting.api.backtesting import stop_independent_backtesting
 from octobot_backtesting.constants import CONFIG_BACKTESTING
 from octobot_commons.logging.logging_util import get_logger
 from octobot_commons.tentacles_management.class_inspector import get_class_from_string, evaluator_parent_inspection
-
+from octobot_tentacles_manager.api.configurator import get_tentacles_activation
 
 DEFAULT_SYMBOL = "ICX/BTC"
 DATA_FILE_PATH = "tests/static/"
@@ -102,11 +102,13 @@ class AbstractBacktestingTest:
 
     def __init__(self):
         self.config = {}
+        self.tentacles_setup_config = None
         self.strategy_evaluator_class = None
         self.logger = get_logger(self.__class__.__name__)
 
-    def initialize_with_strategy(self, strategy_evaluator_class, config):
+    def initialize_with_strategy(self, strategy_evaluator_class, tentacles_setup_config, config):
         self.config = config
+        self.tentacles_setup_config = tentacles_setup_config
         self.strategy_evaluator_class = strategy_evaluator_class
         self._register_only_strategy(strategy_evaluator_class)
 
@@ -215,10 +217,11 @@ class AbstractBacktestingTest:
             from tentacles.Evaluator import Strategies
             from octobot_evaluators.evaluator.strategy_evaluator import StrategyEvaluator
             from octobot_evaluators.constants import CONFIG_EVALUATOR
-            for evaluator_name in self.config[CONFIG_EVALUATOR]:
+            tentacles_activation = get_tentacles_activation(self.tentacles_setup_config)
+            for evaluator_name in tentacles_activation:
                 if get_class_from_string(evaluator_name, StrategyEvaluator, Strategies,
                                          evaluator_parent_inspection) is not None:
-                    self.config[CONFIG_EVALUATOR][evaluator_name] = False
-            self.config[CONFIG_EVALUATOR][strategy_evaluator_class.get_name()] = True
+                    tentacles_activation[evaluator_name] = False
+            tentacles_activation[strategy_evaluator_class.get_name()] = True
         except ImportError:
             self.logger.error("Backtesting tests requires OctoBot-Evaluator package installed")

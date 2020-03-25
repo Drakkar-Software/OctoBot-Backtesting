@@ -22,9 +22,13 @@ from octobot_commons.logging.logging_util import get_logger
 
 class OctoBotBacktesting:
 
-    def __init__(self, backtesting_config, symbols_to_create_exchange_classes, backtesting_files):
+    def __init__(self, backtesting_config,
+                 tentacles_setup_config,
+                 symbols_to_create_exchange_classes,
+                 backtesting_files):
         self.logger = get_logger(self.__class__.__name__)
         self.backtesting_config = backtesting_config
+        self.tentacles_setup_config = tentacles_setup_config
         self.matrix_id = ""
         self.exchange_manager_ids = []
         self.symbols_to_create_exchange_classes = symbols_to_create_exchange_classes
@@ -120,7 +124,7 @@ class OctoBotBacktesting:
 
     async def _init_evaluators(self):
         from octobot_evaluators.api.evaluators import initialize_evaluators
-        self.matrix_id = await initialize_evaluators(self.backtesting_config)
+        self.matrix_id = await initialize_evaluators(self.backtesting_config, self.tentacles_setup_config)
 
     async def _create_evaluators(self):
         from octobot_evaluators.api.evaluators import create_all_type_evaluators
@@ -130,6 +134,7 @@ class OctoBotBacktesting:
             exchange_configuration = get_exchange_configuration_from_exchange_id(exchange_id)
             self.evaluators = await create_all_type_evaluators(
                 self.backtesting_config,
+                self.tentacles_setup_config,
                 matrix_id=self.matrix_id,
                 exchange_name=exchange_configuration.exchange_name,
                 cryptocurrencies=exchange_configuration.cryptocurrencies,
@@ -143,6 +148,7 @@ class OctoBotBacktesting:
         for exchange_class_string in self.symbols_to_create_exchange_classes.keys():
             exchange_builder = create_exchange_builder(self.backtesting_config, exchange_class_string) \
                 .has_matrix(self.matrix_id) \
+                .use_tentacles_setup_config(self.tentacles_setup_config) \
                 .is_simulated() \
                 .is_rest_only() \
                 .is_backtesting(self.backtesting_files)
