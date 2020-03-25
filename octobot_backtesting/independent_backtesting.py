@@ -30,8 +30,9 @@ from octobot_commons.time_frame_manager import find_min_time_frame
 
 
 class IndependentBacktesting:
-    def __init__(self, config, backtesting_files, data_file_path=BACKTESTING_FILE_PATH):
+    def __init__(self, config, tentacles_setup_config, backtesting_files, data_file_path=BACKTESTING_FILE_PATH):
         self.octobot_origin_config = config
+        self.tentacles_setup_config = tentacles_setup_config
         self.backtesting_config = {}
         self.backtesting_files = backtesting_files
         self.logger = get_logger(self.__class__.__name__)
@@ -49,6 +50,7 @@ class IndependentBacktesting:
             self._log_import_error()
             raise e
         self.octobot_backtesting = OctoBotBacktesting(self.backtesting_config,
+                                                      self.tentacles_setup_config,
                                                       self.symbols_to_create_exchange_classes,
                                                       self.backtesting_files)
 
@@ -141,7 +143,7 @@ class IndependentBacktesting:
             from octobot_trading.api.profitability import get_reference_market
             reference_market = get_reference_market(self.backtesting_config)
             try:
-                trading_mode = get_activated_trading_mode(self.backtesting_config).get_name()
+                trading_mode = get_activated_trading_mode(self.backtesting_config, self.tentacles_setup_config).get_name()
             except ConfigTradingError as e:
                 self.logger.error(e)
                 trading_mode = "Error when reading trading mode"

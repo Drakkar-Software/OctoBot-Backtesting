@@ -15,9 +15,9 @@
 #  License along with this library.
 
 import asyncio
-import copy
 import logging
 import math
+from copy import deepcopy
 
 from octobot_backtesting.constants import OPTIMIZER_FORCE_ASYNCIO_DEBUG_OPTION
 from octobot_backtesting.strategy_optimizer.strategy_test_suite import StrategyTestSuite
@@ -26,7 +26,7 @@ from octobot_commons.data_util import mean
 from octobot_commons.tentacles_management.class_inspector import get_class_from_string, evaluator_parent_inspection
 from octobot_commons.logging.logging_util import get_logger
 from octobot_commons.logging.logging_util import set_global_logger_level, get_global_logger_level
-from octobot_commons.constants import CONFIG_TRADING_FILE_PATH
+from octobot_tentacles_manager.api.configurator import get_tentacles_activation
 
 CONFIG = 0
 RANK = 1
@@ -38,18 +38,19 @@ class StrategyOptimizer:
     """
     StrategyOptimizer is a tool that performs backtesting with different configurations
     """
-    def __init__(self, config, strategy_name):
+    def __init__(self, config, tentacles_setup_config, strategy_name):
         self.is_properly_initialized = False
         self.logger = get_logger(self.get_name())
         self.config = config
+        self.tentacles_setup_config = deepcopy(tentacles_setup_config)
         try:
             from octobot_evaluators.api.evaluators import create_evaluator_classes
             from octobot_evaluators.evaluator.strategy_evaluator import StrategyEvaluator
             from octobot_trading.api.modes import init_trading_mode_config, get_activated_trading_mode
             from tentacles.Evaluator import Strategies
-            init_trading_mode_config(self.config, CONFIG_TRADING_FILE_PATH)
+            init_trading_mode_config(self.config)
             create_evaluator_classes(self.config)
-            self.trading_mode = get_activated_trading_mode(self.config)
+            self.trading_mode = get_activated_trading_mode(self.config, tentacles_setup_config)
             self.strategy_class = get_class_from_string(strategy_name, StrategyEvaluator,
                                                         Strategies, evaluator_parent_inspection)
             self.run_results = []
@@ -92,10 +93,9 @@ class StrategyOptimizer:
             previous_log_level = get_global_logger_level()
 
             try:
-                from octobot_evaluators.constants import CONFIG_FORCED_EVALUATOR, CONFIG_FORCED_TIME_FRAME, \
-                    CONFIG_EVALUATOR
+                from octobot_evaluators.constants import CONFIG_FORCED_EVALUATOR, CONFIG_FORCED_TIME_FRAME
                 from octobot_trading.constants import CONFIG_TRADER_RISK, CONFIG_TRADING
-                self.all_TAs = self._get_all_TA(self.config[CONFIG_EVALUATOR]) if TAs is None else TAs
+                self.all_TAs = self._get_all_TA() if TAs is None else TAs
                 nb_TAs = len(self.all_TAs)
 
                 self.all_time_frames = self.strategy_class.get_required_time_frames(self.config) \
@@ -179,7 +179,9 @@ class StrategyOptimizer:
 
     def _run_test_suite(self, config):
         self.current_test_suite = StrategyTestSuite()
-        self.current_test_suite.initialize_with_strategy(self.strategy_class, copy.deepcopy(config))
+        self.current_test_suite.initialize_with_strategy(self.strategy_class,
+                                                         self.tentacles_setup_config,
+                                                         deepcopy(config))
         no_error = asyncio.run(self.current_test_suite.run_test_suite(self.current_test_suite),
                                debug=OPTIMIZER_FORCE_ASYNCIO_DEBUG_OPTION)
         if not no_error:
@@ -306,8 +308,7 @@ class StrategyOptimizer:
         from octobot_evaluators.evaluator.TA_evaluator import TAEvaluator
         return get_class_from_string(evaluator, TAEvaluator, TA, evaluator_parent_inspection) is not None
 
-    @staticmethod
-    def _get_all_TA(config_evaluator):
+    def _get_all_TA(self):
         return [evaluator
-                for evaluator, activated in config_evaluator.items()
+                for evaluator, activated in get_tentacles_activation(self.tentacles_setup_config).items()
                 if activated and StrategyOptimizer._is_relevant_evaluation_config(evaluator)]

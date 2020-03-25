@@ -21,8 +21,11 @@ from octobot_backtesting.constants import CONFIG_BACKTESTING, CONFIG_BACKTESTING
     BACKTESTING_DEFAULT_JOIN_TIMEOUT
 
 
-def create_independent_backtesting(config, data_files, data_file_path=BACKTESTING_FILE_PATH) -> IndependentBacktesting:
-    return IndependentBacktesting(config, data_files, data_file_path)
+def create_independent_backtesting(config,
+                                   tentacles_setup_config,
+                                   data_files,
+                                   data_file_path=BACKTESTING_FILE_PATH) -> IndependentBacktesting:
+    return IndependentBacktesting(config, tentacles_setup_config, data_files, data_file_path)
 
 
 async def initialize_and_run_independent_backtesting(independent_backtesting, log_errors=True) -> None:

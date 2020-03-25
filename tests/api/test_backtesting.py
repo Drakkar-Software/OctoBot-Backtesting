@@ -46,7 +46,7 @@ def _get_default_config():
 
 def test_create_independent_backtesting():
     try:
-        create_independent_backtesting(_get_default_config(), [])
+        create_independent_backtesting(_get_default_config(), None, [])
     except ModuleNotFoundError:
         pass
 

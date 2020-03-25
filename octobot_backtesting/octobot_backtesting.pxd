@@ -18,6 +18,7 @@
 
 cdef class OctoBotBacktesting:
     cdef public dict backtesting_config
+    cdef public object tentacles_setup_config
 
     cdef object logger
 

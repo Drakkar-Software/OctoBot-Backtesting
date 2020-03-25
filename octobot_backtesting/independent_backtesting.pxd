@@ -24,6 +24,7 @@ cdef class IndependentBacktesting:
 
     cdef public dict octobot_origin_config
     cdef public dict backtesting_config
+    cdef public object tentacles_setup_config
     cdef public list backtesting_files
 
     cdef object logger
