@@ -1,6 +1,6 @@
 notifications:
   email: false
-sudo: enabled
+dist: xenial
 os: linux
 language: python
 cache: pip
@@ -10,13 +10,11 @@ env:
     - GH_REPO=Drakkar-Software/OctoBot-Backtesting
     - DEPLOY_BRANCH=master
     - PACKAGE_FOLDER=octobot_trading
-    - secure: g0qJyqvYD0uEKXnlIgEO/bkvV8zlkqQg4hvpIm2GkcQAxXVsSCDAa3wGoLHOYPF9X/I2AYDqdgB/31U1sFk+uLs3Iqy0ouz86BcxBszO3chYfLu0r7cYgIujlNIJ11j3tbcDDdI/ms+BSWCl17n3PqfS5z+AdtJMStYr+pTztDo5ZZogzH1lZtTQEnGkrCkAc28ohGnKMz3BTwpYRlGx4/lzJWORTPz0arlaQzh2YGyutsxALgp82JCEh7+RqrPqYFJARPcEWFi0Rs9JrheAR2fGgdkzHZ4/oI4DuDdpu7Jj/fzyYRpIAuKVxI+RP7pF7sZOFUb4e0lS74roGNOVr7ojNtvKzy64ZwNbZLMCGrA5lJwGVsGZf7VKJr9qaBkXTbM+B2vOW950Co7s2xv2lqeU71LzDNH+VknFRZHsjkfqGs2TyFCTnK0INB+M0RzN8jZCLvSEYrkOOvyQuXATH942Pmlkn4oa1CEG7Iuf4+OcrqqjA469lSxTUJ0/Sv2cPcb1tDvXv4OnIbs2Kc10GOnk1L2nK+YPhenzdjKx6oymb4DUi3zCYU3zxT6EjgbLvMaqh2pF1rH+uPJJLorZtb/TFywltas8Zimt8/HnElkEaF/iJuZyHEjA+PQpHdkUeA4U+uYMBekM1fS2mjIwf4TSgrR1CpsLRnWWSpfXVv8=
-    - secure: RlkiTYdC8Vrkc1RA6GC2twUuPdCvUkCjHhgQPcrTv72JVejJHX38KaVdn/4OOBLD2cmA1umRPnsDeCBk7d46fO1djFwiMU/mfgUYuVFh/CUWnzVdH/85mKrF3tkB4YG7hGh4N20DAafU6cSa67981BpLC8qjzBeN8f2j6sRiDUhZm/hesJVtV36r+GBBZZ7g4C4rmZxDeK7FWzXY8gw/jidRsCCQbm2DEJoZLs/HhFo5Z2EBYauf1Zc91U5HlZElD+YmMtdJ8jp4h1981THlsXhApJO0XSi+mAOUCJnF9a/QukBwxw6ElzWyMZGfo6OnzrG9U8NxE24KU20ChkJMznuAFeaq/kpt4AbRxCObd/+owp8Phe7Ew8EWMOcqzG5WqtQczOy1KJSKzFu29jzznANI3LjlkQSwkyYCi25hqD3j0TeR4buybpNW8vG8KB39nFRhXVH1qoHF13Cept1xeVdyyjhiqTInGHC3qEjnCbfqK8wXgLy2bdbADyufLhlrD3KIq5dT75KJxgLsHpug7gZ6onKVW/4UIkqV50rSr7mVTGfFey2APjwKoyWMc0+jQD7xiJ0ckdl4InkdOchsBosRIKTitgxKns3J1QHjiBEWizxZPLofDSwWIfAZmXQO33d2NZjGMrbkrMsodUocsjtXSnMgB/0ixe2SwSF8LLw=
 
 install:
   - python3 -m pip install --prefer-binary -r dev_requirements.txt -r requirements.txt
 
-matrix:
+jobs:
   include:
     - name: "Linux - Python 3.8-dev - Python sources"
       stage: test
@@ -42,11 +40,11 @@ matrix:
         - ls
       deploy:
         - provider: pypi
-          user: __token__
+          username: __token__
           password:
             secure: Rqe6dMhedaCYf1kAAltDbhQL8+HCcI3Qng95CvruLIMslVBo7HtydFzHoFb04ryOeG8B29LNS278Jvf8H2v6lSepEEnkXMyPWVncS9+lSXI5PI6NbRS6YqtXTktx0bKL1p76oJoPHbexKr/MyKSi+zf08uQngU8TFKPn0b+CU1suRJAQyQh6U7PtrmemA+HJWwW6KV8tBjc9+vVLFPgjGMmrYuoLzj7Qp/ENBX4vT1fiR+GgX/F42Rqvc7q4QvWVnS4X9TDhLF8NUJ/Tk7MUO7SVvBYuhQ+qFzWVXMUPaUbsPdE0OiIUcq2m0GMJecljvvNFFsTLAnJBUNVKf1vQwDtNWf+rf02Hzmhtqo3vD+7VUgi2rm5nORN1SiK4EgLbeHdTxd06ljUDkFoy/+kjahBtI6Ntc/ztjRQSNTVWB05SX62UiNFBmpyz+DW39bkRZfRM4381kWI6ZG/xBcdUjh2NauNpwkFkmktL5kONxhC1CczsMNtuai0t7+i2XpBudCrlmynWLkhzpjSBFnvixgkxFC6fWCHozqbehTHeCGQBh+tAZudMz3U9mvciZN11h0amn+5LpX0T30l+fHpCAAToHv9QUC9+bj2b8s0AN9EAxc1ArvX/yXEiiKuVtwS4HxmBHODfMhVOGa+gyZhqQTBVyY5Ao5Buz1csUDrEvBQ=
           skip_existing: true
-          skip_cleanup: true
+          cleanup: true
           distributions: "sdist"
           on:
             repo: $GH_REPO
@@ -55,7 +53,7 @@ matrix:
             condition: $TRAVIS_OS_NAME = 'linux'
         - provider: script
           script: docker run -it -e PYPI_USERNAME=$PYPI_USERNAME -e PYPI_PASSWORD=$PYPI_PASSWORD -v $(pwd):/project drakkarsoftware/octobot-pypi-deploy:i686 "i686" "cp37-cp37m" "cp37"
-          skip_cleanup: true
+          cleanup: true
           on:
             repo: "$GH_REPO"
             branch: "$DEPLOY_BRANCH"
@@ -63,7 +61,7 @@ matrix:
             condition: "$TRAVIS_OS_NAME = 'linux'"
         - provider: script
           script: docker run -it -e PYPI_USERNAME=$PYPI_USERNAME -e PYPI_PASSWORD=$PYPI_PASSWORD -v $(pwd):/project drakkarsoftware/octobot-pypi-deploy:x86_64 "x86_64" "cp37-cp37m" "cp37"
-          skip_cleanup: true
+          cleanup: true
           on:
             repo: "$GH_REPO"
             branch: "$DEPLOY_BRANCH"
@@ -88,7 +86,7 @@ matrix:
       deploy:
         - provider: script
           script: python3 setup.py bdist_wheel && python3 -m twine upload dist/* -u $PYPI_USERNAME -p $PYPI_PASSWORD --skip-existing
-          skip_cleanup: true
+          cleanup: true
           on:
             repo: "$GH_REPO"
             branch: "$DEPLOY_BRANCH"
