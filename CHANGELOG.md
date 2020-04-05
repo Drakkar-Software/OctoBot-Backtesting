@@ -4,14 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.12] - 2020-03-30
+## [1.3.13] - 2020-04-05
+### Updated
+- Integrate OctoBot-tentacles-manager 2.0.0
+
+## [1.3.12] - 2020-03-30
 ### Updated
 **Requirements**
 - Commons version to 1.3.5
 - Cython version to 0.29.16
 - Channels version to 1.3.22
 
-## [1.1.11] - 2020-03-07
+## [1.3.11] - 2020-03-07
 ### Updated
 **Requirements**
 - Commons version to 1.3.0
