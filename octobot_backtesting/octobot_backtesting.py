@@ -137,7 +137,7 @@ class OctoBotBacktesting:
                 self.tentacles_setup_config,
                 matrix_id=self.matrix_id,
                 exchange_name=exchange_configuration.exchange_name,
-                cryptocurrencies=exchange_configuration.cryptocurrencies,
+                symbols_by_crypto_currencies=exchange_configuration.symbols_by_crypto_currencies,
                 symbols=exchange_configuration.symbols,
                 time_frames=exchange_configuration.time_frames)
 
