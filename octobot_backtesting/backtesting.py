@@ -18,12 +18,12 @@ from octobot_backtesting.channels.time import TimeChannel
 from octobot_channels.channels.channel import get_chan, set_chan, del_chan
 
 from octobot_backtesting.producers.time_updater import TimeUpdater
-from octobot_channels.util import create_channel_instance
+from octobot_channels.util.channel_creator import create_channel_instance
 from octobot_commons.logging.logging_util import get_logger
 
 from octobot_backtesting.data_manager.time_manager import TimeManager
 from octobot_backtesting.util.backtesting_util import create_importer_from_backtesting_file_name
-from octobot_commons.tentacles_management import default_parents_inspection
+from octobot_commons.tentacles_management.class_inspector import default_parents_inspection
 
 
 class Backtesting:
