@@ -216,7 +216,6 @@ class AbstractBacktestingTest:
         try:
             from tentacles.Evaluator import Strategies
             from octobot_evaluators.evaluator.strategy_evaluator import StrategyEvaluator
-            from octobot_evaluators.constants import CONFIG_EVALUATOR
             tentacles_activation = get_tentacles_activation(self.tentacles_setup_config)
             for evaluator_name in tentacles_activation:
                 if get_class_from_string(evaluator_name, StrategyEvaluator, Strategies,
