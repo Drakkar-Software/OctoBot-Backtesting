@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-
+import uuid
 from sys import getrefcount
 from asyncio import get_event_loop
 
@@ -29,18 +29,22 @@ class OctoBotBacktesting:
         self.logger = get_logger(self.__class__.__name__)
         self.backtesting_config = backtesting_config
         self.tentacles_setup_config = tentacles_setup_config
+        self.bot_id = str(uuid.uuid4())
         self.matrix_id = ""
         self.exchange_manager_ids = []
         self.symbols_to_create_exchange_classes = symbols_to_create_exchange_classes
         self.evaluators = []
+        self.service_feeds = []
         self.backtesting_files = backtesting_files
         self.backtestings = []
 
     async def initialize_and_run(self):
         self.logger.info(f"Starting on {self.backtesting_files} with {self.symbols_to_create_exchange_classes}")
         await self._init_evaluators()
+        await self._init_service_feeds()
         await self._init_exchanges()
         await self._create_evaluators()
+        await self._create_service_feeds()
 
     async def stop(self):
         self.logger.info(f"Stopping for {self.backtesting_files} with {self.symbols_to_create_exchange_classes}")
@@ -49,6 +53,7 @@ class OctoBotBacktesting:
             from octobot_trading.api.exchange import get_exchange_managers_from_exchange_ids, stop_exchange
             from octobot_evaluators.api.matrix import del_matrix
             from octobot_evaluators.api.evaluators import stop_evaluator
+            from octobot_services.api.service_feeds import stop_service_feed
             try:
                 for exchange_manager in get_exchange_managers_from_exchange_ids(self.exchange_manager_ids):
                     exchange_managers.append(exchange_manager)
@@ -63,6 +68,9 @@ class OctoBotBacktesting:
                     if evaluator is not None:
                         await stop_evaluator(evaluator)
             del_matrix(self.matrix_id)
+            for service_feed in self.service_feeds:
+                await stop_service_feed(service_feed)
+
             to_reference_check = exchange_managers + self.backtestings
             # Call at the next loop iteration to first let coroutines get cancelled
             # (references to coroutine and caller objects are kept while in async loop)
@@ -126,6 +134,18 @@ class OctoBotBacktesting:
         from octobot_evaluators.api.evaluators import initialize_evaluators
         self.matrix_id = await initialize_evaluators(self.backtesting_config, self.tentacles_setup_config)
 
+    async def _init_service_feeds(self):
+        try:
+            from octobot_services.api.service_feeds import create_service_feed_factory
+            service_feed_factory = create_service_feed_factory(self.backtesting_config,
+                                                               get_event_loop(),
+                                                               self.bot_id)
+            self.service_feeds = [service_feed_factory.create_service_feed(feed)
+                                  for feed in service_feed_factory.get_available_service_feeds(True)]
+        except ImportError:
+            self.logger.error("Octobot Services package is required to test service feeds. Service feeds will not "
+                              "be available for this backtesting.")
+
     async def _create_evaluators(self):
         from octobot_evaluators.api.evaluators import create_all_type_evaluators
         from octobot_trading.api.exchange import get_exchange_configuration_from_exchange_id
@@ -137,13 +157,24 @@ class OctoBotBacktesting:
                 self.tentacles_setup_config,
                 matrix_id=self.matrix_id,
                 exchange_name=exchange_configuration.exchange_name,
+                bot_id=self.bot_id,
                 symbols_by_crypto_currencies=exchange_configuration.symbols_by_crypto_currencies,
                 symbols=exchange_configuration.symbols,
                 time_frames=exchange_configuration.time_frames)
 
+    async def _create_service_feeds(self):
+        try:
+            from octobot_services.api.service_feeds import start_service_feed
+            for feed in self.service_feeds:
+                if not await start_service_feed(feed, False):
+                    self.logger.error(f"Failed to start {feed.get_name()}. Evaluators requiring this service feed "
+                                      f"might not work properly")
+        except ImportError:
+            pass
+
     async def _init_exchanges(self):
         from octobot_trading.api.exchange import create_exchange_builder, get_exchange_manager_id
-        from tools.logger import init_exchange_chan_logger
+        from octobot.logger import init_exchange_chan_logger
 
         for exchange_class_string in self.symbols_to_create_exchange_classes.keys():
             exchange_builder = create_exchange_builder(self.backtesting_config, exchange_class_string) \
@@ -167,5 +198,5 @@ class OctoBotBacktesting:
             self.backtestings.append(backtesting)
 
     def _log_import_error(self):
-        self.logger.error("OctoBotBacktesting requires OctoBot, OctoBot-Trading and OctoBot-Evaluators "
-                          "packages installed")
+        self.logger.error("OctoBotBacktesting requires OctoBot, OctoBot-Trading, OctoBot-Services "
+                          "and OctoBot-Evaluators packages installed")
