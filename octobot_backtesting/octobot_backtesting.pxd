@@ -23,9 +23,11 @@ cdef class OctoBotBacktesting:
     cdef object logger
 
     cdef public str matrix_id
+    cdef public str bot_id
     cdef public list exchange_manager_ids
     cdef public dict symbols_to_create_exchange_classes
     cdef public list evaluators
+    cdef public list service_feeds
     cdef public dict fees_config
     cdef public list backtesting_files
     cdef public list backtestings
