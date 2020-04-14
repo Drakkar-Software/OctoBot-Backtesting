@@ -70,54 +70,57 @@ class ExchangeDataCollector(DataCollector):
                                    symbols=json.dumps(self.symbols),
                                    time_frames=json.dumps([tf.value for tf in self.time_frames]))
 
-    async def save_ticker(self, timestamp, exchange, symbol, ticker, multiple=False):
+    async def save_ticker(self, timestamp, exchange, cryptocurrency, symbol, ticker, multiple=False):
         if not multiple:
             await self.database.insert(ExchangeDataTables.TICKER, timestamp,
-                                       exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(ticker))
+                                       exchange_name=exchange, cryptocurrency=cryptocurrency,
+                                       symbol=symbol, recent_trades=json.dumps(ticker))
         else:
             await self.database.insert_all(ExchangeDataTables.TICKER, timestamp,
-                                           exchange_name=exchange, symbol=symbol, recent_trades=[json.dumps(t)
-                                                                                                 for t in
-                                                                                                 ticker])
+                                           exchange_name=exchange, cryptocurrency=cryptocurrency,
+                                           symbol=symbol, recent_trades=[json.dumps(t) for t in ticker])
 
-    async def save_order_book(self, timestamp, exchange, symbol, asks, bids, multiple=False):
+    async def save_order_book(self, timestamp, exchange, cryptocurrency, symbol, asks, bids, multiple=False):
         if not multiple:
             await self.database.insert(ExchangeDataTables.ORDER_BOOK, timestamp,
-                                       exchange_name=exchange, symbol=symbol,
+                                       exchange_name=exchange, cryptocurrency=cryptocurrency, symbol=symbol,
                                        asks=json.dumps(asks), bids=json.dumps(bids))
         else:
             await self.database.insert_all(ExchangeDataTables.ORDER_BOOK, timestamp,
-                                           exchange_name=exchange, symbol=symbol,
+                                           exchange_name=exchange, cryptocurrency=cryptocurrency, symbol=symbol,
                                            asks=[json.dumps(a) for a in asks],
                                            bids=[json.dumps(b) for b in bids])
 
-    async def save_recent_trades(self, timestamp, exchange, symbol, recent_trades, multiple=False):
+    async def save_recent_trades(self, timestamp, exchange, cryptocurrency, symbol, recent_trades, multiple=False):
         if not multiple:
             await self.database.insert(ExchangeDataTables.RECENT_TRADES, timestamp,
-                                       exchange_name=exchange, symbol=symbol, recent_trades=json.dumps(recent_trades))
+                                       exchange_name=exchange, cryptocurrency=cryptocurrency,
+                                       symbol=symbol, recent_trades=json.dumps(recent_trades))
         else:
             await self.database.insert_all(ExchangeDataTables.RECENT_TRADES, timestamp,
-                                           exchange_name=exchange, symbol=symbol, recent_trades=[json.dumps(rt)
-                                                                                                 for rt in
-                                                                                                 recent_trades])
+                                           exchange_name=exchange, cryptocurrency=cryptocurrency,
+                                           symbol=symbol, recent_trades=[json.dumps(rt) for rt in recent_trades])
 
-    async def save_ohlcv(self, timestamp, exchange, symbol, time_frame, candle, multiple=False):
+    async def save_ohlcv(self, timestamp, exchange, cryptocurrency, symbol, time_frame, candle, multiple=False):
         if not multiple:
             await self.database.insert(ExchangeDataTables.OHLCV, timestamp,
-                                       exchange_name=exchange, symbol=symbol, time_frame=time_frame.value,
+                                       exchange_name=exchange, cryptocurrency=cryptocurrency,
+                                       symbol=symbol, time_frame=time_frame.value,
                                        candle=json.dumps(candle))
         else:
             await self.database.insert_all(ExchangeDataTables.OHLCV, timestamp=timestamp,
-                                           exchange_name=exchange, symbol=symbol, time_frame=time_frame.value,
+                                           exchange_name=exchange, cryptocurrency=cryptocurrency,
+                                           symbol=symbol, time_frame=time_frame.value,
                                            candle=[json.dumps(c) for c in candle])
 
-    async def save_kline(self, timestamp, exchange, symbol, time_frame, kline, multiple=False):
+    async def save_kline(self, timestamp, exchange, cryptocurrency, symbol, time_frame, kline, multiple=False):
         if not multiple:
             await self.database.insert(ExchangeDataTables.KLINE, timestamp,
-                                       exchange_name=exchange, symbol=symbol, time_frame=time_frame.value,
+                                       exchange_name=exchange, cryptocurrency=cryptocurrency,
+                                       symbol=symbol, time_frame=time_frame.value,
                                        candle=json.dumps(kline))
         else:
             await self.database.insert_all(ExchangeDataTables.KLINE, timestamp=timestamp,
-                                           exchange_name=exchange, symbol=symbol, time_frame=time_frame.value,
+                                           exchange_name=exchange, cryptocurrency=cryptocurrency,
+                                           symbol=symbol, time_frame=time_frame.value,
                                            candle=[json.dumps(kl) for kl in kline])
-
