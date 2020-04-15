@@ -17,7 +17,6 @@ import json
 
 from octobot_backtesting.data.data_file_manager import get_database_description
 from octobot_commons.constants import CONFIG_TIME_FRAME
-from octobot_commons.enums import TimeFramesMinutes
 
 from octobot_backtesting.data import DataBaseNotExists, MissingTimeFrame
 from octobot_backtesting.data.database import DataBase
