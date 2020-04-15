@@ -100,13 +100,8 @@ EXTENDED_DATA_FILES = {
 class AbstractBacktestingTest:
     __metaclass__ = ABCMeta
 
-    def __init__(self):
-        self.config = {}
-        self.tentacles_setup_config = None
-        self.strategy_evaluator_class = None
-        self.logger = get_logger(self.__class__.__name__)
-
     def initialize_with_strategy(self, strategy_evaluator_class, tentacles_setup_config, config):
+        self.logger = get_logger(self.__class__.__name__)
         self.config = config
         self.tentacles_setup_config = tentacles_setup_config
         self.strategy_evaluator_class = strategy_evaluator_class
