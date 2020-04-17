@@ -66,8 +66,6 @@ class StrategyOptimizer:
             self.run_id = 0
             self.total_nb_runs = 0
 
-            self._create_matrix_channel_if_necessary()
-
             if not self.strategy_class:
                 self.logger.error(f"Impossible to find a strategy matching class name: {strategy_name} in installed "
                                   f"strategies. Please make sure to enter the name of the class, "
@@ -172,11 +170,6 @@ class StrategyOptimizer:
                                f"{self.run_id}/{self.total_nb_runs} processed")
 
     @staticmethod
-    def _create_matrix_channel_if_necessary():
-        from octobot_evaluators.api.initialization import matrix_channel_exists, create_matrix_channels
-        if not matrix_channel_exists():
-            asyncio.run(create_matrix_channels())
-
     def _run_test_suite(self, config):
         self.current_test_suite = StrategyTestSuite()
         self.current_test_suite.initialize_with_strategy(self.strategy_class,

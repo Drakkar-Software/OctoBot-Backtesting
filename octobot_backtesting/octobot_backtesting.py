@@ -18,6 +18,8 @@ from sys import getrefcount
 from asyncio import get_event_loop
 
 from octobot_commons.logging.logging_util import get_logger
+from octobot_evaluators.api.evaluators import stop_all_evaluator_channels
+from octobot_evaluators.api.initialization import create_evaluator_channels, del_evaluator_channels
 
 
 class OctoBotBacktesting:
@@ -67,6 +69,8 @@ class OctoBotBacktesting:
                     # evaluator instance
                     if evaluator is not None:
                         await stop_evaluator(evaluator)
+            await stop_all_evaluator_channels(self.matrix_id)
+            del_evaluator_channels(self.matrix_id)
             del_matrix(self.matrix_id)
             for service_feed in self.service_feeds:
                 await stop_service_feed(service_feed)
@@ -133,6 +137,7 @@ class OctoBotBacktesting:
     async def _init_evaluators(self):
         from octobot_evaluators.api.evaluators import initialize_evaluators
         self.matrix_id = await initialize_evaluators(self.backtesting_config, self.tentacles_setup_config)
+        await create_evaluator_channels(self.matrix_id)
 
     async def _init_service_feeds(self):
         try:
