@@ -64,8 +64,11 @@ class Backtesting:
         await self.time_updater.run()
 
     async def create_importers(self):
-        self.importers = [await create_importer_from_backtesting_file_name(self.config, backtesting_file)
-                          for backtesting_file in self.backtesting_files]
+        try:
+            self.importers = [await create_importer_from_backtesting_file_name(self.config, backtesting_file)
+                              for backtesting_file in self.backtesting_files]
+        except TypeError:
+            pass
 
     async def handle_time_update(self, timestamp):
         if self.time_manager:
