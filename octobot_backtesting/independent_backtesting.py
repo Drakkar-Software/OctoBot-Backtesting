@@ -42,7 +42,6 @@ class IndependentBacktesting:
         self.starting_portfolio = {}
         self.fees_config = {}
         self.forced_time_frames = []
-        self.forced_evaluators = []
         try:
             self._init_default_config_values()
 

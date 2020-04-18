@@ -24,6 +24,7 @@ cdef class StrategyTestSuite(AbstractBacktestingTest):
 
     cdef public double current_progress
     cdef public list exceptions
+    cdef public list evaluators
 
     cpdef TestSuiteResult get_test_suite_result(self)
 
