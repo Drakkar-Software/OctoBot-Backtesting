@@ -17,14 +17,14 @@ import asyncio
 from copy import deepcopy
 from os import path
 
-from octobot_backtesting.constants import CONFIG_BACKTESTING, BACKTESTING_FILE_PATH
+from octobot_backtesting.constants import CONFIG_BACKTESTING, BACKTESTING_FILE_PATH, BACKTESTING_DEFAULT_JOIN_TIMEOUT
 from octobot_backtesting.data.data_file_manager import get_file_description
 from octobot_backtesting.enums import DataFormatKeys
 from octobot_backtesting.octobot_backtesting import OctoBotBacktesting
 from octobot_commons.constants import CONFIG_ENABLED_OPTION, CONFIG_CRYPTO_CURRENCIES, CONFIG_CRYPTO_PAIRS
 from octobot_commons.enums import PriceIndexes
 from octobot_commons.errors import ConfigTradingError
-from octobot_commons.logging.logging_util import get_logger
+from octobot_commons.logging.logging_util import get_logger, BotLogger
 from octobot_commons.symbol_util import split_symbol
 from octobot_commons.time_frame_manager import find_min_time_frame
 
@@ -59,6 +59,7 @@ class IndependentBacktesting:
             await self.initialize_config()
             self._add_crypto_currencies_config()
             await self.octobot_backtesting.initialize_and_run()
+            self._block_errors_publish_till_end_of_backtesting()
 
         except ImportError as e:
             self._log_import_error()
@@ -92,6 +93,15 @@ class IndependentBacktesting:
             return min([backtesting.get_progress() for backtesting in self.octobot_backtesting.backtestings])
         else:
             return 0
+
+    def _block_errors_publish_till_end_of_backtesting(self):
+        BotLogger.reset_backtesting_errors()
+        BotLogger.set_error_publication_enabled(False)
+        asyncio.create_task(self._re_enable_logs_after_backtesting())
+
+    async def _re_enable_logs_after_backtesting(self):
+        await self.join(timeout=BACKTESTING_DEFAULT_JOIN_TIMEOUT)
+        BotLogger.set_error_publication_enabled(True)
 
     @staticmethod
     def _get_market_delta(symbol, exchange_manager, min_timeframe):
@@ -162,10 +172,12 @@ class IndependentBacktesting:
             SYMBOL_REPORT = "symbol_report"
             BOT_REPORT = "bot_report"
             CHART_IDENTIFIERS = "chart_identifiers"
+            ERRORS_COUNT = "errors_count"
             report = {
                 SYMBOL_REPORT: [],
                 BOT_REPORT: {},
-                CHART_IDENTIFIERS: []
+                CHART_IDENTIFIERS: [],
+                ERRORS_COUNT: BotLogger.get_backtesting_errors_count()
             }
             exchange_manager = get_exchange_manager_from_exchange_id(exchange_id)
             _, profitability, _, market_average_profitability, _ = get_profitability_stats(exchange_manager)
@@ -196,7 +208,7 @@ class IndependentBacktesting:
 
     def _adapt_config(self):
         from octobot_trading.constants import CONFIG_TRADER_RISK, CONFIG_TRADING, CONFIG_SIMULATOR, \
-            CONFIG_STARTING_PORTFOLIO, CONFIG_SIMULATOR_FEES,CONFIG_TRADER_REFERENCE_MARKET
+            CONFIG_STARTING_PORTFOLIO, CONFIG_SIMULATOR_FEES, CONFIG_TRADER_REFERENCE_MARKET
         from octobot_evaluators.constants import CONFIG_FORCED_TIME_FRAME
         self.backtesting_config[CONFIG_TRADING][CONFIG_TRADER_RISK] = self.risk
         self.backtesting_config[CONFIG_TRADING][CONFIG_TRADER_REFERENCE_MARKET] = self._find_reference_market()
