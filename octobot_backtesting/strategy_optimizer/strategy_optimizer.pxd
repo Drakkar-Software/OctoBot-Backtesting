@@ -43,6 +43,7 @@ cdef class StrategyOptimizer:
     cpdef list get_report(self)
     cpdef object get_errors_description(self)
 
-    cdef void _run_test_suite(self, dict config)
+    cdef void _run_test_suite(self, dict config, dict evaluators)
+    cdef void _adapt_tentacles_config(self, dict activated_evaluators)
     cdef void _find_optimal_configuration_using_results(self)
     cdef list _get_all_TA(self)

@@ -35,16 +35,17 @@ class StrategyTestSuite(AbstractBacktestingTest):
         self._trades_counts = []
         self.current_progress = 0
         self.exceptions = []
+        self.evaluators = []
 
     def get_test_suite_result(self):
         try:
             from octobot_trading.constants import CONFIG_TRADER_RISK, CONFIG_TRADING
-            from octobot_evaluators.constants import CONFIG_FORCED_EVALUATOR, CONFIG_FORCED_TIME_FRAME
+            from octobot_evaluators.constants import CONFIG_FORCED_TIME_FRAME
             return TestSuiteResult(self._profitability_results,
                                    self._trades_counts,
                                    self.config[CONFIG_TRADING][CONFIG_TRADER_RISK],
                                    self.config[CONFIG_FORCED_TIME_FRAME],
-                                   self.config[CONFIG_FORCED_EVALUATOR],
+                                   self.evaluators,
                                    self.strategy_evaluator_class.get_name())
         except ImportError:
             self.logger.error(f"{self.__class__.__name__} requires OctoBot-Trading and OctoBot-Evaluators "

@@ -74,6 +74,10 @@ async def stop_independent_backtesting(independent_backtesting) -> None:
     await independent_backtesting.stop()
 
 
+def check_independent_backtesting_remaining_objects(independent_backtesting) -> None:
+    independent_backtesting.octobot_backtesting.check_remaining_objects()
+
+
 def is_independent_backtesting_in_progress(independent_backtesting) -> bool:
     return independent_backtesting.is_in_progress()
 

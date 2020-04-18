@@ -18,8 +18,6 @@ from sys import getrefcount
 from asyncio import get_event_loop
 
 from octobot_commons.logging.logging_util import get_logger
-from octobot_evaluators.api.evaluators import stop_all_evaluator_channels
-from octobot_evaluators.api.initialization import create_evaluator_channels, del_evaluator_channels
 
 
 class OctoBotBacktesting:
@@ -54,7 +52,8 @@ class OctoBotBacktesting:
             exchange_managers = []
             from octobot_trading.api.exchange import get_exchange_managers_from_exchange_ids, stop_exchange
             from octobot_evaluators.api.matrix import del_matrix
-            from octobot_evaluators.api.evaluators import stop_evaluator
+            from octobot_evaluators.api.evaluators import stop_evaluator, stop_all_evaluator_channels
+            from octobot_evaluators.api.initialization import del_evaluator_channels
             from octobot_services.api.service_feeds import stop_service_feed
             try:
                 for exchange_manager in get_exchange_managers_from_exchange_ids(self.exchange_manager_ids):
@@ -132,10 +131,11 @@ class OctoBotBacktesting:
             raise e
 
     def _log_remaining_object_error(self, obj, expected, actual):
-        self.logger.error(f"Too many remaining on {obj.__name__}: expected: {expected} actual {actual}")
+        self.logger.error(f"Too many remaining {obj.__name__} instances: expected: {expected} actual {actual}")
 
     async def _init_evaluators(self):
         from octobot_evaluators.api.evaluators import initialize_evaluators
+        from octobot_evaluators.api.initialization import create_evaluator_channels
         self.matrix_id = await initialize_evaluators(self.backtesting_config, self.tentacles_setup_config)
         await create_evaluator_channels(self.matrix_id)
 

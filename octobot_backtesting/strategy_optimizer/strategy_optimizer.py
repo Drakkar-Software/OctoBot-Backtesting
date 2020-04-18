@@ -23,10 +23,11 @@ from octobot_backtesting.constants import OPTIMIZER_FORCE_ASYNCIO_DEBUG_OPTION
 from octobot_backtesting.strategy_optimizer.strategy_test_suite import StrategyTestSuite
 from octobot_backtesting.strategy_optimizer.test_suite_result import TestSuiteResult
 from octobot_commons.data_util import mean
-from octobot_commons.tentacles_management.class_inspector import get_class_from_string, evaluator_parent_inspection
+from octobot_commons.tentacles_management.class_inspector import get_class_from_string, evaluator_parent_inspection, \
+    trading_mode_parent_inspection
 from octobot_commons.logging.logging_util import get_logger
 from octobot_commons.logging.logging_util import set_global_logger_level, get_global_logger_level
-from octobot_tentacles_manager.api.configurator import get_tentacles_activation
+from octobot_tentacles_manager.api.configurator import get_tentacles_activation, update_activation_configuration
 
 CONFIG = 0
 RANK = 1
@@ -91,7 +92,7 @@ class StrategyOptimizer:
             previous_log_level = get_global_logger_level()
 
             try:
-                from octobot_evaluators.constants import CONFIG_FORCED_EVALUATOR, CONFIG_FORCED_TIME_FRAME
+                from octobot_evaluators.constants import CONFIG_FORCED_TIME_FRAME
                 from octobot_trading.constants import CONFIG_TRADER_RISK, CONFIG_TRADING
                 self.all_TAs = self._get_all_TA() if TAs is None else TAs
                 nb_TAs = len(self.all_TAs)
@@ -130,7 +131,7 @@ class StrategyOptimizer:
                                                                                    self.strategy_class.get_name(),
                                                                                    True)
                                 if activated_evaluators is not None:
-                                    self.config[CONFIG_FORCED_EVALUATOR] = activated_evaluators
+                                    self._adapt_tentacles_config(activated_evaluators)
                                     time_frames_conf_history = []
                                     # test different time frames
                                     for time_frame_conf_iteration in range(nb_TFs):
@@ -149,7 +150,7 @@ class StrategyOptimizer:
                                                     print(f"{self.run_id}/{self.total_nb_runs} Run with: evaluators: "
                                                           f"{activated_evaluators}, "
                                                           f"time frames :{activated_time_frames}, risk: {risk}")
-                                                    self._run_test_suite(self.config)
+                                                    self._run_test_suite(self.config, activated_evaluators)
                                                     print(f" => Result: "
                                                           f"{self.run_results[-1].get_result_string(False)}")
                                                     self.run_id += 1
@@ -169,9 +170,9 @@ class StrategyOptimizer:
             raise RuntimeError(f"{self.get_name()} is already computing: processed "
                                f"{self.run_id}/{self.total_nb_runs} processed")
 
-    @staticmethod
-    def _run_test_suite(self, config):
+    def _run_test_suite(self, config, evaluators):
         self.current_test_suite = StrategyTestSuite()
+        self.current_test_suite.evaluators = evaluators
         self.current_test_suite.initialize_with_strategy(self.strategy_class,
                                                          self.tentacles_setup_config,
                                                          deepcopy(config))
@@ -181,6 +182,22 @@ class StrategyOptimizer:
             self.errors = self.errors.union(set([str(e) for e in self.current_test_suite.exceptions]))
         run_result = self.current_test_suite.get_test_suite_result()
         self.run_results.append(run_result)
+
+    def _adapt_tentacles_config(self, activated_evaluators):
+        from octobot_evaluators.evaluator import StrategyEvaluator
+        from octobot_trading.modes import AbstractTradingMode
+        from tentacles.Trading import Mode
+        from tentacles.Evaluator import Strategies
+        to_update_config = {}
+        for tentacle_class_name in get_tentacles_activation(self.tentacles_setup_config):
+            if tentacle_class_name in activated_evaluators:
+                to_update_config[tentacle_class_name] = True
+            elif get_class_from_string(tentacle_class_name, StrategyEvaluator, Strategies,
+                                       evaluator_parent_inspection) is None and \
+                get_class_from_string(tentacle_class_name, AbstractTradingMode, Mode,
+                                      trading_mode_parent_inspection) is None:
+                to_update_config[tentacle_class_name] = False
+        update_activation_configuration(self.tentacles_setup_config, to_update_config, False)
 
     def _find_optimal_configuration_using_results(self):
         for time_frame in self.all_time_frames:
