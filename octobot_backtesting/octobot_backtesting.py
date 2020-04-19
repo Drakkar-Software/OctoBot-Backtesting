@@ -94,9 +94,11 @@ class OctoBotBacktesting:
                 # Warning: Python debugger can add references when watching an element
                 element = to_check_elements[i]
                 # Now expect 3 references because the above element variable adds a reference
-                self.logger.error(f"Too many remaining references on the {element.__class__.__name__} element after "
+                self.logger.error(f"[Dev oriented error: no effect on backtesting result, please report if you see it]:"
+                                  f" Too many remaining references on the {element.__class__.__name__} element after "
                                   f"{self.__class__.__name__} run, the garbage collector won't free it "
-                                  f"(expected a maximum of 3 references): {getrefcount(element)} actual references")
+                                  f"(expected a maximum of 3 references): {getrefcount(element)} actual references "
+                                  f"({element})")
 
     # Use check_remaining_objects to check remaining objects from garbage collector after calling stop().
     # Warning: can take a long time when a lot of objects exist
@@ -109,7 +111,7 @@ class OctoBotBacktesting:
             import gc
             exchanges_count = len(self.exchange_manager_ids)
             to_watch_objects = (ExchangeSymbolData, ExchangeManager, ExchangeSimulator, OHLCVUpdaterSimulator)
-            objects_references = {obj: 0 for obj in to_watch_objects}
+            objects_references = {obj: (0, []) for obj in to_watch_objects}
             expected_max_objects_references = {
                 ExchangeSymbolData: exchanges_count + 1,
                 ExchangeManager: exchanges_count + 1,
@@ -118,10 +120,12 @@ class OctoBotBacktesting:
             }
             for obj in gc.get_objects():
                 if isinstance(obj, to_watch_objects):
-                    objects_references[type(obj)] += 1
+                    objects_references[type(obj)][1].append(obj)
+                    objects_references[type(obj)] = (objects_references[type(obj)][0] + 1,
+                                                     objects_references[type(obj)][1])
 
             for obj, max_ref in expected_max_objects_references.items():
-                if objects_references[obj] > max_ref:
+                if objects_references[obj][0] > max_ref:
                     self._log_remaining_object_error(obj,
                                                      max_ref,
                                                      objects_references[obj])
@@ -131,7 +135,10 @@ class OctoBotBacktesting:
             raise e
 
     def _log_remaining_object_error(self, obj, expected, actual):
-        self.logger.error(f"Too many remaining {obj.__name__} instances: expected: {expected} actual {actual}")
+        self.logger.error(f"[Dev oriented error: no effect on backtesting result, please report if you see it]: "
+                          f"too many remaining {obj.__name__} instances: expected: {expected} actual {actual[0]}")
+        for i in range(len(actual[1])):
+            self.logger.warning(f"{getrefcount(actual[1][i])} references on {actual[1][i]}")
 
     async def _init_evaluators(self):
         from octobot_evaluators.api.evaluators import initialize_evaluators
@@ -165,7 +172,8 @@ class OctoBotBacktesting:
                 bot_id=self.bot_id,
                 symbols_by_crypto_currencies=exchange_configuration.symbols_by_crypto_currencies,
                 symbols=exchange_configuration.symbols,
-                time_frames=exchange_configuration.time_frames)
+                time_frames=exchange_configuration.time_frames_without_real_time,
+                real_time_time_frames=exchange_configuration.real_time_time_frames)
 
     async def _create_service_feeds(self):
         try:
