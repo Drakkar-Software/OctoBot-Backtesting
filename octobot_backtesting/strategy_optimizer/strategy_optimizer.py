@@ -124,7 +124,7 @@ class StrategyOptimizer:
                         # test with 1-n evaluators at a time
                         for nb_evaluators in range(1, nb_TAs+1):
                             # test different configurations
-                            for i in range(nb_TAs):
+                            for _ in range(nb_TAs):
                                 activated_evaluators = self._get_activated_element(self.all_TAs,
                                                                                    current_forced_evaluator,
                                                                                    nb_evaluators, eval_conf_history,

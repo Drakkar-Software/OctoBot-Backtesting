@@ -106,10 +106,6 @@ def get_independent_backtesting_exchange_manager_ids(independent_backtesting) ->
     return independent_backtesting.octobot_backtesting.exchange_manager_ids
 
 
-def get_backtesting_current_time(backtesting) -> float:
-    return backtesting.time_manager.current_timestamp
-
-
 def is_backtesting_enabled(config) -> bool:
     return CONFIG_BACKTESTING in config and CONFIG_ENABLED_OPTION in config[CONFIG_BACKTESTING] \
            and config[CONFIG_BACKTESTING][CONFIG_ENABLED_OPTION]
