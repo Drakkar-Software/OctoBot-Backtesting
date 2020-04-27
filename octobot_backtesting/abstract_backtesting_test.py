@@ -149,7 +149,7 @@ class AbstractBacktestingTest:
     # 1. XLM/BTC[30m]: 30.88185223016684 (vs btc) % (binance_XLM_BTC_20180722_234305)
     # 2. POWR/BTC[30m]: 12.28597871355852 (vs btc) % (binance_POWR_BTC_20180722_234855)
     @abstractmethod
-    async def test_sharp_uptrend(self, trategy_tester):
+    async def test_sharp_uptrend(self, strategy_tester):
         raise NotImplementedError("test_sharp_uptrend not implemented")
 
     # plays a backtesting with this strategy on a slow uptrend market followed by a slow downtrend market:

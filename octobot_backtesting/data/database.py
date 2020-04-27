@@ -69,10 +69,11 @@ class DataBase:
 
         insert_values = []
 
-        for i in range(len(timestamp)):
+        for index, values in enumerate(timestamp):
             # Insert a row of data
-            inserting_values = [f"'{value if not isinstance(value, list) else value[i]}'" for value in kwargs.values()]
-            insert_values.append(self.__insert_values(timestamp[i], ', '.join(inserting_values)))
+            inserting_values = \
+                [f"'{value if not isinstance(value, list) else value[index]}'" for value in kwargs.values()]
+            insert_values.append(self.__insert_values(values, ', '.join(inserting_values)))
 
         await self.__execute_insert(table, ", ".join(insert_values))
 

@@ -13,10 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import time
-
 from octobot_backtesting.collectors.data_collector import DataCollector
-from octobot_backtesting.constants import BACKTESTING_DATA_FILE_EXT
 
 
 class SocialDataCollector(DataCollector):

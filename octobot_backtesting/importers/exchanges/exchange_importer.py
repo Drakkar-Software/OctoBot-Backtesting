@@ -17,7 +17,6 @@ import json
 
 from octobot_backtesting.data.data_file_manager import get_database_description
 from octobot_commons.constants import CONFIG_TIME_FRAME
-
 from octobot_backtesting.data import DataBaseNotExists, MissingTimeFrame
 from octobot_backtesting.data.database import DataBase
 from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataFormatKeys
@@ -115,8 +114,8 @@ class ExchangeDataImporter(DataImporter):
         return timestamps, operations
 
     def import_ohlcvs(self, ohlcvs):
-        for i in range(len(ohlcvs)):
-            ohlcvs[i] = list(ohlcvs[i])
+        for i, val in enumerate(ohlcvs):
+            ohlcvs[i] = list(val)
             # ohlcvs[i][-2] = TimeFrames(ohlcvs[i][-2])
             ohlcvs[i][-1] = json.loads(ohlcvs[i][-1])
         return ohlcvs
