@@ -19,6 +19,7 @@ from octobot_backtesting.importers.data_importer cimport DataImporter
 cdef class ExchangeDataImporter(DataImporter):
     cdef public str exchange_name
 
+    cdef public list available_data_types
     cdef public list symbols
     cdef public list time_frames
 
