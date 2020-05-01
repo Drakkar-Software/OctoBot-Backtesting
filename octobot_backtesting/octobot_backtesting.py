@@ -193,6 +193,7 @@ class OctoBotBacktesting:
             exchange_builder = create_exchange_builder(self.backtesting_config, exchange_class_string) \
                 .has_matrix(self.matrix_id) \
                 .use_tentacles_setup_config(self.tentacles_setup_config) \
+                .set_bot_id(self.bot_id) \
                 .is_simulated() \
                 .is_rest_only() \
                 .is_backtesting(self.backtesting_files)
