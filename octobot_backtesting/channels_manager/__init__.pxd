@@ -14,16 +14,3 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.channels_manager.channels_manager cimport ChannelsManager
-from octobot_backtesting.data_manager.time_manager cimport TimeManager
-
-from octobot_backtesting.channels.time cimport TimeProducer
-
-cdef class TimeUpdater(TimeProducer):
-    cdef public TimeManager time_manager
-    cdef public ChannelsManager channels_manager
-    cdef object backtesting
-
-    cdef public double starting_time
-
-    cdef public object finished_event
