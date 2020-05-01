@@ -10,20 +10,23 @@
 #  This library is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+#  Lesser General License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.channels_manager.channels_manager cimport ChannelsManager
-from octobot_backtesting.data_manager.time_manager cimport TimeManager
 
-from octobot_backtesting.channels.time cimport TimeProducer
+cdef class ChannelsManager:
+    cdef object logger
 
-cdef class TimeUpdater(TimeProducer):
-    cdef public TimeManager time_manager
-    cdef public ChannelsManager channels_manager
-    cdef object backtesting
+    cdef list exchange_ids
+    cdef list producers
 
-    cdef public double starting_time
+    cdef str matrix_id
 
-    cdef public object finished_event
+    cdef int refresh_timeout
+
+    cdef list _get_trading_producers(self)
+    cdef list _get_evaluator_producers(self)
+    cdef list _get_backtesting_producers(self)
+
+cdef bint _check_producers_consumers_emptiness(list producers, int priority_level)

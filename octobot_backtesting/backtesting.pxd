@@ -23,10 +23,11 @@ cdef class Backtesting:
     cdef public list backtesting_files
     cdef public list importers
 
+    cdef public str exchange_id
+
     cdef public TimeManager time_manager
     cdef public object time_updater
     cdef public TimeChannel time_channel
-
     cdef object logger
 
     cpdef list get_importers(self, object importer_parent_class=*)

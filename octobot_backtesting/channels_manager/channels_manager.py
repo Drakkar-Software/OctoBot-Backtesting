@@ -1,0 +1,96 @@
+#  Drakkar-Software OctoBot-Backtesting
+#  Copyright (c) Drakkar-Software, All rights reserved.
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 3.0 of the License, or (at your option) any later version.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library.
+import asyncio
+from functools import reduce
+
+from octobot_channels.channels.channel import get_chan
+from octobot_commons.channels_name import OctoBotEvaluatorsChannelsName, OctoBotTradingChannelsName, \
+    OctoBotBacktestingChannelsName
+from octobot_commons.list_util import flatten_list
+
+from octobot_commons.logging.logging_util import get_logger
+
+
+class ChannelsManager:
+    MAX_PRIORITY_LEVEL_TO_REFRESH = 2
+
+    def __init__(self, exchange_ids, refresh_timeout=5):
+        self.logger = get_logger(self.__class__.__name__)
+        self.exchange_ids = exchange_ids
+        self.matrix_id = ""  # TODO temp
+        self.refresh_timeout = refresh_timeout
+        self.producers = []
+
+    async def initialize(self) -> None:
+        """
+        Initialize Backtesting channels manager
+        """
+        self.logger.debug("Initializing producers...")
+
+        # TODO temp fix
+        from octobot_trading.exchanges.exchanges import Exchanges
+        from octobot_trading.api.exchange import get_exchange_manager_from_exchange_id
+        exchange_manager = get_exchange_manager_from_exchange_id(self.exchange_ids[0])
+        self.matrix_id = Exchanges.instance().get_exchange(exchange_manager.exchange_name,
+                                                           exchange_manager.id).matrix_id
+
+        self.producers = flatten_list(self._get_backtesting_producers() +
+                                      self._get_trading_producers() +
+                                      self._get_evaluator_producers())
+
+        # Initialize all producers by calling producer.start()
+        for producer in flatten_list(self._get_trading_producers() + self._get_evaluator_producers()):
+            await producer.start()
+
+    async def handle_new_iteration(self) -> None:
+        for i in range(1, self.MAX_PRIORITY_LEVEL_TO_REFRESH + 1):
+            try:
+                await asyncio.wait_for(self.refresh_priority_level(i), timeout=self.refresh_timeout)
+            except asyncio.TimeoutError:
+                self.logger.error(f"Refreshing priority level {i} has been timed out.")
+
+    async def refresh_priority_level(self, priority_level: int) -> None:
+        while not _check_producers_consumers_emptiness(self.producers, priority_level):
+            for producer in self.producers:
+                await producer.synchronized_perform_consumers_queue(priority_level)
+
+    def _get_backtesting_producers(self):
+        return [
+            get_chan(channel_name.value).producers
+            for channel_name in OctoBotBacktestingChannelsName
+        ]
+
+    def _get_trading_producers(self):
+        from octobot_trading.channels.exchange_channel import get_chan as get_trading_chan
+        return [
+            get_trading_chan(channel_name.value, exchange_id).producers
+            for exchange_id in self.exchange_ids
+            for channel_name in OctoBotTradingChannelsName
+        ]
+
+    def _get_evaluator_producers(self):
+        from octobot_evaluators.channels.evaluator_channel import get_chan as get_evaluator_chan
+        return [
+            get_evaluator_chan(channel_name.value, self.matrix_id).producers
+            for channel_name in OctoBotEvaluatorsChannelsName
+        ]
+
+
+def _check_producers_consumers_emptiness(producers, priority_level):
+    for producer in producers:
+        if not producer.is_consumers_queue_empty(priority_level):
+            return False
+    return True

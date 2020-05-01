@@ -17,30 +17,38 @@ import asyncio
 import time
 
 from octobot_backtesting.channels.time import TimeProducer
+from octobot_backtesting.channels_manager.channels_manager import ChannelsManager
 
 
 class TimeUpdater(TimeProducer):
     def __init__(self, channel, backtesting):
         super().__init__(channel, backtesting)
+        self.backtesting = backtesting
         self.time_manager = backtesting.time_manager
         self.starting_time = time.time()
         self.finished_event = asyncio.Event()
 
+        self.channels_manager = None
+
     async def start(self):
+        self.channels_manager = ChannelsManager([self.backtesting.exchange_id])
+        await self.channels_manager.initialize()
         while not self.should_stop:
             try:
                 current_timestamp = self.time_manager.current_timestamp
                 await self.push(self.time_manager.current_timestamp)
-                try:
-                    await self.wait_for_processing()
-                except asyncio.CancelledError:
-                    self.logger.warning("Stopped during processing")
+                # try:
+                #     await self.wait_for_processing()
+                # except asyncio.CancelledError:
+                #     self.logger.warning("Stopped during processing")
 
                 self.logger.info(f"Progress : {round(min(self.backtesting.get_progress(), 1) * 100, 2)}% "
                                  f"[{current_timestamp}]")
 
                 # jump to the next time point
                 self.time_manager.next_timestamp()
+
+                await self.channels_manager.handle_new_iteration()
 
                 if self.time_manager.has_finished():
                     self.logger.debug("Maximum timestamp hit, stopping...")
@@ -61,3 +69,10 @@ class TimeUpdater(TimeProducer):
 
         if maximum_timestamp is not None:
             self.time_manager.set_maximum_timestamp(maximum_timestamp)
+
+    async def run(self) -> None:
+        """
+        Overrides default producer run() because producer task wont be created in synchronized context
+        """
+        await self.channel.register_producer(self)
+        self.create_task()
