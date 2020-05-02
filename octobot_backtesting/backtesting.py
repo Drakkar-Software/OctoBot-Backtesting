@@ -27,12 +27,13 @@ from octobot_commons.tentacles_management.class_inspector import default_parents
 
 
 class Backtesting:
-    def __init__(self, config, exchange_id, backtesting_files):
+    def __init__(self, config, exchange_ids, matrix_id, backtesting_files):
         self.config = config
         self.backtesting_files = backtesting_files
         self.logger = get_logger(self.__class__.__name__)
 
-        self.exchange_id = exchange_id
+        self.exchange_ids = exchange_ids
+        self.matrix_id = matrix_id
 
         self.importers = []
         self.time_manager = None
@@ -41,7 +42,7 @@ class Backtesting:
 
     async def initialize(self):
         try:
-            self.time_manager = TimeManager(self.config)
+            self.time_manager = TimeManager(config=self.config)
             self.time_manager.initialize()
 
             self.time_channel = await create_channel_instance(TimeChannel, set_chan, is_synchronized=True)
