@@ -13,6 +13,17 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.util.backtesting_util import create_importer_from_backtesting_file_name
+from octobot_commons.tentacles_management.class_inspector import default_parents_inspection
+
+
+async def get_importers_from_data_files(config, data_files, importer_parent_class=None):
+    importers = [await create_importer_from_backtesting_file_name(config, backtesting_file)
+                 for backtesting_file in data_files]
+    return [importer
+            for importer in importers
+            if default_parents_inspection(importer.__class__, importer_parent_class)] \
+        if importer_parent_class is not None else importers
 
 
 def get_available_data_types(importer) -> list:
