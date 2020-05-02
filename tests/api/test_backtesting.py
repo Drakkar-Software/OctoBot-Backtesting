@@ -13,8 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.api.backtesting import create_independent_backtesting, is_backtesting_enabled, \
-    get_backtesting_data_files
+from octobot_backtesting.api.backtesting import is_backtesting_enabled, get_backtesting_data_files
 
 
 def _get_default_config():
@@ -42,13 +41,6 @@ def _get_default_config():
             "risk": 1
         }
     }
-
-
-def test_create_independent_backtesting():
-    try:
-        create_independent_backtesting(_get_default_config(), None, [])
-    except ModuleNotFoundError:
-        pass
 
 
 def test_is_backtesting_enabled():
