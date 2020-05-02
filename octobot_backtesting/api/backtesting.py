@@ -13,10 +13,13 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_commons.constants import CONFIG_ENABLED_OPTION
-
+from octobot_backtesting.api.importer import get_data_timestamp_interval
+from octobot_commons.constants import CONFIG_ENABLED_OPTION, MINUTE_TO_SECONDS
 from octobot_backtesting.backtesting import Backtesting
 from octobot_backtesting.constants import CONFIG_BACKTESTING, CONFIG_BACKTESTING_DATA_FILES
+from octobot_commons.enums import TimeFramesMinutes
+from octobot_commons.logging.logging_util import get_logger
+from octobot_commons.time_frame_manager import find_min_time_frame, get_config_time_frame
 
 
 async def initialize_backtesting(config, data_files) -> Backtesting:
@@ -41,6 +44,27 @@ async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
                                           maximum_timestamp=maximum_timestamp)
 
 
+async def adapt_backtesting_channels(backtesting, config, importer_class):
+    # set mininmum and maximum timestamp according to all importers data
+    min_time_frame_to_consider = find_min_time_frame(get_config_time_frame(config))
+    importers = backtesting.get_importers(importer_class)
+    timestamps = [await get_data_timestamp_interval(importer, min_time_frame_to_consider)
+                  for importer in importers]  # [(min, max) ... ]
+
+    await modify_backtesting_timestamps(
+        backtesting,
+        minimum_timestamp=min(timestamps)[0],
+        maximum_timestamp=max(timestamps)[1])
+    try:
+        from octobot_trading.api.exchange import has_only_ohlcv
+
+        if has_only_ohlcv(importers):
+            set_time_updater_interval(backtesting,
+                                      TimeFramesMinutes[min_time_frame_to_consider] * MINUTE_TO_SECONDS)
+    except ImportError:
+        get_logger("BacktestingAPI").error("requires OctoBot-Trading package installed")
+
+
 def set_time_updater_interval(backtesting, interval_in_seconds):
     backtesting.time_manager.time_interval = interval_in_seconds
 
@@ -55,6 +79,10 @@ async def stop_backtesting(backtesting) -> None:
 
 async def stop_independent_backtesting(independent_backtesting) -> None:
     await independent_backtesting.stop()
+
+
+def get_importers(backtesting) -> list:
+    return backtesting.importers
 
 
 def get_backtesting_current_time(backtesting) -> float:
