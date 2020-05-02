@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2020-05-02
+### Updated
+- Migrate octobot-backtesting, indepdendent-backtesting and strategy-optimizer into OctoBot repository
+- backtesting and importer API
+
 ## [1.3.20] - 2020-04-29
 ### Fixed
 - Time channel non-existing attribute set
