@@ -31,24 +31,22 @@ class TimeUpdater(TimeProducer):
         self.channels_manager = None
 
     async def start(self):
-        self.channels_manager = ChannelsManager([self.backtesting.exchange_id])
+        self.channels_manager = ChannelsManager(exchange_ids=self.backtesting.exchange_ids,
+                                                matrix_id=self.backtesting.matrix_id)
         await self.channels_manager.initialize()
         while not self.should_stop:
             try:
                 current_timestamp = self.time_manager.current_timestamp
                 await self.push(self.time_manager.current_timestamp)
-                # try:
-                #     await self.wait_for_processing()
-                # except asyncio.CancelledError:
-                #     self.logger.warning("Stopped during processing")
 
                 self.logger.info(f"Progress : {round(min(self.backtesting.get_progress(), 1) * 100, 2)}% "
                                  f"[{current_timestamp}]")
 
+                # Call synchronous channels callbacks
+                await self.channels_manager.handle_new_iteration()
+
                 # jump to the next time point
                 self.time_manager.next_timestamp()
-
-                await self.channels_manager.handle_new_iteration()
 
                 if self.time_manager.has_finished():
                     self.logger.debug("Maximum timestamp hit, stopping...")

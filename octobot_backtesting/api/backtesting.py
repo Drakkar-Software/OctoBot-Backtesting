@@ -22,8 +22,11 @@ from octobot_commons.logging.logging_util import get_logger
 from octobot_commons.time_frame_manager import find_min_time_frame, get_config_time_frame
 
 
-async def initialize_backtesting(config, exchange_id, data_files) -> Backtesting:
-    backtesting_instance = Backtesting(config, exchange_id, data_files)
+async def initialize_backtesting(config, exchange_ids, matrix_id, data_files) -> Backtesting:
+    backtesting_instance = Backtesting(config=config,
+                                       exchange_ids=exchange_ids,
+                                       matrix_id=matrix_id,
+                                       backtesting_files=data_files)
     await backtesting_instance.create_importers()
     await backtesting_instance.initialize()
 

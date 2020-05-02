@@ -22,8 +22,9 @@ cdef class Backtesting:
 
     cdef public list backtesting_files
     cdef public list importers
+    cdef public list exchange_ids
 
-    cdef public str exchange_id
+    cdef public str matrix_id
 
     cdef public TimeManager time_manager
     cdef public object time_updater
