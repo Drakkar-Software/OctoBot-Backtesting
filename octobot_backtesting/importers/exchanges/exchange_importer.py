@@ -105,10 +105,10 @@ class ExchangeDataImporter(DataImporter):
         operations: list = []
         timestamps: list = []
         if superior_timestamp != -1:
-            timestamps.append(superior_timestamp)
+            timestamps.append(str(superior_timestamp))
             operations.append(DataBaseOperations.INF_EQUALS.value)
         if inferior_timestamp != -1:
-            timestamps.append(inferior_timestamp)
+            timestamps.append(str(inferior_timestamp))
             operations.append(DataBaseOperations.SUP_EQUALS.value)
 
         return timestamps, operations
