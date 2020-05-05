@@ -55,6 +55,7 @@ class TimeUpdater(TimeProducer):
             except Exception as e:
                 self.logger.exception(e, True, f"Fail to update time : {e}")
         await self.backtesting.delete_time_channel()
+        self.channels_manager.flush()
         self.finished_event.set()
 
     async def modify(self, set_timestamp=None, minimum_timestamp=None, maximum_timestamp=None) -> None:

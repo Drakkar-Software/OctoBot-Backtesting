@@ -58,6 +58,9 @@ class ChannelsManager:
             for producer in self.producers:
                 await producer.synchronized_perform_consumers_queue(priority_level)
 
+    def flush(self):
+        self.producers = []
+
     def _get_trading_producers(self):
         from octobot_trading.channels.exchange_channel import get_chan as get_trading_chan
         return [
