@@ -25,6 +25,8 @@ cdef class ChannelsManager:
 
     cdef int refresh_timeout
 
+    cpdef void flush(self)
+
     cdef list _get_trading_producers(self)
     cdef list _get_evaluator_producers(self)
 
