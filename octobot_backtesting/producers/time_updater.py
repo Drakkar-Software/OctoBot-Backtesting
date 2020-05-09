@@ -45,13 +45,13 @@ class TimeUpdater(TimeProducer):
                 # Call synchronous channels callbacks
                 await self.channels_manager.handle_new_iteration()
 
-                # jump to the next time point
-                self.time_manager.next_timestamp()
-
                 if self.time_manager.has_finished():
                     self.logger.debug("Maximum timestamp hit, stopping...")
                     self.logger.info(f"Lasted {round(time.time() - self.starting_time, 3)}s")
                     await self.stop()
+                else:
+                    # jump to the next time point
+                    self.time_manager.next_timestamp()
             except Exception as e:
                 self.logger.exception(e, True, f"Fail to update time : {e}")
         await self.backtesting.delete_time_channel()
