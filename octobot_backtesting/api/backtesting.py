@@ -101,3 +101,7 @@ def get_backtesting_data_files(config) -> list:
     if CONFIG_BACKTESTING in config and CONFIG_BACKTESTING_DATA_FILES in config[CONFIG_BACKTESTING]:
         return config[CONFIG_BACKTESTING][CONFIG_BACKTESTING_DATA_FILES]
     return []
+
+
+def get_backtesting_duration(backtesting) -> float:
+    return backtesting.time_updater.simulation_duration
