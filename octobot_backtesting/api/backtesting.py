@@ -47,17 +47,22 @@ async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
                                           maximum_timestamp=maximum_timestamp)
 
 
-async def adapt_backtesting_channels(backtesting, config, importer_class):
+async def adapt_backtesting_channels(backtesting, config, importer_class, run_on_common_part_only=True):
     # set mininmum and maximum timestamp according to all importers data
     min_time_frame_to_consider = find_min_time_frame(get_config_time_frame(config))
     importers = backtesting.get_importers(importer_class)
     timestamps = [await get_data_timestamp_interval(importer, min_time_frame_to_consider)
                   for importer in importers]  # [(min, max) ... ]
+    min_timestamps = [timestamp[0] for timestamp in timestamps]
+    max_timestamps = [timestamp[1] for timestamp in timestamps]
+
+    min_timestamp = max(min_timestamps) if run_on_common_part_only else min(min_timestamps)
+    max_timestamps = min(max_timestamps) if run_on_common_part_only else max(max_timestamps)
 
     await modify_backtesting_timestamps(
         backtesting,
-        minimum_timestamp=min(timestamps)[0],
-        maximum_timestamp=max(timestamps)[1])
+        minimum_timestamp=min_timestamp,
+        maximum_timestamp=max_timestamps)
     try:
         from octobot_trading.api.exchange import has_only_ohlcv
 
