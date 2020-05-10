@@ -26,6 +26,7 @@ class TimeUpdater(TimeProducer):
         self.backtesting = backtesting
         self.time_manager = backtesting.time_manager
         self.starting_time = time.time()
+        self.simulation_duration = 0
         self.finished_event = asyncio.Event()
 
         self.channels_manager = None
@@ -47,7 +48,8 @@ class TimeUpdater(TimeProducer):
 
                 if self.time_manager.has_finished():
                     self.logger.debug("Maximum timestamp hit, stopping...")
-                    self.logger.info(f"Lasted {round(time.time() - self.starting_time, 3)}s")
+                    self.simulation_duration = time.time() - self.starting_time
+                    self.logger.info(f"Lasted {round(self.simulation_duration, 3)}s")
                     await self.stop()
                 else:
                     # jump to the next time point

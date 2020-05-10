@@ -24,5 +24,6 @@ cdef class TimeUpdater(TimeProducer):
     cdef public ChannelsManager channels_manager
 
     cdef public double starting_time
+    cdef public double simulation_duration
 
     cdef public object finished_event
