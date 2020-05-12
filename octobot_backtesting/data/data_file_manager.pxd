@@ -17,7 +17,7 @@
 
 cpdef object get_data_type(str file_name)
 cpdef str get_file_ending(object data_type)
-cpdef double get_date(str time_info)
+cpdef double get_date(int time_info)
 cpdef bint is_valid_ending(str ending)
 cpdef list get_all_available_data_files(str data_collector_path)
 cpdef object delete_data_file(str data_collector_path, str file_name)

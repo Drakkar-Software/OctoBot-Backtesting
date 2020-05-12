@@ -25,7 +25,7 @@ async def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH) -> di
         return {
             DataFormatKeys.SYMBOLS.value: description[DataFormatKeys.SYMBOLS.value],
             DataFormatKeys.EXCHANGE.value: description[DataFormatKeys.EXCHANGE.value],
-            DataFormatKeys.DATE.value: data_manager.get_date(description[DataFormatKeys.DATE.value]),
+            DataFormatKeys.DATE.value: data_manager.get_date(int(description[DataFormatKeys.DATE.value])),
             DataFormatKeys.TIME_FRAMES.value: [tf.value for tf in description[DataFormatKeys.TIME_FRAMES.value]],
             DataFormatKeys.TYPE.value: "OctoBot data file"
         }
