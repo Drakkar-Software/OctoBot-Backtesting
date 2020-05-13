@@ -3,5 +3,6 @@
 [![PyPI](https://img.shields.io/pypi/v/OctoBot-Backtesting.svg)](https://pypi.python.org/pypi/OctoBot-Backtesting/)
 [![Build Status](https://api.travis-ci.com/Drakkar-Software/OctoBot-Backtesting.svg?branch=master)](https://travis-ci.com/Drakkar-Software/OctoBot-Backtesting) 
 [![Build Status](https://dev.azure.com/drakkarsoftware/OctoBot-Backtesting/_apis/build/status/Drakkar-Software.OctoBot-Backtesting?branchName=master)](https://dev.azure.com/drakkarsoftware/OctoBot-Backtesting/_build/latest?definitionId=4&branchName=master)
+[![Build Status](https://cloud.drone.io/api/badges/Drakkar-Software/OctoBot-Backtesting/status.svg)](https://cloud.drone.io/Drakkar-Software/OctoBot-Backtesting)
 
 OctoBot backtesting engine package.
