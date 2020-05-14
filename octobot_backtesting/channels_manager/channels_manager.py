@@ -15,6 +15,7 @@
 #  License along with this library.
 import asyncio
 
+from octobot_commons.enums import ChannelConsumerPriorityLevels
 from octobot_channels.channels.channel import get_chan
 from octobot_commons.channels_name import OctoBotEvaluatorsChannelsName, OctoBotTradingChannelsName, \
     OctoBotBacktestingChannelsName
@@ -23,7 +24,6 @@ from octobot_commons.logging.logging_util import get_logger
 
 
 class ChannelsManager:
-    MAX_PRIORITY_LEVEL_TO_REFRESH = 2
     DEFAULT_REFRESH_TIMEOUT = 5
 
     def __init__(self, exchange_ids, matrix_id, refresh_timeout=DEFAULT_REFRESH_TIMEOUT):
@@ -47,11 +47,11 @@ class ChannelsManager:
             await producer.start()
 
     async def handle_new_iteration(self) -> None:
-        for i in range(1, self.MAX_PRIORITY_LEVEL_TO_REFRESH + 1):
+        for level_key in ChannelConsumerPriorityLevels:
             try:
-                await asyncio.wait_for(self.refresh_priority_level(i), timeout=self.refresh_timeout)
+                await asyncio.wait_for(self.refresh_priority_level(level_key.value), timeout=self.refresh_timeout)
             except asyncio.TimeoutError:
-                self.logger.error(f"Refreshing priority level {i} has been timed out.")
+                self.logger.error(f"Refreshing priority level {level_key.value} has been timed out.")
 
     async def refresh_priority_level(self, priority_level: int) -> None:
         while not _check_producers_consumers_emptiness(self.producers, priority_level):
