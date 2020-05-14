@@ -20,7 +20,8 @@ cdef class DataBase:
 
     cdef object logger
     cdef object connection
-    cdef object cursor
+    cdef list _cursor_pool
+    cdef int _current_cursor_index
 
     cdef list tables
 
