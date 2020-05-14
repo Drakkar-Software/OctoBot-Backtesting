@@ -13,7 +13,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from sqlite3 import OperationalError, DatabaseError
+from contextlib import asynccontextmanager
+from sqlite3 import OperationalError, DatabaseError, Cursor
 
 import aiosqlite
 
@@ -38,12 +39,15 @@ class DataBase:
         self.cache = {}
 
         self.connection = None
-        self.cursor = None
+
+        # should never be used directly, use async with self.aio_cursor() as cursor: instead
+        self._cursor_pool = []
+        self._current_cursor_index = 0
 
     async def initialize(self):
         try:
             self.connection = await aiosqlite.connect(self.file_name)
-            self.cursor = await self.connection.cursor()
+            await self._add_cursor_in_pool()
             await self.__init_tables_list()
         except (OperationalError, DatabaseError) as e:
             raise DataBaseNotExists(e)
@@ -51,8 +55,27 @@ class DataBase:
     async def create_index(self, table, columns):
         await self.__execute_index_creation(table, '_'.join(columns), ', '.join(columns))
 
+    async def _add_cursor_in_pool(self):
+        self._cursor_pool.append(await self.connection.cursor())
+
+    @asynccontextmanager
+    async def aio_cursor(self) -> Cursor:
+        """
+        Use this as a context manager to get a free database cursor
+        :yield: A free cursor
+        :return: None
+        """
+        if self._current_cursor_index != 0 and len(self._cursor_pool) <= self._current_cursor_index:
+            await self._add_cursor_in_pool()
+        self._current_cursor_index += 1
+        try:
+            yield self._cursor_pool[self._current_cursor_index - 1]
+        finally:
+            self._current_cursor_index -= 1
+
     async def __execute_index_creation(self, table, name, columns):
-        await self.cursor.execute(f"CREATE INDEX index_{table.value}_{name} ON {table.value} ({columns})")
+        async with self.aio_cursor() as cursor:
+            await cursor.execute(f"CREATE INDEX index_{table.value}_{name} ON {table.value} ({columns})")
 
     async def insert(self, table, timestamp, **kwargs):
         if table.value not in self.tables:
@@ -81,7 +104,8 @@ class DataBase:
         return f"({timestamp}, {inserting_values})"
 
     async def __execute_insert(self, table, insert_items) -> None:
-        await self.cursor.execute(f"INSERT INTO {table.value} VALUES {insert_items}")
+        async with self.aio_cursor() as cursor:
+            await cursor.execute(f"INSERT INTO {table.value} VALUES {insert_items}")
 
         # Save (commit) the changes
         await self.connection.commit()
@@ -161,10 +185,11 @@ class DataBase:
     async def __execute_select(self, table, select_items="*", where_clauses="", additional_clauses="", group_by="",
                                size=DEFAULT_SIZE):
         try:
-            await self.cursor.execute(f"SELECT {select_items} FROM {table.value} "
-                                      f"{'WHERE' if where_clauses else ''} {where_clauses} "
-                                      f"{additional_clauses} {group_by}")
-            return await self.cursor.fetchall() if size == self.DEFAULT_SIZE else await self.cursor.fetchmany(size)
+            async with self.aio_cursor() as cursor:
+                await cursor.execute(f"SELECT {select_items} FROM {table.value} "
+                                     f"{'WHERE' if where_clauses else ''} {where_clauses} "
+                                     f"{additional_clauses} {group_by}")
+                return await cursor.fetchall() if size == self.DEFAULT_SIZE else await cursor.fetchmany(size)
         except OperationalError as e:
             if not await self.check_table_exists(table):
                 raise DataBaseNotExists(e)
@@ -172,19 +197,22 @@ class DataBase:
         return []
 
     async def check_table_exists(self, table) -> bool:
-        await self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
-        return await self.cursor.fetchall() != []
+        async with self.aio_cursor() as cursor:
+            await cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table.value}'")
+            return await cursor.fetchall() != []
 
     async def check_table_not_empty(self, table) -> bool:
-        await self.cursor.execute(f"SELECT count(*) FROM '{table.value}'")
-        row_count = await self.cursor.fetchone()
-        return row_count[0] != 0
+        async with self.aio_cursor() as cursor:
+            await cursor.execute(f"SELECT count(*) FROM '{table.value}'")
+            row_count = await cursor.fetchone()
+            return row_count[0] != 0
 
     async def __create_table(self, table, with_index_on_timestamp=True, **kwargs) -> None:
         try:
             columns: list = list(kwargs.keys())
-            await self.cursor.execute(
-                f"CREATE TABLE {table.value} ({self.TIMESTAMP_COLUMN} datetime, {' text, '.join([col for col in columns])})")
+            async with self.aio_cursor() as cursor:
+                await cursor.execute(
+                    f"CREATE TABLE {table.value} ({self.TIMESTAMP_COLUMN} datetime, {' text, '.join([col for col in columns])})")
 
             if with_index_on_timestamp:
                 await self.create_index(table, [self.TIMESTAMP_COLUMN])
@@ -198,8 +226,9 @@ class DataBase:
             self.tables.append(table.value)
 
     async def __init_tables_list(self):
-        await self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
-        self.tables = await self.cursor.fetchall()
+        async with self.aio_cursor() as cursor:
+            await cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
+            self.tables = await cursor.fetchall()
 
     async def stop(self):
         if self.connection is not None:
