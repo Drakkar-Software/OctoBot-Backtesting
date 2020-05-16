@@ -26,5 +26,5 @@ cdef class ExchangeDataCollector(DataCollector):
 
     cdef bint use_all_available_timeframes
 
-    cdef void _load_timeframes_if_necessary(self)
-    cdef void _load_all_available_timeframes(self)
+    cpdef void _load_timeframes_if_necessary(self)
+    cpdef void _load_all_available_timeframes(self)
