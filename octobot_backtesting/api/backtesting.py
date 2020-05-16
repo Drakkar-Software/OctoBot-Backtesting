@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 from octobot_backtesting.api.importer import get_data_timestamp_interval
+from octobot_backtesting.data import MissingTimeFrame
 from octobot_commons.constants import CONFIG_ENABLED_OPTION, MINUTE_TO_SECONDS
 from octobot_backtesting.backtesting import Backtesting
 from octobot_backtesting.constants import CONFIG_BACKTESTING, CONFIG_BACKTESTING_DATA_FILES
@@ -51,13 +52,20 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
     # set mininmum and maximum timestamp according to all importers data
     min_time_frame_to_consider = find_min_time_frame(get_config_time_frame(config))
     importers = backtesting.get_importers(importer_class)
-    timestamps = [await get_data_timestamp_interval(importer, min_time_frame_to_consider)
-                  for importer in importers]  # [(min, max) ... ]
+    try:
+        timestamps = [await get_data_timestamp_interval(importer, min_time_frame_to_consider)
+                      for importer in importers]  # [(min, max) ... ]
+    except MissingTimeFrame as e:
+        raise RuntimeError(f"Impossible to start backtesting on this configuration: {e}")
     min_timestamps = [timestamp[0] for timestamp in timestamps]
     max_timestamps = [timestamp[1] for timestamp in timestamps]
 
     min_timestamp = max(min_timestamps) if run_on_common_part_only else min(min_timestamps)
     max_timestamps = min(max_timestamps) if run_on_common_part_only else max(max_timestamps)
+
+    if min_timestamp > max_timestamps:
+        raise RuntimeError(f"No candle data to run backtesting on in this time window: starting at: {min_timestamp} "
+                           f"and ending at: {max_timestamps}")
 
     await modify_backtesting_timestamps(
         backtesting,
