@@ -44,7 +44,11 @@ def get_file_ending(data_type):
         return BACKTESTING_DATA_FILE_EXT
 
 
-def get_date(time_info):
+def get_date(time_info) -> str:
+    """
+    :param time_info: Timestamp in seconds of the time to convert
+    :return: A human readable date at the backtesting data file time format
+    """
     return datetime.fromtimestamp(time_info).strftime(BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT)
 
 
