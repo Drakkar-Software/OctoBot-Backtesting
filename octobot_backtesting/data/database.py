@@ -139,10 +139,11 @@ class DataBase:
                                                                         values=timestamps,
                                                                         operations=operations,
                                                                         should_quote_value=False)
-        timestamps_where_clauses = f"AND {timestamps_where_clauses}" if timestamps_where_clauses else ''
+        where_clause = self.__where_clauses_from_kwargs(**kwargs)
+        final_where_close = f"{where_clause} AND " if where_clause and timestamps_where_clauses else where_clause
+        final_where_close = f"{final_where_close}{timestamps_where_clauses}"
         return await self.__execute_select(table=table,
-                                           where_clauses=f"{self.__where_clauses_from_kwargs(**kwargs)} "
-                                                         f"{timestamps_where_clauses}",
+                                           where_clauses=final_where_close,
                                            additional_clauses=self.__select_order_by(order_by, sort),
                                            size=size)
 
