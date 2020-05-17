@@ -21,6 +21,7 @@ from octobot_backtesting.data import DataBaseNotExists, MissingTimeFrame
 from octobot_backtesting.data.database import DataBase
 from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataFormatKeys
 from octobot_backtesting.importers.data_importer import DataImporter
+from octobot_commons.enums import TimeFrames
 
 
 class ExchangeDataImporter(DataImporter):
@@ -120,12 +121,13 @@ class ExchangeDataImporter(DataImporter):
             ohlcvs[i][-1] = json.loads(ohlcvs[i][-1])
         return ohlcvs
 
-    async def get_ohlcv(self, exchange_name=None, symbol=None, time_frame=None, limit=DataBase.DEFAULT_SIZE):
+    async def get_ohlcv(self, exchange_name=None, symbol=None,
+                        time_frame=TimeFrames.ONE_HOUR, limit=DataBase.DEFAULT_SIZE):
         return self.import_ohlcvs(await self.database.select(ExchangeDataTables.OHLCV, size=limit,
                                                              exchange_name=exchange_name, symbol=symbol,
                                                              time_frame=time_frame.value))
 
-    async def get_ohlcv_from_timestamps(self, exchange_name=None, symbol=None, time_frame=None,
+    async def get_ohlcv_from_timestamps(self, exchange_name=None, symbol=None, time_frame=TimeFrames.ONE_HOUR,
                                         limit=DataBase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1) -> list:
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
@@ -195,12 +197,13 @@ class ExchangeDataImporter(DataImporter):
             kline[-1] = json.loads(kline[-1])
         return klines
 
-    async def get_kline(self, exchange_name=None, symbol=None, time_frame=None, limit=DataBase.DEFAULT_SIZE):
+    async def get_kline(self, exchange_name=None, symbol=None,
+                        time_frame=TimeFrames.ONE_HOUR, limit=DataBase.DEFAULT_SIZE):
         return self.import_klines(await self.database.select(ExchangeDataTables.KLINE, size=limit,
                                                              exchange_name=exchange_name, symbol=symbol,
                                                              time_frame=time_frame.value))
 
-    async def get_kline_from_timestamps(self, exchange_name=None, symbol=None, time_frame=None,
+    async def get_kline_from_timestamps(self, exchange_name=None, symbol=None, time_frame=TimeFrames.ONE_HOUR,
                                         limit=DataBase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
