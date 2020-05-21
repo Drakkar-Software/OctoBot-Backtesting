@@ -15,7 +15,7 @@
 #  License along with this library.
 from octobot_backtesting.collectors.exchanges.abstract_exchange_history_collector import \
     AbstractExchangeHistoryCollector
-from octobot_commons.tentacles_management.advanced_manager import get_single_deepest_child_class
+from octobot_commons.tentacles_management.class_inspector import get_single_deepest_child_class
 
 
 async def collect_exchange_historical_data(exchange_name, symbols, time_frames=None) -> str:
