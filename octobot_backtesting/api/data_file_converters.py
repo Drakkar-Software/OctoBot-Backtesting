@@ -16,7 +16,7 @@
 from os.path import isfile
 
 from octobot_backtesting.converters.data_converter import DataConverter
-from octobot_commons.tentacles_management.advanced_manager import get_all_classes_from_parent
+from octobot_commons.tentacles_management.class_inspector import get_all_classes_from_parent
 
 
 async def convert_data_file(data_file_path) -> str:
