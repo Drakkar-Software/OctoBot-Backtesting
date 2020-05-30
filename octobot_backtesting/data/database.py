@@ -234,3 +234,4 @@ class DataBase:
     async def stop(self):
         if self.connection is not None:
             await self.connection.close()
+            self.connection = None
