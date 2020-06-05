@@ -40,8 +40,9 @@ class DataImporter:
         raise NotImplementedError("get_data_timestamp_interval is not implemented")
 
     async def stop(self) -> None:
-        self.should_stop = True
-        await self.database.stop()
+        if not self.should_stop:
+            self.should_stop = True
+            await self.database.stop()
 
     async def start(self) -> None:
         raise NotImplementedError("Start is not implemented")
