@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.api.exchange_data_collector import collect_exchange_historical_data
+import octobot_backtesting.api as api
 
 
 def test_import():
-    assert collect_exchange_historical_data is not None
+    assert api.collect_exchange_historical_data is not None

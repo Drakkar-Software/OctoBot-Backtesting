@@ -13,24 +13,22 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.channels import TIME_CHANNEL
-from octobot_backtesting.channels.time import TimeChannel
-from octobot_channels.channels.channel import get_chan, set_chan, del_chan
+import channel.channels as channels
+import channel.util as channel_util
 
-from octobot_backtesting.producers.time_updater import TimeUpdater
-from octobot_channels.util.channel_creator import create_channel_instance
-from octobot_commons.logging.logging_util import get_logger
+import octobot_commons.logging as logging
+import octobot_commons.channels_name as channels_name
+import octobot_commons.tentacles_management as tentacles_management
 
-from octobot_backtesting.data_manager.time_manager import TimeManager
-from octobot_backtesting.util.backtesting_util import create_importer_from_backtesting_file_name
-from octobot_commons.tentacles_management.class_inspector import default_parents_inspection
+import octobot_backtesting.util as util
+import octobot_backtesting.time as backtesting_time
 
 
 class Backtesting:
     def __init__(self, config, exchange_ids, matrix_id, backtesting_files):
         self.config = config
         self.backtesting_files = backtesting_files
-        self.logger = get_logger(self.__class__.__name__)
+        self.logger = logging.get_logger(self.__class__.__name__)
 
         self.exchange_ids = exchange_ids
         self.matrix_id = matrix_id
@@ -42,12 +40,15 @@ class Backtesting:
 
     async def initialize(self):
         try:
-            self.time_manager = TimeManager(config=self.config)
+            self.time_manager = backtesting_time.TimeManager(config=self.config)
             self.time_manager.initialize()
 
-            self.time_channel = await create_channel_instance(TimeChannel, set_chan, is_synchronized=True)
+            self.time_channel = await channel_util.create_channel_instance(backtesting_time.TimeChannel,
+                                                                           backtesting_time.set_chan,
+                                                                           is_synchronized=True)
 
-            self.time_updater = TimeUpdater(get_chan(TIME_CHANNEL), self)
+            self.time_updater = backtesting_time.TimeUpdater(
+                channels.get_chan(channels_name.OctoBotBacktestingChannelsName.TIME_CHANNEL), self)
         except Exception as e:
             self.logger.exception(e, True, f"Error when initializing backtesting : {e}.")
 
@@ -60,14 +61,14 @@ class Backtesting:
         for consumer in self.time_channel.consumers:
             await self.time_channel.remove_consumer(consumer)
         self.time_channel.flush()
-        del_chan(self.time_channel.get_name())
+        channels.del_chan(self.time_channel.get_name())
 
     async def start_time_updater(self):
         await self.time_updater.run()
 
     async def create_importers(self):
         try:
-            self.importers = [await create_importer_from_backtesting_file_name(self.config, backtesting_file)
+            self.importers = [await util.create_importer_from_backtesting_file_name(self.config, backtesting_file)
                               for backtesting_file in self.backtesting_files]
         except TypeError:
             pass
@@ -79,7 +80,7 @@ class Backtesting:
     def get_importers(self, importer_parent_class=None) -> list:
         return [importer
                 for importer in self.importers
-                if default_parents_inspection(importer.__class__, importer_parent_class)] \
+                if tentacles_management.default_parents_inspection(importer.__class__, importer_parent_class)] \
             if importer_parent_class is not None else self.importers
 
     def get_progress(self):

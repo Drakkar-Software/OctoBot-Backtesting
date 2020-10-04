@@ -13,21 +13,22 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.api.importer import get_data_timestamp_interval
-from octobot_backtesting.data import MissingTimeFrame
-from octobot_commons.constants import CONFIG_ENABLED_OPTION, MINUTE_TO_SECONDS
-from octobot_backtesting.backtesting import Backtesting
-from octobot_backtesting.constants import CONFIG_BACKTESTING, CONFIG_BACKTESTING_DATA_FILES
-from octobot_commons.enums import TimeFramesMinutes
-from octobot_commons.logging.logging_util import get_logger
-from octobot_commons.time_frame_manager import find_min_time_frame, get_config_time_frame
+import octobot_commons.constants as common_constants
+import octobot_commons.enums as common_enums
+import octobot_commons.logging as logging
+import octobot_commons.time_frame_manager as time_frame_manager
+
+import octobot_backtesting.api as api
+import octobot_backtesting.errors as errors
+import octobot_backtesting.backtesting as backtesting_class
+import octobot_backtesting.constants as constants
 
 
-async def initialize_backtesting(config, exchange_ids, matrix_id, data_files) -> Backtesting:
-    backtesting_instance = Backtesting(config=config,
-                                       exchange_ids=exchange_ids,
-                                       matrix_id=matrix_id,
-                                       backtesting_files=data_files)
+async def initialize_backtesting(config, exchange_ids, matrix_id, data_files) -> backtesting_class.Backtesting:
+    backtesting_instance = backtesting_class.Backtesting(config=config,
+                                                         exchange_ids=exchange_ids,
+                                                         matrix_id=matrix_id,
+                                                         backtesting_files=data_files)
     await backtesting_instance.create_importers()
     await backtesting_instance.initialize()
 
@@ -50,12 +51,13 @@ async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
 
 async def adapt_backtesting_channels(backtesting, config, importer_class, run_on_common_part_only=True):
     # set mininmum and maximum timestamp according to all importers data
-    min_time_frame_to_consider = find_min_time_frame(get_config_time_frame(config))
+    min_time_frame_to_consider = time_frame_manager.find_min_time_frame(
+        time_frame_manager.get_config_time_frame(config))
     importers = backtesting.get_importers(importer_class)
     try:
-        timestamps = [await get_data_timestamp_interval(importer, min_time_frame_to_consider)
+        timestamps = [await api.get_data_timestamp_interval(importer, min_time_frame_to_consider)
                       for importer in importers]  # [(min, max) ... ]
-    except MissingTimeFrame as e:
+    except errors.MissingTimeFrame as e:
         raise RuntimeError(f"Impossible to start backtesting on this configuration: {e}")
     min_timestamps = [timestamp[0] for timestamp in timestamps]
     max_timestamps = [timestamp[1] for timestamp in timestamps]
@@ -72,13 +74,14 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
         minimum_timestamp=min_timestamp,
         maximum_timestamp=max_timestamps)
     try:
-        from octobot_trading.api.exchange import has_only_ohlcv
+        import octobot_trading.api as exchange_api
 
-        if has_only_ohlcv(importers):
+        if exchange_api.has_only_ohlcv(importers):
             set_time_updater_interval(backtesting,
-                                      TimeFramesMinutes[min_time_frame_to_consider] * MINUTE_TO_SECONDS)
+                                      common_enums.TimeFramesMinutes[min_time_frame_to_consider] *
+                                      common_constants.MINUTE_TO_SECONDS)
     except ImportError:
-        get_logger("BacktestingAPI").error("requires OctoBot-Trading package installed")
+        logging.get_logger("BacktestingAPI").error("requires OctoBot-Trading package installed")
 
 
 def set_time_updater_interval(backtesting, interval_in_seconds):
@@ -106,14 +109,13 @@ def get_backtesting_current_time(backtesting) -> float:
 
 
 def is_backtesting_enabled(config) -> bool:
-    return CONFIG_BACKTESTING in config and CONFIG_ENABLED_OPTION in config[CONFIG_BACKTESTING] \
-           and config[CONFIG_BACKTESTING][CONFIG_ENABLED_OPTION]
+    return constants.CONFIG_BACKTESTING in config \
+           and common_constants.CONFIG_ENABLED_OPTION in config[constants.CONFIG_BACKTESTING] \
+           and config[constants.CONFIG_BACKTESTING][common_constants.CONFIG_ENABLED_OPTION]
 
 
 def get_backtesting_data_files(config) -> list:
-    if CONFIG_BACKTESTING in config and CONFIG_BACKTESTING_DATA_FILES in config[CONFIG_BACKTESTING]:
-        return config[CONFIG_BACKTESTING][CONFIG_BACKTESTING_DATA_FILES]
-    return []
+    return config.get(constants.CONFIG_BACKTESTING, {}).get(constants.CONFIG_BACKTESTING_DATA_FILES, [])
 
 
 def get_backtesting_duration(backtesting) -> float:

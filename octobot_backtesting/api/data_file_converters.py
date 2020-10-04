@@ -13,15 +13,16 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from os.path import isfile
+import os.path as path
+import typing
 
-from octobot_backtesting.converters.data_converter import DataConverter
-from octobot_commons.tentacles_management.class_inspector import get_all_classes_from_parent
+import octobot_backtesting.converters as converters
+import octobot_commons.tentacles_management as tentacles_management
 
 
-async def convert_data_file(data_file_path) -> str:
-    if data_file_path and isfile(data_file_path):
-        converter_classes = get_all_classes_from_parent(DataConverter)
+async def convert_data_file(data_file_path) -> typing.Optional[str]:
+    if data_file_path and path.isfile(data_file_path):
+        converter_classes = tentacles_management.get_all_classes_from_parent(converters.DataConverter)
         for converter_class in converter_classes:
             converter = converter_class(data_file_path)
             if await converter.can_convert():

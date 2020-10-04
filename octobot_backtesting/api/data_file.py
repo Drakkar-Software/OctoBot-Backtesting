@@ -13,29 +13,31 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from os import path
-from octobot_backtesting.constants import BACKTESTING_FILE_PATH
-from octobot_backtesting.data import data_file_manager as data_manager
-from octobot_backtesting.enums import DataFormatKeys
+import os.path as path
+
+import octobot_backtesting.constants as constants
+import octobot_backtesting.data as data
+import octobot_backtesting.enums as enums
 
 
-async def get_file_description(file_name, data_path=BACKTESTING_FILE_PATH) -> dict:
-    description = await data_manager.get_file_description(path.join(data_path, file_name))
+async def get_file_description(file_name, data_path=constants.BACKTESTING_FILE_PATH) -> dict:
+    description = await data.get_file_description(path.join(data_path, file_name))
     if description:
         return {
-            DataFormatKeys.SYMBOLS.value: description[DataFormatKeys.SYMBOLS.value],
-            DataFormatKeys.EXCHANGE.value: description[DataFormatKeys.EXCHANGE.value],
-            DataFormatKeys.DATE.value: data_manager.get_date(int(description[DataFormatKeys.DATE.value])),
-            DataFormatKeys.TIME_FRAMES.value: [tf.value for tf in description[DataFormatKeys.TIME_FRAMES.value]],
-            DataFormatKeys.TYPE.value: "OctoBot data file"
+            enums.DataFormatKeys.SYMBOLS.value: description[enums.DataFormatKeys.SYMBOLS.value],
+            enums.DataFormatKeys.EXCHANGE.value: description[enums.DataFormatKeys.EXCHANGE.value],
+            enums.DataFormatKeys.DATE.value: data.get_date(int(description[enums.DataFormatKeys.DATE.value])),
+            enums.DataFormatKeys.TIME_FRAMES.value: [tf.value
+                                                     for tf in description[enums.DataFormatKeys.TIME_FRAMES.value]],
+            enums.DataFormatKeys.TYPE.value: "OctoBot data file"
         }
     else:
         return description
 
 
-def get_all_available_data_files(data_path=BACKTESTING_FILE_PATH) -> list:
-    return data_manager.get_all_available_data_files(data_path)
+def get_all_available_data_files(data_path=constants.BACKTESTING_FILE_PATH) -> list:
+    return data.get_all_available_data_files(data_path)
 
 
-def delete_data_file(file_name, data_path=BACKTESTING_FILE_PATH) -> tuple:
-    return data_manager.delete_data_file(data_path, file_name)
+def delete_data_file(file_name, data_path=constants.BACKTESTING_FILE_PATH) -> tuple:
+    return data.delete_data_file(data_path, file_name)

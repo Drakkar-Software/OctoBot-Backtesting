@@ -13,10 +13,10 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.collectors.data_collector import DataCollector
+import octobot_backtesting.collectors as collectors
 
 
-class SocialDataCollector(DataCollector):
+class SocialDataCollector(collectors.DataCollector):
     # IMPORTER = SocialDataImporter
 
     def __init__(self, config, social_name):

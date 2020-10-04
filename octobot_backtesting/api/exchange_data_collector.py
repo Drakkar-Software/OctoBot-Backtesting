@@ -13,13 +13,12 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.collectors.exchanges.abstract_exchange_history_collector import \
-    AbstractExchangeHistoryCollector
-from octobot_commons.tentacles_management.class_inspector import get_single_deepest_child_class
+import octobot_backtesting.collectors as collectors
+import octobot_commons.tentacles_management as tentacles_management
 
 
 async def collect_exchange_historical_data(exchange_name, symbols, time_frames=None) -> str:
-    collector_class = get_single_deepest_child_class(AbstractExchangeHistoryCollector)
+    collector_class = tentacles_management.get_single_deepest_child_class(collectors.AbstractExchangeHistoryCollector)
     collector_instance = collector_class({}, exchange_name, symbols, time_frames,
                                          use_all_available_timeframes=time_frames is None)
     await collector_instance.initialize()

@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.api.backtesting import is_backtesting_enabled, get_backtesting_data_files
+import octobot_backtesting.api as api
 
 
 def _get_default_config():
@@ -44,14 +44,14 @@ def _get_default_config():
 
 
 def test_is_backtesting_enabled():
-    assert is_backtesting_enabled({}) is False
-    assert is_backtesting_enabled({"backtesting": {}}) is False
-    assert is_backtesting_enabled({"backtesting": {"enabled": False}}) is False
-    assert is_backtesting_enabled({"backtesting": {"enabled": True}}) is True
+    assert api.is_backtesting_enabled({}) is False
+    assert api.is_backtesting_enabled({"backtesting": {}}) is False
+    assert api.is_backtesting_enabled({"backtesting": {"enabled": False}}) is False
+    assert api.is_backtesting_enabled({"backtesting": {"enabled": True}}) is True
 
 
 def test_get_backtesting_data_files():
-    assert get_backtesting_data_files({}) == []
-    assert get_backtesting_data_files({"backtesting": {}}) == []
-    assert get_backtesting_data_files({"backtesting": {"files": []}}) == []
-    assert get_backtesting_data_files({"backtesting": {"files": ["t", "1"]}}) == ["t", "1"]
+    assert api.get_backtesting_data_files({}) == []
+    assert api.get_backtesting_data_files({"backtesting": {}}) == []
+    assert api.get_backtesting_data_files({"backtesting": {"files": []}}) == []
+    assert api.get_backtesting_data_files({"backtesting": {"files": ["t", "1"]}}) == ["t", "1"]

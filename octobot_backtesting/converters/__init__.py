@@ -13,3 +13,13 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.converters import data_converter
+
+from octobot_backtesting.converters.data_converter import (
+    DataConverter,
+)
+
+__all__ = [
+    "DataConverter",
+]

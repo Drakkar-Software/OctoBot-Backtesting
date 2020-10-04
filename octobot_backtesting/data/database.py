@@ -13,27 +13,27 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from contextlib import asynccontextmanager
-from sqlite3 import OperationalError, DatabaseError, Cursor
-
+import contextlib 
+import sqlite3
 import aiosqlite
 
-from octobot_backtesting.data import DataBaseNotExists
-from octobot_backtesting.enums import DataBaseOrderBy
-from octobot_commons.logging.logging_util import get_logger
+import octobot_commons.logging as logging
+
+import octobot_backtesting.enums as enums
+import octobot_backtesting.errors as errors
 
 
 class DataBase:
     TIMESTAMP_COLUMN = "timestamp"
     DEFAULT_ORDER_BY = TIMESTAMP_COLUMN
-    DEFAULT_SORT = DataBaseOrderBy.DESC.value
+    DEFAULT_SORT = enums.DataBaseOrderBy.DESC.value
     DEFAULT_WHERE_OPERATION = "="
     DEFAULT_SIZE = -1
     CACHE_SIZE = 50
 
     def __init__(self, file_name):
         self.file_name = file_name
-        self.logger = get_logger(self.__class__.__name__)
+        self.logger = logging.get_logger(self.__class__.__name__)
 
         self.tables = []
         self.cache = {}
@@ -49,8 +49,8 @@ class DataBase:
             self.connection = await aiosqlite.connect(self.file_name)
             await self._add_cursor_in_pool()
             await self.__init_tables_list()
-        except (OperationalError, DatabaseError) as e:
-            raise DataBaseNotExists(e)
+        except (sqlite3.OperationalError, sqlite3.DatabaseError) as e:
+            raise errors.DataBaseNotExists(e)
 
     async def create_index(self, table, columns):
         await self.__execute_index_creation(table, '_'.join(columns), ', '.join(columns))
@@ -58,8 +58,8 @@ class DataBase:
     async def _add_cursor_in_pool(self):
         self._cursor_pool.append(await self.connection.cursor())
 
-    @asynccontextmanager
-    async def aio_cursor(self) -> Cursor:
+    @contextlib.asynccontextmanager
+    async def aio_cursor(self) -> sqlite3.Cursor:
         """
         Use this as a context manager to get a free database cursor
         :yield: A free cursor
@@ -191,9 +191,9 @@ class DataBase:
                                      f"{'WHERE' if where_clauses else ''} {where_clauses} "
                                      f"{additional_clauses} {group_by}")
                 return await cursor.fetchall() if size == self.DEFAULT_SIZE else await cursor.fetchmany(size)
-        except OperationalError as e:
+        except sqlite3.OperationalError as e:
             if not await self.check_table_exists(table):
-                raise DataBaseNotExists(e)
+                raise errors.DataBaseNotExists(e)
             self.logger.error(f"An error occurred when executing select : {e}")
         return []
 
@@ -221,7 +221,7 @@ class DataBase:
                 for i in range(1, round(len(columns) / 2) + 1):
                     await self.create_index(table, [self.TIMESTAMP_COLUMN] + [columns[u] for u in range(0, i)])
 
-        except OperationalError:
+        except sqlite3.OperationalError:
             self.logger.error(f"{table} already exists")
         finally:
             self.tables.append(table.value)

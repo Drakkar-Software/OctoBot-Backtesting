@@ -19,7 +19,7 @@ import asyncio
 from sqlite3 import OperationalError
 from contextlib import asynccontextmanager
 
-from octobot_backtesting.data import DataBaseNotExists
+from octobot_backtesting.errors import DataBaseNotExists
 from octobot_backtesting.data.database import DataBase
 from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations
 

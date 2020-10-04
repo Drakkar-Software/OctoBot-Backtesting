@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_commons.enums import TimeFrames
+import octobot_commons.enums as enums
 
 CONFIG_BACKTESTING = "backtesting"
 CONFIG_BACKTESTING_DATA_FILES = "files"
@@ -28,9 +28,9 @@ BACKTESTING_DATA_FILE_SEPARATOR = "_"
 BACKTESTING_DATA_FILE_TIME_WRITE_FORMAT = '%Y%m%d_%H%M%S'
 BACKTESTING_DATA_FILE_TIME_READ_FORMAT = BACKTESTING_DATA_FILE_TIME_WRITE_FORMAT.replace("_", "")
 BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT = '%d %B %Y at %H:%M:%S'
-BACKTESTING_TIME_FRAMES_TO_DISPLAY = [TimeFrames.THIRTY_MINUTES.value,
-                                      TimeFrames.ONE_HOUR.value,
-                                      TimeFrames.FOUR_HOURS.value,
-                                      TimeFrames.ONE_DAY.value]
-
 BACKTESTING_DEFAULT_JOIN_TIMEOUT = 1800  # 30min
+
+BACKTESTING_TIME_FRAMES_TO_DISPLAY = [enums.TimeFrames.THIRTY_MINUTES.value,
+                                      enums.TimeFrames.ONE_HOUR.value,
+                                      enums.TimeFrames.FOUR_HOURS.value,
+                                      enums.TimeFrames.ONE_DAY.value]

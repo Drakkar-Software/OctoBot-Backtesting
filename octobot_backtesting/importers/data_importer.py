@@ -13,20 +13,20 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from os import path
+import os.path as path
 
-from octobot_backtesting.constants import BACKTESTING_FILE_PATH
-from octobot_backtesting.data import BacktestingFileNotFound
-from octobot_commons.logging.logging_util import get_logger
+import octobot_commons.logging as logging
 
-from octobot_backtesting.data.database import DataBase
+import octobot_backtesting.constants as constants
+import octobot_backtesting.data as data
+import octobot_backtesting.errors as errors
 
 
 class DataImporter:
     def __init__(self, config, file_path):
         self.config = config
         self.file_path = file_path
-        self.logger = get_logger(self.__class__.__name__)
+        self.logger = logging.get_logger(self.__class__.__name__)
 
         self.should_stop = False
 
@@ -50,13 +50,13 @@ class DataImporter:
     def load_database(self) -> None:
         file_path = self.adapt_file_path_if_necessary()
         if not self.database:
-            self.database = DataBase(file_path)
+            self.database = data.DataBase(file_path)
 
     def adapt_file_path_if_necessary(self):
         if path.isfile(self.file_path):
             return self.file_path
         else:
-            candidate_path = path.join(BACKTESTING_FILE_PATH, self.file_path)
+            candidate_path = path.join(constants.BACKTESTING_FILE_PATH, self.file_path)
             if path.isfile(candidate_path):
                 return candidate_path
-        raise BacktestingFileNotFound(f"File {self.file_path} not found")
+        raise errors.BacktestingFileNotFound(f"File {self.file_path} not found")
