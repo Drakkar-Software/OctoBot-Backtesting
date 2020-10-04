@@ -15,9 +15,9 @@
 #  License along with this library.
 import asyncio 
 
-import channel.channels as channels
-import channel.consumer as consumers
-import channel.producer as producers
+import async_channel.channels as channels
+import async_channel.consumer as consumers
+import async_channel.producer as producers
 
 
 class TimeProducer(producers.Producer):

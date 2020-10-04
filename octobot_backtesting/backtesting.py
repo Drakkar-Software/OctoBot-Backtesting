@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import channel.channels as channels
-import channel.util as channel_util
+import async_channel.channels as channels
+import async_channel.util as channel_util
 
 import octobot_commons.logging as logging
 import octobot_commons.channels_name as channels_name
