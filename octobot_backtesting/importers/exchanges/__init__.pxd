@@ -14,3 +14,13 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.cimporters.exchanges cimport exchange_cimporter
+
+from octobot_backtesting.cimporters.exchanges.exchange_cimporter cimport (
+    ExchangeDataImporter,
+)
+
+__all__ = [
+    "ExchangeDataImporter",
+]
