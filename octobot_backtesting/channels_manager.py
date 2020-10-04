@@ -15,8 +15,8 @@
 #  License along with this library.
 import asyncio
 
-import channel.channels as channels
-import channel.enums as channel_enums
+import async_channel.channels as channels
+import async_channel.enums as channel_enums
 
 import octobot_commons.channels_name as channels_name
 import octobot_commons.list_util as list_util
