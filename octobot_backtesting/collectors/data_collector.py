@@ -15,30 +15,30 @@
 #  License along with this library.
 import asyncio
 import json
-from os.path import join, isdir
-from os import makedirs
+import os.path as path
+import os
+import aiohttp 
 
-from aiohttp import ClientSession, ClientPayloadError
+import octobot_commons.logging as logging
 
-from octobot_backtesting.enums import DataFormats
-from octobot_commons.logging.logging_util import get_logger
-
-from octobot_backtesting.constants import BACKTESTING_FILE_PATH
-from octobot_backtesting.data.database import DataBase
-from octobot_backtesting.data.data_file_manager import get_backtesting_file_name
-from octobot_backtesting.importers.data_importer import DataImporter
+import octobot_backtesting.enums as enums
+import octobot_backtesting.constants as constants
+import octobot_backtesting.data as data
+import octobot_backtesting.importers as importers
 
 
 class DataCollector:
-    IMPORTER = DataImporter
+    IMPORTER = importers.DataImporter
 
-    def __init__(self, config, path=BACKTESTING_FILE_PATH, data_format=DataFormats.REGULAR_COLLECTOR_DATA):
+    def __init__(self, config,
+                 path=constants.BACKTESTING_FILE_PATH,
+                 data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA):
         self.config = config
         self.path = path
-        self.logger = get_logger(self.__class__.__name__)
+        self.logger = logging.get_logger(self.__class__.__name__)
 
         self.should_stop = False
-        self.file_name = get_backtesting_file_name(self.__class__, data_format)
+        self.file_name = data.get_backtesting_file_name(self.__class__, data_format)
 
         self.database = None
         self.aiohttp_session = None
@@ -56,19 +56,19 @@ class DataCollector:
         raise NotImplementedError("Start is not implemented")
 
     def _ensure_file_path(self):
-        if not isdir(self.path):
-            makedirs(self.path)
+        if not path.isdir(self.path):
+            os.makedirs(self.path)
 
     def set_file_path(self) -> None:
-        self.file_path = join(self.path, self.file_name) if self.path else self.file_name
+        self.file_path = path.join(self.path, self.file_name) if self.path else self.file_name
 
     def create_database(self) -> None:
         if not self.database:
-            self.database = DataBase(self.file_path)
+            self.database = data.DataBase(self.file_path)
 
     def create_aiohttp_session(self) -> None:
         if not self.aiohttp_session:
-            self.aiohttp_session = ClientSession()
+            self.aiohttp_session = aiohttp.ClientSession()
 
     async def stop_aiohttp_session(self) -> None:
         if self.aiohttp_session:
@@ -93,7 +93,7 @@ class DataCollector:
             return None
         try:
             return json.loads(await response.text())
-        except ClientPayloadError as e:
+        except aiohttp.ClientPayloadError as e:
             self.logger.error(f"Failed to extract payload text : {e}")
             return None
 

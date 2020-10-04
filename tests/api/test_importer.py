@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.api.importer import get_data_timestamp_interval
+import octobot_backtesting.api as api
 
 
 def test_import():
-    assert get_data_timestamp_interval is not None
+    assert api.get_data_timestamp_interval is not None

@@ -1,3 +1,4 @@
+# cython: language_level=3
 #  Drakkar-Software OctoBot-Backtesting
 #  Copyright (c) Drakkar-Software, All rights reserved.
 #
@@ -13,3 +14,16 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.channels_manager cimport ChannelsManager
+from octobot_backtesting.time.time_manager cimport TimeManager
+
+from octobot_backtesting.time.channel.time cimport TimeProducer
+
+cdef class TimeUpdater(TimeProducer):
+    cdef public TimeManager time_manager
+    cdef public ChannelsManager channels_manager
+
+    cdef public double starting_time
+    cdef public double simulation_duration
+
+    cdef public object finished_event

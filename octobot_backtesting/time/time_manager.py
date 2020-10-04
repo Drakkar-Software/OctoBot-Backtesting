@@ -15,7 +15,7 @@
 #  License along with this library.
 import time
 
-from octobot_commons.logging.logging_util import get_logger
+import octobot_commons.logging as logging
 
 
 class TimeManager:
@@ -24,7 +24,7 @@ class TimeManager:
     DEFAULT_TIME_INTERVAL = 50
 
     def __init__(self, config):
-        self.logger = get_logger(self.__class__.__name__)
+        self.logger = logging.get_logger(self.__class__.__name__)
         self.config = config
 
         self.time_initialized = False

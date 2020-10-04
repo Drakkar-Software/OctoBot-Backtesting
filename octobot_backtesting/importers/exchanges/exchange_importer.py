@@ -15,16 +15,16 @@
 #  License along with this library.
 import json
 
-from octobot_backtesting.data.data_file_manager import get_database_description
-from octobot_commons.constants import CONFIG_TIME_FRAME
-from octobot_backtesting.data import DataBaseNotExists, MissingTimeFrame
-from octobot_backtesting.data.database import DataBase
-from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations, DataFormatKeys
-from octobot_backtesting.importers.data_importer import DataImporter
-from octobot_commons.enums import TimeFrames
+import octobot_commons.constants as common_constants
+import octobot_commons.enums as common_enums
+
+import octobot_backtesting.data as data
+import octobot_backtesting.enums as enums
+import octobot_backtesting.errors as errors
+import octobot_backtesting.importers as importers
 
 
-class ExchangeDataImporter(DataImporter):
+class ExchangeDataImporter(importers.DataImporter):
     def __init__(self, config, file_path):
         super().__init__(config, file_path)
 
@@ -38,10 +38,10 @@ class ExchangeDataImporter(DataImporter):
         await self.database.initialize()
 
         # load description
-        description = await get_database_description(self.database)
-        self.exchange_name = description[DataFormatKeys.EXCHANGE.value]
-        self.symbols = description[DataFormatKeys.SYMBOLS.value]
-        self.time_frames = description[DataFormatKeys.TIME_FRAMES.value]
+        description = await data.get_database_description(self.database)
+        self.exchange_name = description[enums.DataFormatKeys.EXCHANGE.value]
+        self.symbols = description[enums.DataFormatKeys.SYMBOLS.value]
+        self.time_frames = description[enums.DataFormatKeys.TIME_FRAMES.value]
         await self._init_available_data_types()
 
         self.logger.info(f"Loaded {self.exchange_name} data file with "
@@ -57,40 +57,40 @@ class ExchangeDataImporter(DataImporter):
         min_ohlcv_timestamp: float = 0.0
         max_ohlcv_timestamp: float = 0.0
 
-        for table in [ExchangeDataTables.KLINE, ExchangeDataTables.ORDER_BOOK, ExchangeDataTables.RECENT_TRADES,
-                      ExchangeDataTables.TICKER]:
+        for table in [enums.ExchangeDataTables.KLINE, enums.ExchangeDataTables.ORDER_BOOK,
+                      enums.ExchangeDataTables.RECENT_TRADES, enums.ExchangeDataTables.TICKER]:
             if table in self.available_data_types:
                 try:
-                    min_timestamp = (await self.database.select_min(table, [DataBase.TIMESTAMP_COLUMN]))[0][0]
+                    min_timestamp = (await self.database.select_min(table, [data.DataBase.TIMESTAMP_COLUMN]))[0][0]
                     if not minimum_timestamp or minimum_timestamp > min_timestamp:
                         minimum_timestamp = min_timestamp
 
-                    max_timestamp = (await self.database.select_max(table, [DataBase.TIMESTAMP_COLUMN]))[0][0]
+                    max_timestamp = (await self.database.select_max(table, [data.DataBase.TIMESTAMP_COLUMN]))[0][0]
                     if not maximum_timestamp or maximum_timestamp < max_timestamp:
                         maximum_timestamp = max_timestamp
-                except (IndexError, DataBaseNotExists):
+                except (IndexError, errors.DataBaseNotExists):
                     pass
 
         # OHLCV timestamps
         try:
             ohlcv_kwargs = {"time_frame": time_frame} if time_frame else {}
-            ohlcv_min_timestamps = (await self.database.select_min(ExchangeDataTables.OHLCV,
-                                                                   [DataBase.TIMESTAMP_COLUMN],
-                                                                   [CONFIG_TIME_FRAME],
-                                                                   group_by=CONFIG_TIME_FRAME,
+            ohlcv_min_timestamps = (await self.database.select_min(enums.ExchangeDataTables.OHLCV,
+                                                                   [data.DataBase.TIMESTAMP_COLUMN],
+                                                                   [common_constants.CONFIG_TIME_FRAME],
+                                                                   group_by=common_constants.CONFIG_TIME_FRAME,
                                                                    **ohlcv_kwargs
                                                                    ))
 
             if ohlcv_min_timestamps:
                 # if the required time frame is not included in this database, ohlcv_min_timestamps is empty: ignore it
                 min_ohlcv_timestamp = max(ohlcv_min_timestamps)[0]
-                max_ohlcv_timestamp = (await self.database.select_max(ExchangeDataTables.OHLCV,
-                                                                      [DataBase.TIMESTAMP_COLUMN],
+                max_ohlcv_timestamp = (await self.database.select_max(enums.ExchangeDataTables.OHLCV,
+                                                                      [data.DataBase.TIMESTAMP_COLUMN],
                                                                       **ohlcv_kwargs))[0][0]
             elif time_frame:
-                raise MissingTimeFrame(f"Missing time frame in data file: {time_frame}")
+                raise errors.MissingTimeFrame(f"Missing time frame in data file: {time_frame}")
 
-        except (IndexError, DataBaseNotExists):
+        except (IndexError, errors.DataBaseNotExists):
             pass
 
         if minimum_timestamp > 0 and maximum_timestamp > 0:
@@ -98,7 +98,7 @@ class ExchangeDataImporter(DataImporter):
         return min_ohlcv_timestamp, max_ohlcv_timestamp
 
     async def _init_available_data_types(self):
-        self.available_data_types = [table for table in ExchangeDataTables
+        self.available_data_types = [table for table in enums.ExchangeDataTables
                                      if await self.database.check_table_exists(table)
                                      and await self.database.check_table_not_empty(table)]
 
@@ -107,10 +107,10 @@ class ExchangeDataImporter(DataImporter):
         timestamps: list = []
         if superior_timestamp != -1:
             timestamps.append(str(superior_timestamp))
-            operations.append(DataBaseOperations.INF_EQUALS.value)
+            operations.append(enums.DataBaseOperations.INF_EQUALS.value)
         if inferior_timestamp != -1:
             timestamps.append(str(inferior_timestamp))
-            operations.append(DataBaseOperations.SUP_EQUALS.value)
+            operations.append(enums.DataBaseOperations.SUP_EQUALS.value)
 
         return timestamps, operations
 
@@ -122,16 +122,18 @@ class ExchangeDataImporter(DataImporter):
         return ohlcvs
 
     async def get_ohlcv(self, exchange_name=None, symbol=None,
-                        time_frame=TimeFrames.ONE_HOUR, limit=DataBase.DEFAULT_SIZE):
-        return self.import_ohlcvs(await self.database.select(ExchangeDataTables.OHLCV, size=limit,
+                        time_frame=common_enums.TimeFrames.ONE_HOUR,
+                        limit=data.DataBase.DEFAULT_SIZE):
+        return self.import_ohlcvs(await self.database.select(enums.ExchangeDataTables.OHLCV, size=limit,
                                                              exchange_name=exchange_name, symbol=symbol,
                                                              time_frame=time_frame.value))
 
-    async def get_ohlcv_from_timestamps(self, exchange_name=None, symbol=None, time_frame=TimeFrames.ONE_HOUR,
-                                        limit=DataBase.DEFAULT_SIZE,
+    async def get_ohlcv_from_timestamps(self, exchange_name=None, symbol=None,
+                                        time_frame=common_enums.TimeFrames.ONE_HOUR,
+                                        limit=data.DataBase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1) -> list:
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-        return self.import_ohlcvs(await self.database.select_from_timestamp(ExchangeDataTables.OHLCV, size=limit,
+        return self.import_ohlcvs(await self.database.select_from_timestamp(enums.ExchangeDataTables.OHLCV, size=limit,
                                                                             exchange_name=exchange_name, symbol=symbol,
                                                                             time_frame=time_frame.value,
                                                                             timestamps=timestamps,
@@ -142,14 +144,14 @@ class ExchangeDataImporter(DataImporter):
             ticker[-1] = json.loads(ticker[-1])
         return tickers
 
-    async def get_ticker(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE):
-        return self.import_tickers(await self.database.select(ExchangeDataTables.TICKER, size=limit,
+    async def get_ticker(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
+        return self.import_tickers(await self.database.select(enums.ExchangeDataTables.TICKER, size=limit,
                                                               exchange_name=exchange_name, symbol=symbol))
 
-    async def get_ticker_from_timestamps(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE,
+    async def get_ticker_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
                                          inferior_timestamp=-1, superior_timestamp=-1):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-        return self.import_tickers(await self.database.select_from_timestamp(ExchangeDataTables.TICKER, size=limit,
+        return self.import_tickers(await self.database.select_from_timestamp(enums.ExchangeDataTables.TICKER, size=limit,
                                                                              exchange_name=exchange_name, symbol=symbol,
                                                                              timestamps=timestamps,
                                                                              operations=operations))
@@ -160,15 +162,15 @@ class ExchangeDataImporter(DataImporter):
             order_book[-2] = json.loads(order_book[-2])
         return order_books
 
-    async def get_order_book(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE):
-        return self.import_order_books(await self.database.select(ExchangeDataTables.ORDER_BOOK, size=limit,
+    async def get_order_book(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
+        return self.import_order_books(await self.database.select(enums.ExchangeDataTables.ORDER_BOOK, size=limit,
                                                                   exchange_name=exchange_name, symbol=symbol))
 
-    async def get_order_book_from_timestamps(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE,
+    async def get_order_book_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
                                              inferior_timestamp=-1, superior_timestamp=-1):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
         return self.import_order_books(
-            await self.database.select_from_timestamp(ExchangeDataTables.ORDER_BOOK, size=limit,
+            await self.database.select_from_timestamp(enums.ExchangeDataTables.ORDER_BOOK, size=limit,
                                                       exchange_name=exchange_name, symbol=symbol,
                                                       timestamps=timestamps, operations=operations))
 
@@ -177,15 +179,15 @@ class ExchangeDataImporter(DataImporter):
             recent_trade[-1] = json.loads(recent_trade[-1])
         return recent_trades
 
-    async def get_recent_trades(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE):
-        return self.import_recent_trades(await self.database.select(ExchangeDataTables.RECENT_TRADES, size=limit,
+    async def get_recent_trades(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
+        return self.import_recent_trades(await self.database.select(enums.ExchangeDataTables.RECENT_TRADES, size=limit,
                                                                     exchange_name=exchange_name, symbol=symbol))
 
-    async def get_recent_trades_from_timestamps(self, exchange_name=None, symbol=None, limit=DataBase.DEFAULT_SIZE,
+    async def get_recent_trades_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
                                                 inferior_timestamp=-1, superior_timestamp=-1):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
         return self.import_recent_trades(await
-                                         self.database.select_from_timestamp(ExchangeDataTables.RECENT_TRADES,
+                                         self.database.select_from_timestamp(enums.ExchangeDataTables.RECENT_TRADES,
                                                                              size=limit,
                                                                              exchange_name=exchange_name,
                                                                              symbol=symbol,
@@ -198,16 +200,17 @@ class ExchangeDataImporter(DataImporter):
         return klines
 
     async def get_kline(self, exchange_name=None, symbol=None,
-                        time_frame=TimeFrames.ONE_HOUR, limit=DataBase.DEFAULT_SIZE):
-        return self.import_klines(await self.database.select(ExchangeDataTables.KLINE, size=limit,
+                        time_frame=common_enums.TimeFrames.ONE_HOUR, limit=data.DataBase.DEFAULT_SIZE):
+        return self.import_klines(await self.database.select(enums.ExchangeDataTables.KLINE, size=limit,
                                                              exchange_name=exchange_name, symbol=symbol,
                                                              time_frame=time_frame.value))
 
-    async def get_kline_from_timestamps(self, exchange_name=None, symbol=None, time_frame=TimeFrames.ONE_HOUR,
-                                        limit=DataBase.DEFAULT_SIZE,
+    async def get_kline_from_timestamps(self, exchange_name=None, symbol=None,
+                                        time_frame=common_enums.TimeFrames.ONE_HOUR,
+                                        limit=data.DataBase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1):
         timestamps, operations = self.__get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-        return self.import_klines(await self.database.select_from_timestamp(ExchangeDataTables.KLINE, size=limit,
+        return self.import_klines(await self.database.select_from_timestamp(enums.ExchangeDataTables.KLINE, size=limit,
                                                                             exchange_name=exchange_name, symbol=symbol,
                                                                             time_frame=time_frame.value,
                                                                             timestamps=timestamps,

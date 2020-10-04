@@ -13,3 +13,13 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.collectors.social import social_collector
+
+from octobot_backtesting.collectors.social.social_collector import (
+    SocialDataCollector,
+)
+
+__all__ = [
+    "SocialDataCollector",
+]

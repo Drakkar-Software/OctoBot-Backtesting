@@ -13,3 +13,13 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.importers.exchanges import exchange_importer
+
+from octobot_backtesting.importers.exchanges.exchange_importer import (
+    ExchangeDataImporter,
+)
+
+__all__ = [
+    "ExchangeDataImporter",
+]

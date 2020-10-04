@@ -18,7 +18,7 @@ import os
 from contextlib import asynccontextmanager
 
 
-from octobot_backtesting.data import DataBaseNotExists
+from octobot_backtesting.errors import DataBaseNotExists
 from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 from octobot_backtesting.enums import ExchangeDataTables
 from octobot_commons.enums import TimeFrames

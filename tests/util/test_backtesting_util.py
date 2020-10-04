@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.util.backtesting_util import parse_class_name_from_backtesting_file
+import octobot_backtesting.util as util
 
 
 def test_parse_class_name_from_backtesting_file():
-    assert parse_class_name_from_backtesting_file("ExchangeHistoryDataCollector_1589740606.4862757") == "ExchangeHistoryDataCollector"
+    assert util.parse_class_name_from_backtesting_file("ExchangeHistoryDataCollector_1589740606.4862757") == "ExchangeHistoryDataCollector"

@@ -13,3 +13,20 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.importers import data_importer
+from octobot_backtesting.importers.data_importer import (
+    DataImporter,
+)
+
+from octobot_backtesting.importers import social
+from octobot_backtesting.importers import exchanges
+
+from octobot_backtesting.importers.exchanges import (
+    ExchangeDataImporter,
+)
+
+__all__ = [
+    "DataImporter",
+    "ExchangeDataImporter",
+]

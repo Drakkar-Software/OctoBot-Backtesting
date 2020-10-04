@@ -14,8 +14,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.data_manager.time_manager cimport TimeManager
-from octobot_backtesting.channels.time cimport TimeChannel
+from octobot_backtesting.time.time_manager cimport TimeManager
+from octobot_backtesting.time.channel.time cimport TimeChannel
 
 cdef class Backtesting:
     cdef public object config

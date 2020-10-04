@@ -16,8 +16,8 @@
 import asyncio
 import time
 
-from octobot_backtesting.channels.time import TimeProducer
-from octobot_backtesting.channels_manager.channels_manager import ChannelsManager
+import octobot_backtesting.channels_manager as channels_manager
+from octobot_backtesting.time.channel.time import TimeProducer
 
 
 class TimeUpdater(TimeProducer):
@@ -32,8 +32,8 @@ class TimeUpdater(TimeProducer):
         self.channels_manager = None
 
     async def start(self):
-        self.channels_manager = ChannelsManager(exchange_ids=self.backtesting.exchange_ids,
-                                                matrix_id=self.backtesting.matrix_id)
+        self.channels_manager = channels_manager.ChannelsManager(exchange_ids=self.backtesting.exchange_ids,
+                                                                 matrix_id=self.backtesting.matrix_id)
         await self.channels_manager.initialize()
         while not self.should_stop:
             try:

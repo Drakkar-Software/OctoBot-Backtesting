@@ -14,34 +14,33 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from datetime import datetime
 import json
-from os.path import isfile, join, splitext
-from os import listdir, remove
-from time import time
+import os.path as path
+import os 
+import time
+from datetime import datetime
 
-from octobot_backtesting.data import DataBaseNotExists
-from octobot_backtesting.data.database import DataBase
-from octobot_commons.enums import TimeFrames
+import octobot_backtesting.data as data
+import octobot_commons.enums as common_enums
 
-from octobot_backtesting.constants import BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT, BACKTESTING_DATA_FILE_EXT, \
-    BACKTESTING_DATA_FILE_SEPARATOR
-from octobot_backtesting.enums import DataFormatKeys, DataFormats, DataTables
+import octobot_backtesting.constants as constants
+import octobot_backtesting.enums as enums
+import octobot_backtesting.errors as errors
 
 
-def get_backtesting_file_name(clazz, data_format=DataFormats.REGULAR_COLLECTOR_DATA):
-    return f"{clazz.__name__}{BACKTESTING_DATA_FILE_SEPARATOR}" \
-           f"{time()}{get_file_ending(data_format)}"
+def get_backtesting_file_name(clazz, data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA):
+    return f"{clazz.__name__}{constants.BACKTESTING_DATA_FILE_SEPARATOR}" \
+           f"{time.time()}{get_file_ending(data_format)}"
 
 
 def get_data_type(file_name):
-    if file_name.endswith(BACKTESTING_DATA_FILE_EXT):
-        return DataFormats.REGULAR_COLLECTOR_DATA
+    if file_name.endswith(constants.BACKTESTING_DATA_FILE_EXT):
+        return enums.DataFormats.REGULAR_COLLECTOR_DATA
 
 
 def get_file_ending(data_type):
-    if data_type == DataFormats.REGULAR_COLLECTOR_DATA:
-        return BACKTESTING_DATA_FILE_EXT
+    if data_type == enums.DataFormats.REGULAR_COLLECTOR_DATA:
+        return constants.BACKTESTING_DATA_FILE_EXT
 
 
 def get_date(time_info) -> str:
@@ -49,19 +48,19 @@ def get_date(time_info) -> str:
     :param time_info: Timestamp in seconds of the time to convert
     :return: A human readable date at the backtesting data file time format
     """
-    return datetime.fromtimestamp(time_info).strftime(BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT)
+    return datetime.fromtimestamp(time_info).strftime(constants.BACKTESTING_DATA_FILE_TIME_DISPLAY_FORMAT)
 
 
 async def get_database_description(database):
-    description = (await database.select(DataTables.DESCRIPTION, size=1))[0]
+    description = (await database.select(enums.DataTables.DESCRIPTION, size=1))[0]
     version = description[1]
     if version == "1.0":
         return {
-            DataFormatKeys.DATE.value: description[0],
-            DataFormatKeys.VERSION.value: description[1],
-            DataFormatKeys.EXCHANGE.value: description[2],
-            DataFormatKeys.SYMBOLS.value: json.loads(description[3]),
-            DataFormatKeys.TIME_FRAMES.value: [TimeFrames(tf) for tf in json.loads(description[4])]
+            enums.DataFormatKeys.DATE.value: description[0],
+            enums.DataFormatKeys.VERSION.value: description[1],
+            enums.DataFormatKeys.EXCHANGE.value: description[2],
+            enums.DataFormatKeys.SYMBOLS.value: json.loads(description[3]),
+            enums.DataFormatKeys.TIME_FRAMES.value: [common_enums.TimeFrames(tf) for tf in json.loads(description[4])]
         }
     else:
         raise RuntimeError(f"Unknown datafile version: {version}")
@@ -70,10 +69,10 @@ async def get_database_description(database):
 async def get_file_description(database_file):
     database = None
     try:
-        database = DataBase(database_file)
+        database = data.DataBase(database_file)
         await database.initialize()
         description = await get_database_description(database)
-    except (DataBaseNotExists, TypeError):
+    except (errors.DataBaseNotExists, TypeError):
         description = None
     finally:
         if database is not None:
@@ -82,14 +81,14 @@ async def get_file_description(database_file):
 
 
 def is_valid_ending(ending):
-    return ending in [BACKTESTING_DATA_FILE_EXT]
+    return ending in [constants.BACKTESTING_DATA_FILE_EXT]
 
 
 def get_all_available_data_files(data_collector_path):
     try:
         files = [file
-                 for file in listdir(data_collector_path)
-                 if isfile(join(data_collector_path, file)) and is_valid_ending(splitext(file)[1])]
+                 for file in os.listdir(data_collector_path)
+                 if path.isfile(path.join(data_collector_path, file)) and is_valid_ending(path.splitext(file)[1])]
     except FileNotFoundError:
         files = []
     return files
@@ -97,9 +96,9 @@ def get_all_available_data_files(data_collector_path):
 
 def delete_data_file(data_collector_path, file_name):
     try:
-        file_path = join(data_collector_path, file_name)
-        if isfile(file_path):
-            remove(file_path)
+        file_path = path.join(data_collector_path, file_name)
+        if path.isfile(file_path):
+            os.remove(file_path)
             return True, ""
         else:
             return False, f"file can't be found"

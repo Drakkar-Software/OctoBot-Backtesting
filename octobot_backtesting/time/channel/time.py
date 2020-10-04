@@ -13,14 +13,14 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from asyncio import CancelledError
+import asyncio 
 
-from octobot_channels.channels.channel import Channel
-from octobot_channels.consumer import SupervisedConsumer
-from octobot_channels.producer import Producer
+import channel.channels as channels
+import channel.consumer as consumers
+import channel.producer as producers
 
 
-class TimeProducer(Producer):
+class TimeProducer(producers.Producer):
     def __init__(self, channel, backtesting):
         super().__init__(channel)
         self.backtesting = backtesting
@@ -32,7 +32,7 @@ class TimeProducer(Producer):
         try:
             await self.backtesting.handle_time_update(timestamp)
             await self.send(timestamp)
-        except CancelledError:
+        except asyncio.CancelledError:
             self.logger.info("Update tasks cancelled.")
         except Exception as e:
             self.logger.exception(e, True, f"Exception when triggering time update: {e}")
@@ -44,10 +44,10 @@ class TimeProducer(Producer):
             })
 
 
-class TimeConsumer(SupervisedConsumer):
+class TimeConsumer(consumers.SupervisedConsumer):
     pass
 
 
-class TimeChannel(Channel):
+class TimeChannel(channels.Channel):
     PRODUCER_CLASS = TimeProducer
     CONSUMER_CLASS = TimeConsumer

@@ -13,14 +13,14 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from enum import Enum
+import enum 
 
 
-class DataFormats(Enum):
+class DataFormats(enum.Enum):
     REGULAR_COLLECTOR_DATA = 0
 
 
-class DataFormatKeys(Enum):
+class DataFormatKeys(enum.Enum):
     SYMBOLS = "symbols"
     EXCHANGE = "exchange"
     DATE = "date"
@@ -30,22 +30,22 @@ class DataFormatKeys(Enum):
     VERSION = "version"
 
 
-class ReportFormat(Enum):
+class ReportFormat(enum.Enum):
     SYMBOL_REPORT = "symbol_report"
     BOT_REPORT = "bot_report"
     SYMBOLS_WITH_TF = "symbols_with_time_frames_frames"
 
 
-class DataBaseOrderBy(Enum):
+class DataBaseOrderBy(enum.Enum):
     ASC = "ASC"
     DESC = "DESC"
 
 
-class DataTables(Enum):
+class DataTables(enum.Enum):
     DESCRIPTION = "description"
 
 
-class ExchangeDataTables(Enum):
+class ExchangeDataTables(enum.Enum):
     RECENT_TRADES = "recent_trades"
     ORDER_BOOK = "order_book"
     OHLCV = "ohlcv"
@@ -53,7 +53,7 @@ class ExchangeDataTables(Enum):
     TICKER = "ticker"
 
 
-class DataBaseOperations(Enum):
+class DataBaseOperations(enum.Enum):
     SUP = ">"
     INF = "<"
     EQUALS = "="

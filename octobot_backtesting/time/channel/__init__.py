@@ -13,3 +13,22 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.time.channel import time
+from octobot_backtesting.time.channel import time_updater
+
+from octobot_backtesting.time.channel.time import (
+    TimeProducer,
+    TimeConsumer,
+    TimeChannel,
+)
+from octobot_backtesting.time.channel.time_updater import (
+    TimeUpdater,
+)
+
+__all__ = [
+    "TimeProducer",
+    "TimeConsumer",
+    "TimeChannel",
+    "TimeUpdater",
+]

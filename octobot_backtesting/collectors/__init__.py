@@ -13,3 +13,29 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.collectors import data_collector
+from octobot_backtesting.collectors.data_collector import (
+    DataCollector,
+)
+
+from octobot_backtesting.collectors import exchanges
+from octobot_backtesting.collectors.exchanges import (
+    ExchangeDataCollector,
+    AbstractExchangeHistoryCollector,
+    AbstractExchangeLiveCollector,
+)
+
+from octobot_backtesting.collectors import social
+from octobot_backtesting.collectors.social import (
+    SocialDataCollector,
+)
+
+
+__all__ = [
+    "DataCollector",
+    "ExchangeDataCollector",
+    "AbstractExchangeHistoryCollector",
+    "AbstractExchangeLiveCollector",
+    "SocialDataCollector",
+]
