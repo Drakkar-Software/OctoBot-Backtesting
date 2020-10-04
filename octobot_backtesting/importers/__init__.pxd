@@ -1,3 +1,4 @@
+# cython: language_level=3
 #  Drakkar-Software OctoBot-Backtesting
 #  Copyright (c) Drakkar-Software, All rights reserved.
 #
@@ -13,3 +14,20 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.cimporters cimport data_cimporter
+from octobot_backtesting.cimporters.data_cimporter cimport (
+    DataImporter,
+)
+
+from octobot_backtesting.cimporters cimport social
+from octobot_backtesting.cimporters cimport exchanges
+
+from octobot_backtesting.cimporters.exchanges cimport (
+    ExchangeDataImporter,
+)
+
+__all__ = [
+    "DataImporter",
+    "ExchangeDataImporter",
+]

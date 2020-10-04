@@ -14,3 +14,24 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+from octobot_backtesting.time cimport time_manager
+from octobot_backtesting.time cimport channel
+
+from octobot_backtesting.time.time_manager cimport (
+    TimeManager,
+)
+
+from octobot_backtesting.time.channel cimport (
+    TimeProducer,
+    TimeConsumer,
+    TimeChannel,
+    TimeUpdater,
+)
+
+__all__ = [
+    "TimeManager",
+    "TimeProducer",
+    "TimeConsumer",
+    "TimeChannel",
+    "TimeUpdater",
+]

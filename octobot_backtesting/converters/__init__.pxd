@@ -14,3 +14,13 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+
+from octobot_backtesting.converters cimport data_converter
+
+from octobot_backtesting.converters.data_converter cimport (
+    DataConverter,
+)
+
+__all__ = [
+    "DataConverter",
+]
