@@ -2,9 +2,9 @@
 cython==0.29.21
 
 # Drakkar-Software requirements
-async-channel>=2.0.1, <2.1
-OctoBot-Commons>=1.4.0, <1.5
-OctoBot-Tentacles-Manager>=2.2.5, <2.3
+async-channel>=2.0.2, <2.1
+OctoBot-Commons>=1.4.1, <1.5
+OctoBot-Tentacles-Manager>=2.3.1, <2.4
 
 # Backtesting core requirements
 aiosqlite==0.12.0

@@ -15,12 +15,27 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_backtesting.util cimport backtesting_util
+from octobot_backtesting.data cimport data_file_manager
+from octobot_backtesting.data cimport database
 
-from octobot_backtesting.util.backtesting_util cimport (
-    parse_class_name_from_backtesting_file,
+from octobot_backtesting.data.data_file_manager cimport (
+    get_data_type,
+    get_file_ending,
+    get_date,
+    is_valid_ending,
+    get_all_available_data_files,
+    delete_data_file,
+)
+from octobot_backtesting.data.database cimport (
+    DataBase,
 )
 
 __all__ = [
-    "parse_class_name_from_backtesting_file",
+    "get_data_type",
+    "get_file_ending",
+    "get_date",
+    "is_valid_ending",
+    "get_all_available_data_files",
+    "delete_data_file",
+    "DataBase",
 ]

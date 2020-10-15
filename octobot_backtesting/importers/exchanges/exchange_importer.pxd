@@ -14,9 +14,9 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.importers.data_importer cimport DataImporter
+cimport octobot_backtesting.importers as importers
 
-cdef class ExchangeDataImporter(DataImporter):
+cdef class ExchangeDataImporter(importers.DataImporter):
     cdef public str exchange_name
 
     cdef public list available_data_types

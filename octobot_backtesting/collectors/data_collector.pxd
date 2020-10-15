@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_backtesting.data.database cimport DataBase
+cimport octobot_backtesting.data as data
 
 cdef class DataCollector:
     cdef public dict config
@@ -29,7 +29,7 @@ cdef class DataCollector:
     cdef public str file_path
     cdef public str path
 
-    cdef public DataBase database
+    cdef public data.DataBase database
 
     cpdef void create_database(self)
     cpdef void create_aiohttp_session(self)

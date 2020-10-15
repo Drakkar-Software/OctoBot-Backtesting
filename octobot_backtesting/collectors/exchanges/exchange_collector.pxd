@@ -15,10 +15,10 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_backtesting.collectors.data_collector cimport DataCollector
+cimport octobot_backtesting.collectors.data_collector as data_collector
 
 
-cdef class ExchangeDataCollector(DataCollector):
+cdef class ExchangeDataCollector(data_collector.DataCollector):
     cdef public str exchange_name
 
     cdef public list symbols

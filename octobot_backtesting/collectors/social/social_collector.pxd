@@ -15,8 +15,8 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_backtesting.collectors.data_collector cimport DataCollector
+cimport octobot_backtesting.collectors as collectors
 
 
-cdef class SocialDataCollector(DataCollector):
+cdef class SocialDataCollector(collectors.DataCollector):
     cdef public str social_name

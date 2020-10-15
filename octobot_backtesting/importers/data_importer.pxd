@@ -14,7 +14,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.data.database cimport DataBase
+cimport octobot_backtesting.data as data
 
 cdef class DataImporter:
     cdef public dict config
@@ -26,6 +26,6 @@ cdef class DataImporter:
     cdef public str version
     cdef public str file_path
 
-    cdef public DataBase database
+    cdef public data.DataBase database
 
     cpdef void load_database(self)
