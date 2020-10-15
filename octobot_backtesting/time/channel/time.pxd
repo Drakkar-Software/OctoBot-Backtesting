@@ -14,17 +14,17 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_channels.channels.channel cimport Channel
-from octobot_channels.consumer cimport SupervisedConsumer
-from octobot_channels.producer cimport Producer
+cimport async_channel.channels as channels
+cimport async_channel.consumer as consumers
+cimport async_channel.producer as producers
 
-from octobot_backtesting.backtesting cimport Backtesting
+cimport octobot_backtesting.backtesting as backtesting
 
-cdef class TimeProducer(Producer):
-    cdef public Backtesting backtesting
+cdef class TimeProducer(producers.Producer):
+    cdef public backtesting.Backtesting backtesting
 
-cdef class TimeConsumer(SupervisedConsumer):
+cdef class TimeConsumer(consumers.SupervisedConsumer):
     pass
 
-cdef class TimeChannel(Channel):
+cdef class TimeChannel(channels.Channel):
     pass

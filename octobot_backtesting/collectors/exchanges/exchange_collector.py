@@ -19,7 +19,7 @@ import abc
 
 import time
 
-import octobot_backtesting.collectors as collectors
+import octobot_backtesting.collectors.data_collector as data_collector
 import octobot_backtesting.enums as enums
 import octobot_backtesting.importers as importers
 
@@ -29,7 +29,7 @@ except ImportError:
     logging.error("ExchangeDataCollector requires OctoBot-Trading package installed")
 
 
-class ExchangeDataCollector(collectors.DataCollector):
+class ExchangeDataCollector(data_collector.DataCollector):
     VERSION = "1.0"
     IMPORTER = importers.ExchangeDataImporter
 

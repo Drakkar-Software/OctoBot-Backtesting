@@ -20,7 +20,7 @@ import octobot_commons.logging as logging
 import octobot_commons.channels_name as channels_name
 import octobot_commons.tentacles_management as tentacles_management
 
-import octobot_backtesting.util as util
+import octobot_backtesting.util as backtesting_util
 import octobot_backtesting.time as backtesting_time
 
 
@@ -44,11 +44,11 @@ class Backtesting:
             self.time_manager.initialize()
 
             self.time_channel = await channel_util.create_channel_instance(backtesting_time.TimeChannel,
-                                                                           backtesting_time.set_chan,
+                                                                           channels.set_chan,
                                                                            is_synchronized=True)
 
             self.time_updater = backtesting_time.TimeUpdater(
-                channels.get_chan(channels_name.OctoBotBacktestingChannelsName.TIME_CHANNEL), self)
+                channels.get_chan(channels_name.OctoBotBacktestingChannelsName.TIME_CHANNEL.value), self)
         except Exception as e:
             self.logger.exception(e, True, f"Error when initializing backtesting : {e}.")
 
@@ -68,7 +68,8 @@ class Backtesting:
 
     async def create_importers(self):
         try:
-            self.importers = [await util.create_importer_from_backtesting_file_name(self.config, backtesting_file)
+            self.importers = [await backtesting_util.create_importer_from_backtesting_file_name(self.config,
+                                                                                                backtesting_file)
                               for backtesting_file in self.backtesting_files]
         except TypeError:
             pass

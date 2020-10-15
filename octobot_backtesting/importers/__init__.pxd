@@ -15,15 +15,15 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_backtesting.cimporters cimport data_cimporter
-from octobot_backtesting.cimporters.data_cimporter cimport (
+from octobot_backtesting.importers cimport data_importer
+from octobot_backtesting.importers.data_importer cimport (
     DataImporter,
 )
 
-from octobot_backtesting.cimporters cimport social
-from octobot_backtesting.cimporters cimport exchanges
+from octobot_backtesting.importers cimport social
+from octobot_backtesting.importers cimport exchanges
 
-from octobot_backtesting.cimporters.exchanges cimport (
+from octobot_backtesting.importers.exchanges cimport (
     ExchangeDataImporter,
 )
 

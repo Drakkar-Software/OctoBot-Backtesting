@@ -48,15 +48,15 @@ packages_list = [
     "octobot_backtesting.data.data_file_manager",
     "octobot_backtesting.data.database",
     "octobot_backtesting.util.backtesting_util",
-    "octobot_backtesting.time.time_manager",
-    "octobot_backtesting.time.channel.time",
-    "octobot_backtesting.time.channel.time_updater",
     "octobot_backtesting.collectors.data_collector",
-    "octobot_backtesting.collectors.exchanges.abstract_exchange_history_collector",
     "octobot_backtesting.collectors.exchanges.exchange_collector",
+    "octobot_backtesting.collectors.exchanges.abstract_exchange_history_collector",
     "octobot_backtesting.collectors.exchanges.abstract_exchange_live_collector",
     "octobot_backtesting.collectors.social.social_collector",
     "octobot_backtesting.converters.data_converter",
+    "octobot_backtesting.time.time_manager",
+    "octobot_backtesting.time.channel.time",
+    "octobot_backtesting.time.channel.time_updater",
 ]
 
 ext_modules = [

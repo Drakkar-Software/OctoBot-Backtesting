@@ -16,13 +16,13 @@
 #  License along with this library.
 
 from octobot_backtesting.time.channel cimport time
-from octobot_backtesting.time.channel cimport time_updater
-
 from octobot_backtesting.time.channel.time cimport (
     TimeProducer,
     TimeConsumer,
     TimeChannel,
 )
+
+from octobot_backtesting.time.channel cimport time_updater
 from octobot_backtesting.time.channel.time_updater cimport (
     TimeUpdater,
 )

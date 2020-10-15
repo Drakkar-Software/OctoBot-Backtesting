@@ -17,10 +17,10 @@ import asyncio
 import time
 
 import octobot_backtesting.channels_manager as channels_manager
-from octobot_backtesting.time.channel.time import TimeProducer
+import octobot_backtesting.time.channel.time as time_channel
 
 
-class TimeUpdater(TimeProducer):
+class TimeUpdater(time_channel.TimeProducer):
     def __init__(self, channel, backtesting):
         super().__init__(channel, backtesting)
         self.backtesting = backtesting

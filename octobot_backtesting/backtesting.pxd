@@ -14,8 +14,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-from octobot_backtesting.time.time_manager cimport TimeManager
-from octobot_backtesting.time.channel.time cimport TimeChannel
+cimport octobot_backtesting.time.time_manager as time_manager
+cimport octobot_backtesting.time.channel.time as time_channel
 
 cdef class Backtesting:
     cdef public object config
@@ -26,9 +26,9 @@ cdef class Backtesting:
 
     cdef public str matrix_id
 
-    cdef public TimeManager time_manager
+    cdef public time_manager.TimeManager time_manager
     cdef public object time_updater
-    cdef public TimeChannel time_channel
+    cdef public time_channel.TimeChannel time_channel
     cdef object logger
 
     cpdef list get_importers(self, object importer_parent_class=*)
