@@ -38,13 +38,17 @@ class ChannelsManager:
         Initialize Backtesting channels manager
         """
         self.logger.debug("Initializing producers...")
-        self.producers = list_util.flatten_list(_get_backtesting_producers() +
-                                                self._get_trading_producers() +
-                                                self._get_evaluator_producers())
+        try:
+            self.producers = list_util.flatten_list(_get_backtesting_producers() +
+                                                    self._get_trading_producers() +
+                                                    self._get_evaluator_producers())
 
-        # Initialize all producers by calling producer.start()
-        for producer in list_util.flatten_list(self._get_trading_producers() + self._get_evaluator_producers()):
-            await producer.start()
+            # Initialize all producers by calling producer.start()
+            for producer in list_util.flatten_list(self._get_trading_producers() + self._get_evaluator_producers()):
+                await producer.start()
+        except Exception as exception:
+            self.logger.exception(exception, True, f"Error when initializing backtesting: {exception}")
+            raise
 
     async def handle_new_iteration(self) -> None:
         for level_key in channel_enums.ChannelConsumerPriorityLevels:
@@ -70,9 +74,9 @@ class ChannelsManager:
         ]
 
     def _get_evaluator_producers(self):
-        import octobot_evaluators.channels as channels
+        import octobot_evaluators.evaluators.channel as evaluators_channel
         return [
-            _get_channel_producers(channels.get_chan(channel_name.value, self.matrix_id))
+            _get_channel_producers(evaluators_channel.get_chan(channel_name.value, self.matrix_id))
             for channel_name in channels_name.OctoBotEvaluatorsChannelsName
         ]
 

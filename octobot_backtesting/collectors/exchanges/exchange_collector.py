@@ -19,6 +19,7 @@ import abc
 
 import time
 
+import octobot_commons.constants as commons_constants
 import octobot_backtesting.collectors.data_collector as data_collector
 import octobot_backtesting.enums as enums
 import octobot_backtesting.importers as importers
@@ -51,15 +52,15 @@ class ExchangeDataCollector(data_collector.DataCollector):
         await self.database.initialize()
 
         # set config from params
-        self.config[trading_constants.CONFIG_TIME_FRAME] = self.time_frames
+        self.config[commons_constants.CONFIG_TIME_FRAME] = self.time_frames
         self.config[trading_constants.CONFIG_EXCHANGES] = {self.exchange_name: {}}
-        self.config[trading_constants.CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {
-            trading_constants.CONFIG_CRYPTO_PAIRS: self.symbols}}
+        self.config[commons_constants.CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {
+            commons_constants.CONFIG_CRYPTO_PAIRS: self.symbols}}
 
     def _load_timeframes_if_necessary(self):
         if self.use_all_available_timeframes:
             self._load_all_available_timeframes()
-        self.config[trading_constants.CONFIG_TIME_FRAME] = self.time_frames
+        self.config[commons_constants.CONFIG_TIME_FRAME] = self.time_frames
 
     async def _create_description(self):
         await self.database.insert(enums.DataTables.DESCRIPTION,
