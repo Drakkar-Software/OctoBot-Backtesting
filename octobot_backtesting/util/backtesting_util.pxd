@@ -15,4 +15,4 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-cdef str parse_class_name_from_backtesting_file(str backtesting_file)
+cdef str _parse_class_name_from_backtesting_file(str backtesting_file)

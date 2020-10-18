@@ -13,8 +13,12 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import octobot_backtesting.util as util
+import os
+
+if not os.getenv('CYTHON_IGNORE'):
+    from octobot_backtesting.util.backtesting_util import _parse_class_name_from_backtesting_file
 
 
 def test_parse_class_name_from_backtesting_file():
-    assert util.parse_class_name_from_backtesting_file("ExchangeHistoryDataCollector_1589740606.4862757") == "ExchangeHistoryDataCollector"
+    if not os.getenv('CYTHON_IGNORE'):
+        assert _parse_class_name_from_backtesting_file("ExchangeHistoryDataCollector_1589740606.4862757") == "ExchangeHistoryDataCollector"

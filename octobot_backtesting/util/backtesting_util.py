@@ -25,7 +25,7 @@ import octobot_commons.tentacles_management as tentacles_management
 async def create_importer_from_backtesting_file_name(config,
                                                      backtesting_file) -> typing.Optional[importers.DataImporter]:
     collector_klass = tentacles_management.get_deep_class_from_parent_subclasses(
-        parse_class_name_from_backtesting_file(backtesting_file), collectors.DataCollector)
+        _parse_class_name_from_backtesting_file(backtesting_file), collectors.DataCollector)
     importer = collector_klass.IMPORTER(config, backtesting_file) if collector_klass else None
 
     if not importer:
@@ -35,5 +35,5 @@ async def create_importer_from_backtesting_file_name(config,
     return importer
 
 
-def parse_class_name_from_backtesting_file(backtesting_file):
+def _parse_class_name_from_backtesting_file(backtesting_file):
     return os.path.basename(backtesting_file).split(constants.BACKTESTING_DATA_FILE_SEPARATOR)[0]
