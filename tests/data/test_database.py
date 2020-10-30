@@ -16,22 +16,27 @@
 import pytest
 import os
 import asyncio
-from sqlite3 import OperationalError
-from contextlib import asynccontextmanager
+import sqlite3
+import contextlib
 
-from octobot_backtesting.errors import DataBaseNotExists
-from octobot_backtesting.data.database import DataBase
-from octobot_backtesting.enums import ExchangeDataTables, DataBaseOperations
+
+import octobot_commons.asyncio_tools as asyncio_tools
+import octobot_backtesting.errors as errors
+import octobot_backtesting.data as backtesting_data
+import octobot_backtesting.enums as enums
 
 # All test coroutines will be treated as marked.
+
 pytestmark = pytest.mark.asyncio
+DATA_FILE1 = "ExchangeHistoryDataCollector_1589740606.4862757.data"
+DATA_FILE2 = "second_ExchangeHistoryDataCollector_1589740606.4862757.data"
 
 
 # use context manager instead of fixture to prevent pytest threads issues
-@asynccontextmanager
-async def get_database():
-    database_file = os.path.join("tests", "static", "ExchangeHistoryDataCollector_1589740606.4862757.data")
-    database = DataBase(database_file)
+@contextlib.asynccontextmanager
+async def get_database(data_file=DATA_FILE1):
+    database_file = os.path.join("tests", "static", data_file)
+    database = backtesting_data.DataBase(database_file)
     try:
         await database.initialize()
         yield database
@@ -40,10 +45,10 @@ async def get_database():
 
 
 # use context manager instead of fixture to prevent pytest threads issues
-@asynccontextmanager
+@contextlib.asynccontextmanager
 async def get_temp_empty_database():
     database_name = "temp_empty_database"
-    database = DataBase(database_name)
+    database = backtesting_data.DataBase(database_name)
     try:
         await database.initialize()
         yield database
@@ -54,12 +59,12 @@ async def get_temp_empty_database():
 
 async def test_invalid_file():
     file_name = "plop"
-    db = DataBase(file_name)
+    db = backtesting_data.DataBase(file_name)
     try:
         await db.initialize()
-        assert not await db.check_table_exists(ExchangeDataTables.KLINE)
-        with pytest.raises(OperationalError):
-            await db.check_table_not_empty(ExchangeDataTables.KLINE)
+        assert not await db.check_table_exists(enums.ExchangeDataTables.KLINE)
+        with pytest.raises(sqlite3.OperationalError):
+            await db.check_table_not_empty(enums.ExchangeDataTables.KLINE)
     finally:
         await db.stop()
         os.remove(file_name)
@@ -68,67 +73,67 @@ async def test_invalid_file():
 async def test_select():
     async with get_database() as database:
         # default values
-        with pytest.raises(DataBaseNotExists):
-            await database.select(ExchangeDataTables.KLINE)
+        with pytest.raises(errors.DataBaseNotExists):
+            await database.select(enums.ExchangeDataTables.KLINE)
 
-        ohlcv = await database.select(ExchangeDataTables.OHLCV)
+        ohlcv = await database.select(enums.ExchangeDataTables.OHLCV)
         assert len(ohlcv) == 6531
 
-        ohlcv = await database.select(ExchangeDataTables.OHLCV, time_frame="1h")
+        ohlcv = await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")
         assert len(ohlcv) == 500
 
-        ohlcv = await database.select(ExchangeDataTables.OHLCV, symbol="xyz")
+        ohlcv = await database.select(enums.ExchangeDataTables.OHLCV, symbol="xyz")
         assert len(ohlcv) == 0
 
-        ohlcv = await database.select(ExchangeDataTables.OHLCV, symbol="ETH/BTC")
+        ohlcv = await database.select(enums.ExchangeDataTables.OHLCV, symbol="ETH/BTC")
         assert len(ohlcv) == 6531
 
-        changed_order_ohlcv = await database.select(ExchangeDataTables.OHLCV, order_by="time_frame", symbol="ETH/BTC")
+        changed_order_ohlcv = await database.select(enums.ExchangeDataTables.OHLCV, order_by="time_frame", symbol="ETH/BTC")
         assert changed_order_ohlcv[0] != ohlcv[0]
 
-        ohlcv = await database.select(ExchangeDataTables.OHLCV, xyz="xyz")
+        ohlcv = await database.select(enums.ExchangeDataTables.OHLCV, xyz="xyz")
         assert len(ohlcv) == 0
 
 
 async def test_select_max():
     async with get_database() as database:
-        assert await database.select_max(ExchangeDataTables.OHLCV, ["timestamp"]) == [(1590883200,)]
-        assert await database.select_max(ExchangeDataTables.OHLCV, ["timestamp"], time_frame="1h") == [(1589742000,)]
-        assert await database.select_max(ExchangeDataTables.OHLCV, ["timestamp"], ["symbol"], time_frame="1h") == \
+        assert await database.select_max(enums.ExchangeDataTables.OHLCV, ["timestamp"]) == [(1590883200,)]
+        assert await database.select_max(enums.ExchangeDataTables.OHLCV, ["timestamp"], time_frame="1h") == [(1589742000,)]
+        assert await database.select_max(enums.ExchangeDataTables.OHLCV, ["timestamp"], ["symbol"], time_frame="1h") == \
             [(1589742000, "ETH/BTC")]
 
 
 async def test_select_min():
     async with get_database() as database:
-        assert await database.select_min(ExchangeDataTables.OHLCV, ["timestamp"]) == [(1500249600,)]
-        assert await database.select_min(ExchangeDataTables.OHLCV, ["timestamp"], time_frame="1h") == [(1587945600,)]
-        assert await database.select_min(ExchangeDataTables.OHLCV, ["timestamp"], ["symbol"], time_frame="1h") == \
+        assert await database.select_min(enums.ExchangeDataTables.OHLCV, ["timestamp"]) == [(1500249600,)]
+        assert await database.select_min(enums.ExchangeDataTables.OHLCV, ["timestamp"], time_frame="1h") == [(1587945600,)]
+        assert await database.select_min(enums.ExchangeDataTables.OHLCV, ["timestamp"], ["symbol"], time_frame="1h") == \
             [(1587945600, "ETH/BTC")]
 
 
 async def test_select_from_timestamp():
     async with get_database() as database:
-        operations = [DataBaseOperations.INF_EQUALS.value]
-        candles = await database.select_from_timestamp(ExchangeDataTables.OHLCV, ["1587960000"], operations)
+        operations = [enums.DataBaseOperations.INF_EQUALS.value]
+        candles = await database.select_from_timestamp(enums.ExchangeDataTables.OHLCV, ["1587960000"], operations)
         assert len(candles) > 0
         assert all(candle[0] <= 1587960000 for candle in candles)
 
-        operations = [DataBaseOperations.INF_EQUALS.value, DataBaseOperations.SUP_EQUALS.value]
-        candles = await database.select_from_timestamp(ExchangeDataTables.OHLCV,
+        operations = [enums.DataBaseOperations.INF_EQUALS.value, enums.DataBaseOperations.SUP_EQUALS.value]
+        candles = await database.select_from_timestamp(enums.ExchangeDataTables.OHLCV,
                                                        ["1587960000", "1587960000"],
                                                        operations)
         assert len(candles) > 0
         assert all(candle[0] == 1587960000 for candle in candles)
 
-        operations = [DataBaseOperations.INF_EQUALS.value, DataBaseOperations.SUP_EQUALS.value]
-        candles = await database.select_from_timestamp(ExchangeDataTables.OHLCV,
+        operations = [enums.DataBaseOperations.INF_EQUALS.value, enums.DataBaseOperations.SUP_EQUALS.value]
+        candles = await database.select_from_timestamp(enums.ExchangeDataTables.OHLCV,
                                                        ["1587960000", "1587945600"],
                                                        operations)
         assert len(candles) == 15
         assert all(1587945600 <= candle[0] <= 1587960000 for candle in candles)
 
-        operations = [DataBaseOperations.INF_EQUALS.value, DataBaseOperations.SUP_EQUALS.value]
-        candles = await database.select_from_timestamp(ExchangeDataTables.OHLCV,
+        operations = [enums.DataBaseOperations.INF_EQUALS.value, enums.DataBaseOperations.SUP_EQUALS.value]
+        candles = await database.select_from_timestamp(enums.ExchangeDataTables.OHLCV,
                                                        ["1587960000", "1587945600"],
                                                        operations,
                                                        symbol="xyz")
@@ -137,36 +142,65 @@ async def test_select_from_timestamp():
 
 async def test_concurrent_select():
     async with get_database() as database:
-        timestamps = [ohlcv[0] for ohlcv in await database.select(ExchangeDataTables.OHLCV, time_frame="1h")]
+        timestamps = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
         await asyncio.gather(*[_check_select_result(database, ts) for ts in timestamps])
+
+
+async def test_stop_while_concurrent_select():
+    async with get_database() as database:
+        timestamps = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
+        await _check_select_result(database, timestamps[0])
+        asyncio.create_task(asyncio.wait(asyncio.gather(*[_check_select_result(database, ts) for ts in timestamps])))
+        # not enough time to finish all requests, most if not all will remaining pending
+        await asyncio_tools.wait_asyncio_next_cycle()
+
+
+async def test_double_database():
+    async with get_database() as database1, get_database(DATA_FILE2) as database2:
+        timestamps1 = [ohlcv[0] for ohlcv in await database1.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
+        timestamps2 = [ohlcv[0] for ohlcv in await database2.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
+        await asyncio.gather(*[_check_select_result(database1, ts) for ts in timestamps1])
+        await asyncio.gather(*[_check_select_result(database2, ts) for ts in timestamps2])
+
+
+async def test_double_database_stop_while_concurrent_select():
+    async with get_database() as database1, get_database(DATA_FILE2) as database2:
+        timestamps1 = [ohlcv[0] for ohlcv in await database1.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
+        timestamps2 = [ohlcv[0] for ohlcv in await database2.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
+        await _check_select_result(database1, timestamps1[0])
+        await _check_select_result(database2, timestamps2[0])
+        asyncio.create_task(asyncio.wait(asyncio.gather(*[_check_select_result(database1, ts) for ts in timestamps1])))
+        asyncio.create_task(asyncio.wait(asyncio.gather(*[_check_select_result(database2, ts) for ts in timestamps2])))
+        # not enough time to finish all requests, most if not all will remaining pending
+        await asyncio_tools.wait_asyncio_next_cycle()
 
 
 async def test_insert():
     async with get_temp_empty_database() as temp_empty_database:
-        await temp_empty_database.insert(ExchangeDataTables.OHLCV, symbol="xyz", timestamp=1, price=1, date="01")
-        assert await temp_empty_database.select(ExchangeDataTables.OHLCV) == [(1, 'xyz', '1', '01')]
+        await temp_empty_database.insert(enums.ExchangeDataTables.OHLCV, symbol="xyz", timestamp=1, price=1, date="01")
+        assert await temp_empty_database.select(enums.ExchangeDataTables.OHLCV) == [(1, 'xyz', '1', '01')]
 
 
 async def test_insert_all():
     async with get_temp_empty_database() as temp_empty_database:
-        await temp_empty_database.insert_all(ExchangeDataTables.OHLCV,
+        await temp_empty_database.insert_all(enums.ExchangeDataTables.OHLCV,
                                              symbol=["xyz", "abc"],
                                              timestamp=[1, 2],
                                              price=[1, 10],
                                              date=["01", "05"])
-        assert await temp_empty_database.select(ExchangeDataTables.OHLCV) == [(2, 'abc', '10', '05'), (1, 'xyz', '1', '01')]
-        assert await temp_empty_database.select(ExchangeDataTables.OHLCV, date="05") == [(2, 'abc', '10', '05')]
+        assert await temp_empty_database.select(enums.ExchangeDataTables.OHLCV) == [(2, 'abc', '10', '05'), (1, 'xyz', '1', '01')]
+        assert await temp_empty_database.select(enums.ExchangeDataTables.OHLCV, date="05") == [(2, 'abc', '10', '05')]
 
 
 async def test_create_index():
     async with get_temp_empty_database() as temp_empty_database:
-        await temp_empty_database.insert(ExchangeDataTables.OHLCV, 1, symbol="xyz", price="1", date="01")
+        await temp_empty_database.insert(enums.ExchangeDataTables.OHLCV, 1, symbol="xyz", price="1", date="01")
         # ensure no exception
-        await temp_empty_database.create_index(ExchangeDataTables.OHLCV, ["symbol", "timestamp"])
-        assert await temp_empty_database.select(ExchangeDataTables.OHLCV) == [(1, 'xyz', '1', '01')]
+        await temp_empty_database.create_index(enums.ExchangeDataTables.OHLCV, ["symbol", "timestamp"])
+        assert await temp_empty_database.select(enums.ExchangeDataTables.OHLCV) == [(1, 'xyz', '1', '01')]
 
 
 async def _check_select_result(database, timestamp):
-    ohlcv = await database.select(ExchangeDataTables.OHLCV, time_frame="1h", timestamp=str(timestamp))
+    ohlcv = await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h", timestamp=str(timestamp))
     assert len(ohlcv) == 1
     assert ohlcv[0][0] == timestamp
