@@ -232,6 +232,10 @@ class DataBase:
             self.tables = await cursor.fetchall()
 
     async def stop(self):
-        if self.connection is not None:
-            await self.connection.close()
-            self.connection = None
+        try:
+            for cursor in self._cursor_pool:
+                await cursor.close()
+        finally:
+            if self.connection is not None:
+                await self.connection.close()
+                self.connection = None
