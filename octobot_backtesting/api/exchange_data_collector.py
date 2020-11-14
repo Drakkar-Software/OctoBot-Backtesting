@@ -17,9 +17,9 @@ import octobot_backtesting.collectors as collectors
 import octobot_commons.tentacles_management as tentacles_management
 
 
-async def collect_exchange_historical_data(exchange_name, symbols, time_frames=None) -> str:
+async def collect_exchange_historical_data(exchange_name, tentacles_setup_config, symbols, time_frames=None) -> str:
     collector_class = tentacles_management.get_single_deepest_child_class(collectors.AbstractExchangeHistoryCollector)
-    collector_instance = collector_class({}, exchange_name, symbols, time_frames,
+    collector_instance = collector_class({}, exchange_name, tentacles_setup_config, symbols, time_frames,
                                          use_all_available_timeframes=time_frames is None)
     await collector_instance.initialize()
     await collector_instance.start()

@@ -24,6 +24,7 @@ cdef class ExchangeDataCollector(data_collector.DataCollector):
     cdef public list symbols
     cdef public list time_frames
 
+    cdef object tentacles_setup_config
     cdef bint use_all_available_timeframes
 
     cpdef void _load_timeframes_if_necessary(self)
