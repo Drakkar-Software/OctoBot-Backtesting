@@ -34,10 +34,11 @@ class ExchangeDataCollector(data_collector.DataCollector):
     VERSION = "1.0"
     IMPORTER = importers.ExchangeDataImporter
 
-    def __init__(self, config, exchange_name, symbols, time_frames, use_all_available_timeframes=False,
+    def __init__(self, config, exchange_name, tentacles_setup_config, symbols, time_frames, use_all_available_timeframes=False,
                  data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA):
         super().__init__(config, data_format=data_format)
         self.exchange_name = exchange_name
+        self.tentacles_setup_config = tentacles_setup_config
         self.symbols = symbols if symbols else []
         self.time_frames = time_frames if time_frames else []
         self.use_all_available_timeframes = use_all_available_timeframes
