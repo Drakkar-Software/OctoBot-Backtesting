@@ -66,9 +66,9 @@ class ChannelsManager:
         self.producers = []
 
     def _get_trading_producers(self):
-        import octobot_trading.exchanges as exchanges
+        import octobot_trading.exchange_channel as exchange_channel
         return [
-            _get_channel_producers(exchanges.get_chan(channel_name.value, exchange_id))
+            _get_channel_producers(exchange_channel.get_chan(channel_name.value, exchange_id))
             for exchange_id in self.exchange_ids
             for channel_name in channels_name.OctoBotTradingChannelsName
         ]
