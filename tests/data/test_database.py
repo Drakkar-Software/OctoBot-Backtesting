@@ -26,8 +26,8 @@ import octobot_backtesting.data as backtesting_data
 import octobot_backtesting.enums as enums
 
 # All test coroutines will be treated as marked.
-
 pytestmark = pytest.mark.asyncio
+
 DATA_FILE1 = "ExchangeHistoryDataCollector_1589740606.4862757.data"
 DATA_FILE2 = "second_ExchangeHistoryDataCollector_1589740606.4862757.data"
 

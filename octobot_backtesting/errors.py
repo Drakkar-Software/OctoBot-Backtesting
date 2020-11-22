@@ -18,6 +18,10 @@ class DataBaseNotExists(Exception):
     pass
 
 
+class DataCollectorError(Exception):
+    pass
+
+
 class MissingTimeFrame(Exception):
     pass
 
