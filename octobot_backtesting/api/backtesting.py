@@ -33,7 +33,7 @@ async def initialize_backtesting(config, exchange_ids, matrix_id, data_files) ->
     await backtesting_instance.initialize()
 
     if not backtesting_instance.importers:
-        raise ValueError("No importers created")
+        raise ValueError("No importers created: did you enter the backtesting file(s) to use ?")
 
     return backtesting_instance
 
