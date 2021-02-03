@@ -32,7 +32,6 @@ from octobot_backtesting.api.importer import (
     get_available_data_types,
     get_available_time_frames,
     get_available_symbols,
-    get_importers_from_data_files,
     get_data_timestamp_interval,
     stop_importer,
 )
@@ -63,7 +62,6 @@ __all__ = [
     "get_available_data_types",
     "get_available_time_frames",
     "get_available_symbols",
-    "get_importers_from_data_files",
     "get_data_timestamp_interval",
     "stop_importer",
     "set_time_updater_interval",
