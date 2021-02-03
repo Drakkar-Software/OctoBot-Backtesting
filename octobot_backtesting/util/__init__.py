@@ -18,8 +18,10 @@ from octobot_backtesting.util import backtesting_util
 
 from octobot_backtesting.util.backtesting_util import (
     create_importer_from_backtesting_file_name,
+    get_default_importer,
 )
 
 __all__ = [
     "create_importer_from_backtesting_file_name",
+    "get_default_importer",
 ]

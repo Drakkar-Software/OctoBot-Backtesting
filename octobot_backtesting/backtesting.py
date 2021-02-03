@@ -68,8 +68,11 @@ class Backtesting:
 
     async def create_importers(self):
         try:
-            self.importers = [await backtesting_util.create_importer_from_backtesting_file_name(self.config,
-                                                                                                backtesting_file)
+            self.importers = [await backtesting_util.create_importer_from_backtesting_file_name(
+                self.config,
+                backtesting_file,
+                backtesting_util.get_default_importer()
+            )
                               for backtesting_file in self.backtesting_files]
         except TypeError:
             pass
