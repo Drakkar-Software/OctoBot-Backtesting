@@ -54,6 +54,8 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
     min_time_frame_to_consider = time_frame_manager.find_min_time_frame(
         time_frame_manager.get_config_time_frame(config))
     importers = backtesting.get_importers(importer_class)
+    if not importers:
+        raise RuntimeError("No exchange importer has been found for this data file, backtesting can't start.")
     try:
         timestamps = [await api.get_data_timestamp_interval(importer, min_time_frame_to_consider)
                       for importer in importers]  # [(min, max) ... ]
