@@ -24,6 +24,7 @@ class DataFormatKeys(enum.Enum):
     SYMBOLS = "symbols"
     EXCHANGE = "exchange"
     DATE = "date"
+    TIMESTAMP = "timestamp"
     CANDLES = "candles"
     TIME_FRAMES = "time_frames"
     TYPE = "type"
