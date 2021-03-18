@@ -26,7 +26,8 @@ async def get_file_description(file_name, data_path=constants.BACKTESTING_FILE_P
         return {
             enums.DataFormatKeys.SYMBOLS.value: description[enums.DataFormatKeys.SYMBOLS.value],
             enums.DataFormatKeys.EXCHANGE.value: description[enums.DataFormatKeys.EXCHANGE.value],
-            enums.DataFormatKeys.DATE.value: data.get_date(int(description[enums.DataFormatKeys.DATE.value])),
+            enums.DataFormatKeys.DATE.value: data.get_date(int(description[enums.DataFormatKeys.TIMESTAMP.value])),
+            enums.DataFormatKeys.TIMESTAMP.value: int(description[enums.DataFormatKeys.TIMESTAMP.value]),
             enums.DataFormatKeys.TIME_FRAMES.value: [tf.value
                                                      for tf in description[enums.DataFormatKeys.TIME_FRAMES.value]],
             enums.DataFormatKeys.TYPE.value: "OctoBot data file"

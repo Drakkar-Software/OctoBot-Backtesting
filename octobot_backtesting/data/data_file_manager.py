@@ -56,7 +56,7 @@ async def get_database_description(database):
     version = description[1]
     if version == "1.0":
         return {
-            enums.DataFormatKeys.DATE.value: description[0],
+            enums.DataFormatKeys.TIMESTAMP.value: description[0],
             enums.DataFormatKeys.VERSION.value: description[1],
             enums.DataFormatKeys.EXCHANGE.value: description[2],
             enums.DataFormatKeys.SYMBOLS.value: json.loads(description[3]),
