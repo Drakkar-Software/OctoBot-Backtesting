@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.6.16] - 2021-03-19 
+### Added 
+- Timestamp to data_file description
+
 ## [1.6.15] - 2021-03-06 
 ### Updated 
 - Force chardet version
