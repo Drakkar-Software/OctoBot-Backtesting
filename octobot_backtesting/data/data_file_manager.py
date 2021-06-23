@@ -60,7 +60,9 @@ async def get_database_description(database):
             enums.DataFormatKeys.VERSION.value: description[1],
             enums.DataFormatKeys.EXCHANGE.value: description[2],
             enums.DataFormatKeys.SYMBOLS.value: json.loads(description[3]),
-            enums.DataFormatKeys.TIME_FRAMES.value: [common_enums.TimeFrames(tf) for tf in json.loads(description[4])]
+            enums.DataFormatKeys.TIME_FRAMES.value: [common_enums.TimeFrames(tf) for tf in json.loads(description[4])],
+            enums.DataFormatKeys.START_TIMESTAMP.value: (await database.select_min(enums.ExchangeDataTables.OHLCV, [data.DataBase.TIMESTAMP_COLUMN]))[0][0],
+            enums.DataFormatKeys.END_TIMESTAMP.value: (await database.select_max(enums.ExchangeDataTables.OHLCV, [data.DataBase.TIMESTAMP_COLUMN]))[0][0]
         }
     else:
         raise RuntimeError(f"Unknown datafile version: {version}")
