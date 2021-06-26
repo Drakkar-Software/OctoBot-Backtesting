@@ -35,15 +35,13 @@ class ExchangeDataCollector(data_collector.DataCollector):
     IMPORTER = importers.ExchangeDataImporter
 
     def __init__(self, config, exchange_name, tentacles_setup_config, symbols, time_frames, use_all_available_timeframes=False,
-                 data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA, start_timestamp=None, end_timestamp=None):
+                 data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA):
         super().__init__(config, data_format=data_format)
         self.exchange_name = exchange_name
         self.tentacles_setup_config = tentacles_setup_config
         self.symbols = symbols if symbols else []
         self.time_frames = time_frames if time_frames else []
         self.use_all_available_timeframes = use_all_available_timeframes
-        self.start_timestamp = start_timestamp
-        self.end_timestamp = end_timestamp
         self.set_file_path()
 
     @abc.abstractmethod
