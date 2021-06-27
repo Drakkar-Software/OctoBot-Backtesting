@@ -110,6 +110,11 @@ async def test_select_min():
         assert await database.select_min(enums.ExchangeDataTables.OHLCV, ["timestamp"], ["symbol"], time_frame="1h") == \
             [(1587945600, "ETH/BTC")]
 
+async def test_select_count():
+    async with get_database() as database:
+        assert await database.select_count(enums.ExchangeDataTables.OHLCV, ["*"]) == [(6531,)]
+        assert await database.select_count(enums.ExchangeDataTables.OHLCV, ["*"], time_frame="1h") == [(500,)]
+        assert await database.select_count(enums.ExchangeDataTables.OHLCV, ["*"], time_frame="1M") == [(35,)]
 
 async def test_select_from_timestamp():
     async with get_database() as database:
