@@ -22,7 +22,7 @@ from datetime import datetime
 
 import octobot_backtesting.data as data
 import octobot_commons.enums as common_enums
-from octobot_commons.time_frame_manager import find_min_time_frame
+import octobot_commons.time_frame_manager as tmf_manager
 
 import octobot_backtesting.constants as constants
 import octobot_backtesting.enums as enums
@@ -65,8 +65,8 @@ async def get_database_description(database):
             enums.DataFormatKeys.START_TIMESTAMP.value: 0,
             enums.DataFormatKeys.END_TIMESTAMP.value: 0,
             enums.DataFormatKeys.CANDLES_LENGTH.value:
-                                    int((await database.select_count(enums.ExchangeDataTables.OHLCV, "*",\
-                                    time_frame=find_min_time_frame([common_enums.TimeFrames(tf)
+                                    int((await database.select_count(enums.ExchangeDataTables.OHLCV, ["*"],\
+                                    time_frame=tmf_manager.find_min_time_frame([common_enums.TimeFrames(tf)
                                                                     for tf in json.loads(description[4])]).value))[0][0]
                                     / len(json.loads(description[3])))
         }
@@ -80,8 +80,8 @@ async def get_database_description(database):
             enums.DataFormatKeys.START_TIMESTAMP.value: description[5],
             enums.DataFormatKeys.END_TIMESTAMP.value: description[6],
             enums.DataFormatKeys.CANDLES_LENGTH.value:
-                                    int((await database.select_count(enums.ExchangeDataTables.OHLCV, "*",\
-                                    time_frame=find_min_time_frame([common_enums.TimeFrames(tf)
+                                    int((await database.select_count(enums.ExchangeDataTables.OHLCV, ["*"],\
+                                    time_frame=tmf_manager.find_min_time_frame([common_enums.TimeFrames(tf)
                                                                     for tf in json.loads(description[4])]).value))[0][0]
                                     / len(json.loads(description[3])))
         }
