@@ -30,6 +30,7 @@ class DataFormatKeys(enum.Enum):
     START_DATE = "start_date"
     END_DATE = "end_date"
     CANDLES = "candles"
+    CANDLES_LENGTH = "candles_length"
     TIME_FRAMES = "time_frames"
     TYPE = "type"
     VERSION = "version"

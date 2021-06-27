@@ -36,6 +36,7 @@ async def get_file_description(file_name, data_path=constants.BACKTESTING_FILE_P
                                         int(description[enums.DataFormatKeys.END_TIMESTAMP.value])).split(" at ")[0],
             enums.DataFormatKeys.TIME_FRAMES.value: [tf.value
                                                      for tf in description[enums.DataFormatKeys.TIME_FRAMES.value]],
+            enums.DataFormatKeys.CANDLES_LENGTH.value: description[enums.DataFormatKeys.CANDLES_LENGTH.value],
             enums.DataFormatKeys.TYPE.value: "OctoBot data file"
         }
     else:
