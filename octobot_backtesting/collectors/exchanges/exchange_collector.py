@@ -31,7 +31,7 @@ except ImportError:
 
 
 class ExchangeDataCollector(data_collector.DataCollector):
-    VERSION = "1.0"
+    VERSION = "1.1"
     IMPORTER = importers.ExchangeDataImporter
 
     def __init__(self, config, exchange_name, tentacles_setup_config, symbols, time_frames, use_all_available_timeframes=False,
@@ -72,7 +72,10 @@ class ExchangeDataCollector(data_collector.DataCollector):
                                    version=self.VERSION,
                                    exchange=self.exchange_name,
                                    symbols=json.dumps(self.symbols),
-                                   time_frames=json.dumps([tf.value for tf in self.time_frames]))
+                                   time_frames=json.dumps([tf.value for tf in self.time_frames]),
+                                   start_timestamp=int(self.start_timestamp/1000) if self.start_timestamp else 0,
+                                   end_timestamp=self.end_timestamp if self.end_timestamp else int(time.time()) \
+                                                                                    if self.start_timestamp else 0)
 
     async def save_ticker(self, timestamp, exchange, cryptocurrency, symbol, ticker, multiple=False):
         if not multiple:
