@@ -115,6 +115,11 @@ class DataBase:
                                            where_clauses=self.__where_clauses_from_kwargs(**kwargs),
                                            additional_clauses=self.__select_order_by(order_by, sort),
                                            size=size)
+    
+    async def select_count(self, table, selected_items=None, **kwargs):
+        return await self.__execute_select(table=table,
+                                           select_items=f"{self.__count(selected_items)}",
+                                           where_clauses=self.__where_clauses_from_kwargs(**kwargs))
 
     async def select_max(self, table, max_columns, selected_items=None, group_by=None, **kwargs):
         return await self.__execute_select(table=table,
@@ -179,6 +184,9 @@ class DataBase:
 
     def __min(self, columns):
         return f"MIN({self.__selected_columns(columns)})"
+
+    def __count(self, columns):
+        return f"COUNT({self.__selected_columns(columns)})"
 
     def __selected_columns(self, columns=None):
         return ','.join(columns) if columns else ""
