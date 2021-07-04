@@ -74,7 +74,7 @@ class ExchangeDataCollector(data_collector.DataCollector):
                                    symbols=json.dumps(self.symbols),
                                    time_frames=json.dumps([tf.value for tf in self.time_frames]),
                                    start_timestamp=int(self.start_timestamp/1000) if self.start_timestamp else 0,
-                                   end_timestamp=self.end_timestamp if self.end_timestamp else int(time.time()) \
+                                   end_timestamp=int(self.end_timestamp/1000) if self.end_timestamp else int(time.time()) \
                                                                                     if self.start_timestamp else 0)
 
     async def save_ticker(self, timestamp, exchange, cryptocurrency, symbol, ticker, multiple=False):
