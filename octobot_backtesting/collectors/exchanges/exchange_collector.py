@@ -35,8 +35,7 @@ class ExchangeDataCollector(data_collector.DataCollector):
     IMPORTER = importers.ExchangeDataImporter
 
     def __init__(self, config, exchange_name, tentacles_setup_config, symbols, time_frames, use_all_available_timeframes=False,
-                 data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA, start_timestamp=None,\
-                 end_timestamp=None):
+                 data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA, start_timestamp=None, end_timestamp=None):
         super().__init__(config, data_format=data_format)
         self.exchange_name = exchange_name
         self.tentacles_setup_config = tentacles_setup_config
@@ -74,8 +73,8 @@ class ExchangeDataCollector(data_collector.DataCollector):
                                    symbols=json.dumps(self.symbols),
                                    time_frames=json.dumps([tf.value for tf in self.time_frames]),
                                    start_timestamp=int(self.start_timestamp/1000) if self.start_timestamp else 0,
-                                   end_timestamp=int(self.end_timestamp/1000) if self.end_timestamp else int(time.time()) \
-                                                                                    if self.start_timestamp else 0)
+                                   end_timestamp=int(self.end_timestamp/1000) if self.end_timestamp
+                                   else int(time.time()) if self.start_timestamp else 0)
 
     async def save_ticker(self, timestamp, exchange, cryptocurrency, symbol, ticker, multiple=False):
         if not multiple:
