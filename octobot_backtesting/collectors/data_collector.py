@@ -43,6 +43,7 @@ class DataCollector:
         self.database = None
         self.aiohttp_session = None
         self.file_path = None
+        self.temp_file_path = None
         self._ensure_file_path()
         self.set_file_path()
 
@@ -61,10 +62,14 @@ class DataCollector:
 
     def set_file_path(self) -> None:
         self.file_path = path.join(self.path, self.file_name) if self.path else self.file_name
+        self.temp_file_path = self.file_path + constants.BACKTESTING_DATA_FILE_TEMP_EXT
 
     def create_database(self) -> None:
         if not self.database:
-            self.database = data.DataBase(self.file_path)
+            self.database = data.DataBase(self.temp_file_path)
+    
+    def finalize_database(self):
+        os.rename(self.temp_file_path, self.file_path)
 
     def create_aiohttp_session(self) -> None:
         if not self.aiohttp_session:
