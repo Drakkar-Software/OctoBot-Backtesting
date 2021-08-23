@@ -57,6 +57,7 @@ class ExchangeDataTables(enum.Enum):
     OHLCV = "ohlcv"
     KLINE = "kline"
     TICKER = "ticker"
+    FUNDING = "funding"
 
 
 class DataBaseOperations(enum.Enum):
