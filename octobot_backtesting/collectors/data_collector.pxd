@@ -29,7 +29,13 @@ cdef class DataCollector:
     cdef public str file_path
     cdef public str path
 
+    cdef bint finished
+    cdef bint in_progress
+
     cdef public data.DataBase database
+
+    cpdef bint is_finished(self)
+    cpdef bint is_in_progress(self)
 
     cpdef void create_database(self)
     cpdef void create_aiohttp_session(self)

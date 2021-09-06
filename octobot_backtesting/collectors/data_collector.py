@@ -44,6 +44,8 @@ class DataCollector:
         self.aiohttp_session = None
         self.file_path = None
         self.temp_file_path = None
+        self.finished = False
+        self.in_progress  = False
         self._ensure_file_path()
         self.set_file_path()
 
@@ -55,6 +57,12 @@ class DataCollector:
 
     async def start(self) -> None:
         raise NotImplementedError("Start is not implemented")
+
+    def is_in_progress(self):
+        return self.in_progress
+
+    def is_finished(self):
+        return self.finished
 
     def _ensure_file_path(self):
         if not path.isdir(self.path):
