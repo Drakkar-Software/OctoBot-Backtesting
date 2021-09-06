@@ -26,8 +26,15 @@ cdef class ExchangeDataCollector(data_collector.DataCollector):
     cdef public object tentacles_setup_config
     cdef public object start_timestamp
     cdef public object end_timestamp
+    cdef public int current_time_frame_index
+    cdef public int total_time_frame
+    cdef public float current_time_frame_percent
 
     cdef bint use_all_available_timeframes
+
+    cpdef int get_current_time_frame_index(self)
+    cpdef int get_total_time_frame(self)
+    cpdef float get_current_time_frame_percent(self)
 
     cpdef void _load_timeframes_if_necessary(self)
     cpdef void _load_all_available_timeframes(self)

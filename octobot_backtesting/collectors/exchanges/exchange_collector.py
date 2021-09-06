@@ -44,7 +44,19 @@ class ExchangeDataCollector(data_collector.DataCollector):
         self.use_all_available_timeframes = use_all_available_timeframes
         self.start_timestamp = start_timestamp
         self.end_timestamp = end_timestamp
+        self.current_time_frame_index = 0
+        self.total_time_frame = 0
+        self.current_time_frame_percent = 0
         self.set_file_path()
+
+    def get_current_time_frame_index(self):
+        return self.current_time_frame_index
+
+    def get_total_time_frame(self):
+        return self.total_time_frame
+
+    def get_current_time_frame_percent(self):
+        return self.current_time_frame_percent
 
     @abc.abstractmethod
     def _load_all_available_timeframes(self):
