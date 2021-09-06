@@ -17,4 +17,4 @@ import octobot_backtesting.api as api
 
 
 def test_import():
-    assert api.collect_exchange_historical_data is not None
+    assert api.exchange_historical_data_collector_factory is not None
