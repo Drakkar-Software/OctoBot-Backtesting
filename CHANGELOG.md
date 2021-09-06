@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.6.21] - 2021-09-06
+### Updated
+- BacktestingApi Add initialize_and_run_data_collector
+- BacktestingApi Add is_data_collector_in_progress
+- BacktestingApi Add get_data_collector_progress
+- BacktestingApi Add is_data_collector_finished
+- ExchangeDataCollector Add progression info
+- DataCollector Add collection status (started, finished)
 
 ## [1.6.20] - 2021-07-19
 ### Updated
