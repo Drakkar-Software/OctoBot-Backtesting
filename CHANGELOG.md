@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.6.22] - 2021-09-07
+### Updated
+- Data collector variables names
+
 ## [1.6.21] - 2021-09-06
 ### Updated
 - BacktestingApi Add initialize_and_run_data_collector
