@@ -18,28 +18,33 @@ import octobot_commons.tentacles_management as tentacles_management
 
 
 def exchange_historical_data_collector_factory(exchange_name,
-                                            tentacles_setup_config,
-                                            symbols,
-                                            time_frames=None,
-                                            start_timestamp=None,
-                                            end_timestamp=None) -> str:
+                                               tentacles_setup_config,
+                                               symbols,
+                                               time_frames=None,
+                                               start_timestamp=None,
+                                               end_timestamp=None) -> str:
     collector_class = tentacles_management.get_single_deepest_child_class(collectors.AbstractExchangeHistoryCollector)
     collector_instance = collector_class({}, exchange_name, tentacles_setup_config, symbols, time_frames,
                                          use_all_available_timeframes=time_frames is None,
                                          start_timestamp=start_timestamp, end_timestamp=end_timestamp)
     return collector_instance
 
+
 async def initialize_and_run_data_collector(data_collector):
     await data_collector.initialize()
     await data_collector.start()
     return data_collector.file_name
 
+
 def is_data_collector_in_progress(data_collector):
     return data_collector.is_in_progress() if data_collector else False
 
+
 def get_data_collector_progress(data_collector):
-    return (data_collector.get_current_time_frame_index(), data_collector.get_total_time_frame(),
-                data_collector.get_current_time_frame_percent()) if data_collector else (0, 0, 0)
+    return (data_collector.get_current_step_index(), data_collector.get_total_steps(),
+            data_collector.get_current_step_percent()) if data_collector else (0, 0, 0)
+
 
 def is_data_collector_finished(data_collector):
-    return not is_data_collector_in_progress(data_collector) and data_collector.is_finished() if data_collector else False
+    return not is_data_collector_in_progress(
+        data_collector) and data_collector.is_finished() if data_collector else False
