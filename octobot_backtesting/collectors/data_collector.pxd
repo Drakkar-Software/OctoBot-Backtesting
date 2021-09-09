@@ -29,8 +29,8 @@ cdef class DataCollector:
     cdef public str file_path
     cdef public str path
 
-    cdef bint finished
-    cdef bint in_progress
+    cdef public bint finished
+    cdef public bint in_progress
 
     cdef public data.DataBase database
 

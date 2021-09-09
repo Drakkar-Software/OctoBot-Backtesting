@@ -45,7 +45,7 @@ class DataCollector:
         self.file_path = None
         self.temp_file_path = None
         self.finished = False
-        self.in_progress  = False
+        self.in_progress = False
         self._ensure_file_path()
         self.set_file_path()
 
