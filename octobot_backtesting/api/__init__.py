@@ -53,6 +53,7 @@ from octobot_backtesting.api.backtesting import (
 from octobot_backtesting.api.exchange_data_collector import (
     exchange_historical_data_collector_factory,
     initialize_and_run_data_collector,
+    stop_data_collector,
     is_data_collector_in_progress,
     get_data_collector_progress,
     is_data_collector_finished,
@@ -83,6 +84,7 @@ __all__ = [
     "stop_independent_backtesting",
     "exchange_historical_data_collector_factory",
     "initialize_and_run_data_collector",
+    "stop_data_collector",
     "is_data_collector_in_progress",
     "get_data_collector_progress",
     "is_data_collector_finished",
