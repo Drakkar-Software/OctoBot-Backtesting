@@ -36,6 +36,10 @@ async def initialize_and_run_data_collector(data_collector):
     return data_collector.file_name
 
 
+async def stop_data_collector(data_collector):
+    return await data_collector.stop(should_stop_database=False) if data_collector else False
+
+
 def is_data_collector_in_progress(data_collector):
     return data_collector.is_in_progress() if data_collector else False
 

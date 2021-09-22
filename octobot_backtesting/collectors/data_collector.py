@@ -17,7 +17,7 @@ import asyncio
 import json
 import os.path as path
 import os
-import aiohttp 
+import aiohttp
 
 import octobot_commons.logging as logging
 
@@ -52,7 +52,7 @@ class DataCollector:
     async def initialize(self) -> None:
         pass
 
-    async def stop(self) -> None:
+    async def stop(self, **kwargs) -> None:
         self.should_stop = True
 
     async def start(self) -> None:
@@ -75,7 +75,7 @@ class DataCollector:
     def create_database(self) -> None:
         if not self.database:
             self.database = data.DataBase(self.temp_file_path)
-    
+
     def finalize_database(self):
         os.rename(self.temp_file_path, self.file_path)
 
