@@ -49,7 +49,8 @@ async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
                                           maximum_timestamp=maximum_timestamp)
 
 
-async def adapt_backtesting_channels(backtesting, config, importer_class, run_on_common_part_only=True):
+async def adapt_backtesting_channels(backtesting, config, importer_class, run_on_common_part_only=True,
+                                     start_timestamp=None, end_timestamp=None):
     # set mininmum and maximum timestamp according to all importers data
     min_time_frame_to_consider = time_frame_manager.find_min_time_frame(
         time_frame_manager.get_config_time_frame(config))
@@ -65,16 +66,33 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
     max_timestamps = [timestamp[1] for timestamp in timestamps]
 
     min_timestamp = max(min_timestamps) if run_on_common_part_only else min(min_timestamps)
-    max_timestamps = min(max_timestamps) if run_on_common_part_only else max(max_timestamps)
+    max_timestamp = min(max_timestamps) if run_on_common_part_only else max(max_timestamps)
 
-    if min_timestamp > max_timestamps:
+    if min_timestamp > max_timestamp:
         raise RuntimeError(f"No candle data to run backtesting on in this time window: starting at: {min_timestamp} "
-                           f"and ending at: {max_timestamps}")
+                           f"and ending at: {max_timestamp}")
+    if start_timestamp is not None and end_timestamp is not None and \
+            start_timestamp > end_timestamp:
+        raise RuntimeError(f"No candle data to run backtesting on in this time window: starting at: {start_timestamp} "
+                           f"and ending at: {end_timestamp}")
+
+    if start_timestamp is not None:
+        if min_timestamp <= start_timestamp < end_timestamp if end_timestamp else max_timestamp:
+            min_timestamp = start_timestamp
+        else:
+            logging.get_logger("BacktestingAPI").warning(f"Can't set the minimum timestamp to {start_timestamp}. "
+                                                         f"The minimum available({min_timestamp}) will be used instead.")
+    if end_timestamp is not None:
+        if max_timestamp >= end_timestamp > start_timestamp if start_timestamp else min_timestamp:
+            max_timestamp = end_timestamp
+        else:
+            logging.get_logger("BacktestingAPI").warning(f"Can't set the maximum timestamp to {end_timestamp}. "
+                                                         f"The maximum available({max_timestamp}) will be used instead.")
 
     await modify_backtesting_timestamps(
         backtesting,
         minimum_timestamp=min_timestamp,
-        maximum_timestamp=max_timestamps)
+        maximum_timestamp=max_timestamp)
     try:
         import octobot_trading.api as exchange_api
 
