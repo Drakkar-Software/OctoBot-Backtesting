@@ -23,6 +23,8 @@ import octobot_commons.constants as commons_constants
 import octobot_backtesting.collectors.data_collector as data_collector
 import octobot_backtesting.enums as enums
 import octobot_backtesting.importers as importers
+import octobot_backtesting.errors as errors
+import octobot_commons.time_frame_manager as time_frame_manager
 
 try:
     import octobot_trading.constants as trading_constants
@@ -47,7 +49,11 @@ class ExchangeDataCollector(data_collector.DataCollector):
         self.current_step_index = 0
         self.total_steps = 0
         self.current_step_percent = 0
+        self.exchange_id = None
         self.set_file_path()
+
+    def register_exchange_id(self, exchange_id):
+        self.exchange_id = exchange_id
 
     def get_current_step_index(self):
         return self.current_step_index
@@ -57,6 +63,17 @@ class ExchangeDataCollector(data_collector.DataCollector):
 
     def get_current_step_percent(self):
         return self.current_step_percent
+
+    async def check_timestamps(self):
+        if self.start_timestamp is not None:
+            lowest_timestamp = min([await self.get_first_candle_timestamp(symbol,
+                                                                          time_frame_manager.find_min_time_frame(
+                                                                              self.time_frames))
+                                    for symbol in self.symbols])
+            if lowest_timestamp > self.start_timestamp:
+                self.start_timestamp = lowest_timestamp
+            if self.start_timestamp > (self.end_timestamp if self.end_timestamp else (time.time() * 1000)):
+                raise errors.DataCollectorError("start_timestamp is higher than end_timestamp")
 
     @abc.abstractmethod
     def _load_all_available_timeframes(self):

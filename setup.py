@@ -50,6 +50,7 @@ packages_list = [
     "octobot_backtesting.util.backtesting_util",
     "octobot_backtesting.collectors.data_collector",
     "octobot_backtesting.collectors.exchanges.exchange_collector",
+    "octobot_backtesting.collectors.exchanges.abstract_exchange_bot_snapshot_collector",
     "octobot_backtesting.collectors.exchanges.abstract_exchange_history_collector",
     "octobot_backtesting.collectors.exchanges.abstract_exchange_live_collector",
     "octobot_backtesting.collectors.social.social_collector",
