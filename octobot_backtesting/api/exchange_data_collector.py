@@ -22,8 +22,37 @@ def exchange_historical_data_collector_factory(exchange_name,
                                                symbols,
                                                time_frames=None,
                                                start_timestamp=None,
-                                               end_timestamp=None) -> str:
-    collector_class = tentacles_management.get_single_deepest_child_class(collectors.AbstractExchangeHistoryCollector)
+                                               end_timestamp=None):
+    return _exchange_collector_factory(collectors.AbstractExchangeHistoryCollector,
+                                       exchange_name,
+                                       tentacles_setup_config,
+                                       symbols,
+                                       time_frames,
+                                       start_timestamp,
+                                       end_timestamp)
+
+
+def exchange_bot_snapshot_data_collector_factory(exchange_name,
+                                                 tentacles_setup_config,
+                                                 symbols,
+                                                 exchange_id,
+                                                 time_frames=None,
+                                                 start_timestamp=None,
+                                                 end_timestamp=None):
+    collector = _exchange_collector_factory(collectors.AbstractExchangeBotSnapshotCollector,
+                                            exchange_name,
+                                            tentacles_setup_config,
+                                            symbols,
+                                            time_frames,
+                                            start_timestamp,
+                                            end_timestamp)
+    collector.register_exchange_id(exchange_id)
+    return collector
+
+
+def _exchange_collector_factory(collector_parent_class, exchange_name, tentacles_setup_config, symbols,
+                                time_frames, start_timestamp, end_timestamp):
+    collector_class = tentacles_management.get_single_deepest_child_class(collector_parent_class)
     collector_instance = collector_class({}, exchange_name, tentacles_setup_config, symbols, time_frames,
                                          use_all_available_timeframes=time_frames is None,
                                          start_timestamp=start_timestamp, end_timestamp=end_timestamp)
