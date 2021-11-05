@@ -22,6 +22,7 @@ from octobot_backtesting.collectors.data_collector import (
 from octobot_backtesting.collectors import exchanges
 from octobot_backtesting.collectors.exchanges import (
     ExchangeDataCollector,
+    AbstractExchangeBotSnapshotCollector,
     AbstractExchangeHistoryCollector,
     AbstractExchangeLiveCollector,
 )
@@ -35,6 +36,7 @@ from octobot_backtesting.collectors.social import (
 __all__ = [
     "DataCollector",
     "ExchangeDataCollector",
+    "AbstractExchangeBotSnapshotCollector",
     "AbstractExchangeHistoryCollector",
     "AbstractExchangeLiveCollector",
     "SocialDataCollector",

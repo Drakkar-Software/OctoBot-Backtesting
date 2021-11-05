@@ -23,6 +23,7 @@ from octobot_backtesting.collectors.data_collector cimport (
 from octobot_backtesting.collectors cimport exchanges
 from octobot_backtesting.collectors.exchanges cimport (
     ExchangeDataCollector,
+    AbstractExchangeBotSnapshotCollector,
     AbstractExchangeHistoryCollector,
     AbstractExchangeLiveCollector,
 )
@@ -36,6 +37,7 @@ from octobot_backtesting.collectors.social cimport (
 __all__ = [
     "DataCollector",
     "ExchangeDataCollector",
+    "AbstractExchangeBotSnapshotCollector",
     "AbstractExchangeHistoryCollector",
     "AbstractExchangeLiveCollector",
     "SocialDataCollector",
