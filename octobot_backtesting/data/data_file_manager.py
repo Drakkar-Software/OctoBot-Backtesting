@@ -29,9 +29,9 @@ import octobot_backtesting.enums as enums
 import octobot_backtesting.errors as errors
 
 
-def get_backtesting_file_name(clazz, data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA):
+def get_backtesting_file_name(clazz, identifier, data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA):
     return f"{clazz.__name__}{constants.BACKTESTING_DATA_FILE_SEPARATOR}" \
-           f"{time.time()}{get_file_ending(data_format)}"
+           f"{identifier()}{get_file_ending(data_format)}"
 
 
 def get_data_type(file_name):

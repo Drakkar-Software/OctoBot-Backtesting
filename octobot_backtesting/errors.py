@@ -22,6 +22,10 @@ class DataCollectorError(Exception):
     pass
 
 
+class IncompatibleDatafileError(Exception):
+    pass
+
+
 class MissingTimeFrame(Exception):
     pass
 
