@@ -100,12 +100,26 @@ class DataBase:
 
         await self.__execute_insert(table, ", ".join(insert_values))
 
+    async def update(self, table, updated_value_by_column, **kwargs):
+        # Insert a row of data
+        updating_values = [f"{key} = '{value}'" for key, value in updated_value_by_column.items()]
+        await self.__execute_update(table,
+                                    ', '.join(updating_values),
+                                    self.__where_clauses_from_kwargs(**kwargs))
+
     def __insert_values(self, timestamp, inserting_values) -> str:
         return f"({timestamp}, {inserting_values})"
 
     async def __execute_insert(self, table, insert_items) -> None:
         async with self.aio_cursor() as cursor:
             await cursor.execute(f"INSERT INTO {table.value} VALUES {insert_items}")
+
+        # Save (commit) the changes
+        await self.connection.commit()
+
+    async def __execute_update(self, table, update_items, where_clauses) -> None:
+        async with self.aio_cursor() as cursor:
+            await cursor.execute(f"UPDATE {table.value} SET {update_items} WHERE {where_clauses}")
 
         # Save (commit) the changes
         await self.connection.commit()

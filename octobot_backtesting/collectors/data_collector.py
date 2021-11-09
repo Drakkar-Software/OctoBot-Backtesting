@@ -17,6 +17,8 @@ import asyncio
 import json
 import os.path as path
 import os
+import time
+
 import aiohttp
 
 import octobot_commons.logging as logging
@@ -38,7 +40,9 @@ class DataCollector:
         self.logger = logging.get_logger(self.__class__.__name__)
 
         self.should_stop = False
-        self.file_name = data.get_backtesting_file_name(self.__class__, data_format)
+        self.file_name = data.get_backtesting_file_name(self.__class__,
+                                                        self.get_file_identifier,
+                                                        data_format=data_format)
 
         self.database = None
         self.aiohttp_session = None
@@ -51,6 +55,9 @@ class DataCollector:
 
     async def initialize(self) -> None:
         pass
+
+    def get_file_identifier(self):
+        return time.time()
 
     async def stop(self, **kwargs) -> None:
         self.should_stop = True

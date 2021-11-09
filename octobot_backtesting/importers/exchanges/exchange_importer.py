@@ -114,7 +114,8 @@ class ExchangeDataImporter(importers.DataImporter):
 
         return timestamps, operations
 
-    def import_ohlcvs(self, ohlcvs):
+    @staticmethod
+    def import_ohlcvs(ohlcvs):
         for i, val in enumerate(ohlcvs):
             ohlcvs[i] = list(val)
             # ohlcvs[i][-2] = TimeFrames(ohlcvs[i][-2])
@@ -139,7 +140,8 @@ class ExchangeDataImporter(importers.DataImporter):
                                                                             timestamps=timestamps,
                                                                             operations=operations))
 
-    def import_tickers(self, tickers):
+    @staticmethod
+    def import_tickers(tickers):
         for ticker in tickers:
             ticker[-1] = json.loads(ticker[-1])
         return tickers
@@ -156,7 +158,8 @@ class ExchangeDataImporter(importers.DataImporter):
                                                                              timestamps=timestamps,
                                                                              operations=operations))
 
-    def import_order_books(self, order_books):
+    @staticmethod
+    def import_order_books(order_books):
         for order_book in order_books:
             order_book[-1] = json.loads(order_book[-1])
             order_book[-2] = json.loads(order_book[-2])
@@ -174,7 +177,8 @@ class ExchangeDataImporter(importers.DataImporter):
                                                       exchange_name=exchange_name, symbol=symbol,
                                                       timestamps=timestamps, operations=operations))
 
-    def import_recent_trades(self, recent_trades):
+    @staticmethod
+    def import_recent_trades(recent_trades):
         for recent_trade in recent_trades:
             recent_trade[-1] = json.loads(recent_trade[-1])
         return recent_trades
@@ -194,7 +198,8 @@ class ExchangeDataImporter(importers.DataImporter):
                                                                              timestamps=timestamps,
                                                                              operations=operations))
 
-    def import_klines(self, klines):
+    @staticmethod
+    def import_klines(klines):
         for kline in klines:
             kline[-1] = json.loads(kline[-1])
         return klines
