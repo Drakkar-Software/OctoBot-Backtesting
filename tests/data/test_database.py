@@ -35,13 +35,8 @@ DATA_FILE2 = "second_ExchangeHistoryDataCollector_1589740606.4862757.data"
 # use context manager instead of fixture to prevent pytest threads issues
 @contextlib.asynccontextmanager
 async def get_database(data_file=DATA_FILE1):
-    database_file = os.path.join("tests", "static", data_file)
-    database = backtesting_data.DataBase(database_file)
-    try:
-        await database.initialize()
-        yield database
-    finally:
-        await database.stop()
+    async with backtesting_data.DataBase.database(os.path.join("tests", "static", data_file)) as db:
+        yield db
 
 
 # use context manager instead of fixture to prevent pytest threads issues

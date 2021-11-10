@@ -76,20 +76,24 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
         raise RuntimeError(f"No candle data to run backtesting on in this time window: starting at: {start_timestamp} "
                            f"and ending at: {end_timestamp}")
 
+    time_frame_sec = common_enums.TimeFramesMinutes[min_time_frame_to_consider] * common_constants.MINUTE_TO_SECONDS
     if start_timestamp is not None:
-        # Adapt start timestamp to start exactly at the top of the 1st available candle
+        # Adapt start and end timestamp to start exactly at the top of the 1st available candle
         # This avoids backtesting to run from mid candle time to mid candle time.
-        time_frame_sec = common_enums.TimeFramesMinutes[min_time_frame_to_consider] * common_constants.MINUTE_TO_SECONDS
+        # Adapt end timestamp
         start_timestamp = start_timestamp + (time_frame_sec - start_timestamp % time_frame_sec)
 
         if min_timestamp <= start_timestamp < end_timestamp if end_timestamp else max_timestamp:
-            min_timestamp = start_timestamp
+            min_timestamp = int(start_timestamp)
         else:
             logging.get_logger("BacktestingAPI").warning(f"Can't set the minimum timestamp to {start_timestamp}. "
                                                          f"The minimum available({min_timestamp}) will be used instead.")
     if end_timestamp is not None:
+        # Adapt end timestamp
+        end_timestamp = end_timestamp - (end_timestamp % time_frame_sec)
+
         if max_timestamp >= end_timestamp > start_timestamp if start_timestamp else min_timestamp:
-            max_timestamp = end_timestamp
+            max_timestamp = int(end_timestamp)
         else:
             logging.get_logger("BacktestingAPI").warning(f"Can't set the maximum timestamp to {end_timestamp}. "
                                                          f"The maximum available({max_timestamp}) will be used instead.")
