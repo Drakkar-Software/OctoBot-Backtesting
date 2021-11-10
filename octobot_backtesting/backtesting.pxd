@@ -34,5 +34,6 @@ cdef class Backtesting:
     cpdef list get_importers(self, object importer_parent_class=*)
     cpdef double get_progress(self)
     cpdef bint is_in_progress(self)
+    cpdef bint has_finished(self)
 
     cdef bint _has_nothing_to_do(self)
