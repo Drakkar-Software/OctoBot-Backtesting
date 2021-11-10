@@ -55,16 +55,6 @@ class DataBase:
     async def create_index(self, table, columns):
         await self.__execute_index_creation(table, '_'.join(columns), ', '.join(columns))
 
-    @staticmethod
-    @contextlib.asynccontextmanager
-    async def database(file_path):
-        local_database = DataBase(file_path)
-        try:
-            await local_database.initialize()
-            yield local_database
-        finally:
-            await local_database.stop()
-
     async def _add_cursor_in_pool(self):
         self._cursor_pool.append(await self.connection.cursor())
 
@@ -272,3 +262,13 @@ class DataBase:
             if self.connection is not None:
                 await self.connection.close()
                 self.connection = None
+
+
+@contextlib.asynccontextmanager
+async def new_database(file_path):
+    local_database = DataBase(file_path)
+    try:
+        await local_database.initialize()
+        yield local_database
+    finally:
+        await local_database.stop()

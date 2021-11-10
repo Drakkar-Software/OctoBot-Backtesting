@@ -30,6 +30,7 @@ from octobot_backtesting.data.data_file_manager import (
 )
 from octobot_backtesting.data.database import (
     DataBase,
+    new_database,
 )
 
 __all__ = [
@@ -43,4 +44,5 @@ __all__ = [
     "get_database_description",
     "get_file_description",
     "DataBase",
+    "new_database",
 ]
