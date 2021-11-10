@@ -22,16 +22,3 @@ cdef class ExchangeDataImporter(importers.DataImporter):
     cdef public list available_data_types
     cdef public list symbols
     cdef public list time_frames
-
-    @staticmethod
-    cdef tuple get_operations_from_timestamps(double superior_timestamp, double inferior_timestamp)
-    @staticmethod
-    cdef list import_ohlcvs(list ohlcvs)
-    @staticmethod
-    cdef list import_tickers(list tickers)
-    @staticmethod
-    cdef list import_klines(list klines)
-    @staticmethod
-    cdef list import_order_books(list order_books)
-    @staticmethod
-    cdef list import_recent_trades(list recent_trades)

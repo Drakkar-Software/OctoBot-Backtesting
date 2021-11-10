@@ -13,8 +13,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import octobot_backtesting.collectors.exchanges.exchange_collector as exchange_collector
+import octobot_backtesting.collectors.exchanges as exchanges
 
 
-class AbstractExchangeBotSnapshotCollector(exchange_collector.ExchangeDataCollector):
+class AbstractExchangeBotSnapshotCollector(exchanges.ExchangeDataCollector):
     pass
