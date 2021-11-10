@@ -23,7 +23,8 @@ cdef class ExchangeDataImporter(importers.DataImporter):
     cdef public list symbols
     cdef public list time_frames
 
-    cdef tuple __get_operations_from_timestamps(self, double superior_timestamp, double inferior_timestamp)
+    @staticmethod
+    cdef tuple get_operations_from_timestamps(double superior_timestamp, double inferior_timestamp)
     @staticmethod
     cdef list import_ohlcvs(list ohlcvs)
     @staticmethod
