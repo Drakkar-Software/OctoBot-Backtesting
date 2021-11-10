@@ -133,6 +133,10 @@ def get_backtesting_current_time(backtesting) -> float:
     return backtesting.time_manager.current_timestamp
 
 
+def get_backtesting_starting_time(backtesting) -> float:
+    return backtesting.time_manager.starting_timestamp
+
+
 def is_backtesting_enabled(config) -> bool:
     return constants.CONFIG_BACKTESTING in config \
            and common_constants.CONFIG_ENABLED_OPTION in config[constants.CONFIG_BACKTESTING] \
