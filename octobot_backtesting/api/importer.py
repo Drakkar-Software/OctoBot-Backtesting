@@ -45,10 +45,9 @@ async def get_data_timestamp_interval(exchange_importer, time_frame=None) -> (fl
 
 async def get_all_ohlcvs(database_path, exchange_name, symbol, time_frame,
                          inferior_timestamp=-1, superior_timestamp=-1) -> list:
-    timestamps, operations = importers.ExchangeDataImporter.get_operations_from_timestamps(superior_timestamp,
-                                                                                           inferior_timestamp)
+    timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
     async with data.DataBase.database(database_path) as database:
-        candles_with_metadata = importers.ExchangeDataImporter.import_ohlcvs(
+        candles_with_metadata = importers.import_ohlcvs(
             await database.select_from_timestamp(backtesting_enums.ExchangeDataTables.OHLCV,
                                                  exchange_name=exchange_name, symbol=symbol,
                                                  time_frame=time_frame.value,

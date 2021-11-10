@@ -24,9 +24,21 @@ from octobot_backtesting.importers import exchanges
 
 from octobot_backtesting.importers.exchanges import (
     ExchangeDataImporter,
+    get_operations_from_timestamps,
+    import_ohlcvs,
+    import_tickers,
+    import_order_books,
+    import_recent_trades,
+    import_klines,
 )
 
 __all__ = [
     "DataImporter",
     "ExchangeDataImporter",
+    "get_operations_from_timestamps",
+    "import_ohlcvs",
+    "import_tickers",
+    "import_order_books",
+    "import_recent_trades",
+    "import_klines",
 ]

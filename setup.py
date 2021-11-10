@@ -43,6 +43,7 @@ packages_list = [
     "octobot_backtesting.channels_manager",
     "octobot_backtesting.backtesting",
     "octobot_backtesting.importers.data_importer",
+    "octobot_backtesting.importers.exchanges.util",
     "octobot_backtesting.importers.exchanges.exchange_importer",
     "octobot_backtesting.importers.social.social_importer",
     "octobot_backtesting.data.data_file_manager",
