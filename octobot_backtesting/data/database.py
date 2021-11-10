@@ -55,6 +55,16 @@ class DataBase:
     async def create_index(self, table, columns):
         await self.__execute_index_creation(table, '_'.join(columns), ', '.join(columns))
 
+    @staticmethod
+    @contextlib.asynccontextmanager
+    async def database(file_path):
+        local_database = DataBase(file_path)
+        try:
+            await local_database.initialize()
+            yield local_database
+        finally:
+            await local_database.stop()
+
     async def _add_cursor_in_pool(self):
         self._cursor_pool.append(await self.connection.cursor())
 
@@ -209,10 +219,11 @@ class DataBase:
                                size=DEFAULT_SIZE):
         try:
             async with self.aio_cursor() as cursor:
+                limit_clause = "" if size == self.DEFAULT_SIZE else f"LIMIT {size}"
                 await cursor.execute(f"SELECT {select_items} FROM {table.value} "
                                      f"{'WHERE' if where_clauses else ''} {where_clauses} "
-                                     f"{additional_clauses} {group_by}")
-                return await cursor.fetchall() if size == self.DEFAULT_SIZE else await cursor.fetchmany(size)
+                                     f"{additional_clauses} {limit_clause} {group_by}")
+                return await cursor.fetchall()
         except sqlite3.OperationalError as e:
             if not await self.check_table_exists(table):
                 raise errors.DataBaseNotExists(e)
