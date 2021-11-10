@@ -84,7 +84,7 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
         start_timestamp = start_timestamp + (time_frame_sec - start_timestamp % time_frame_sec)
 
         if min_timestamp <= start_timestamp < end_timestamp if end_timestamp else max_timestamp:
-            min_timestamp = int(start_timestamp)
+            min_timestamp = start_timestamp
         else:
             logging.get_logger("BacktestingAPI").warning(f"Can't set the minimum timestamp to {start_timestamp}. "
                                                          f"The minimum available({min_timestamp}) will be used instead.")
@@ -93,15 +93,15 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
         end_timestamp = end_timestamp - (end_timestamp % time_frame_sec)
 
         if max_timestamp >= end_timestamp > start_timestamp if start_timestamp else min_timestamp:
-            max_timestamp = int(end_timestamp)
+            max_timestamp = end_timestamp
         else:
             logging.get_logger("BacktestingAPI").warning(f"Can't set the maximum timestamp to {end_timestamp}. "
                                                          f"The maximum available({max_timestamp}) will be used instead.")
 
     await modify_backtesting_timestamps(
         backtesting,
-        minimum_timestamp=min_timestamp,
-        maximum_timestamp=max_timestamp)
+        minimum_timestamp=int(min_timestamp),
+        maximum_timestamp=int(max_timestamp))
     try:
         import octobot_trading.api as exchange_api
 
@@ -139,6 +139,10 @@ def get_backtesting_current_time(backtesting) -> float:
 
 def get_backtesting_starting_time(backtesting) -> float:
     return backtesting.time_manager.starting_timestamp
+
+
+def get_backtesting_ending_time(backtesting) -> float:
+    return backtesting.time_manager.finishing_timestamp
 
 
 def is_backtesting_enabled(config) -> bool:
