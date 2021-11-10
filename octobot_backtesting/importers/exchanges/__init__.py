@@ -15,11 +15,27 @@
 #  License along with this library.
 
 from octobot_backtesting.importers.exchanges import exchange_importer
+from octobot_backtesting.importers.exchanges import util
 
 from octobot_backtesting.importers.exchanges.exchange_importer import (
     ExchangeDataImporter,
 )
 
+from octobot_backtesting.importers.exchanges.util import (
+    get_operations_from_timestamps,
+    import_ohlcvs,
+    import_tickers,
+    import_order_books,
+    import_recent_trades,
+    import_klines,
+)
+
 __all__ = [
     "ExchangeDataImporter",
+    "get_operations_from_timestamps",
+    "import_ohlcvs",
+    "import_tickers",
+    "import_order_books",
+    "import_recent_trades",
+    "import_klines",
 ]

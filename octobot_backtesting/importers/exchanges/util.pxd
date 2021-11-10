@@ -10,33 +10,14 @@
 #  This library is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+#  Lesser General License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-from octobot_backtesting.importers.exchanges cimport exchange_importer
-from octobot_backtesting.importers.exchanges cimport util
-
-from octobot_backtesting.importers.exchanges.exchange_importer cimport (
-    ExchangeDataImporter,
-)
-
-from octobot_backtesting.importers.exchanges.util cimport (
-    get_operations_from_timestamps,
-    import_ohlcvs,
-    import_tickers,
-    import_order_books,
-    import_recent_trades,
-    import_klines,
-)
-
-__all__ = [
-    "ExchangeDataImporter",
-    "get_operations_from_timestamps",
-    "import_ohlcvs",
-    "import_tickers",
-    "import_order_books",
-    "import_recent_trades",
-    "import_klines",
-]
+cpdef tuple get_operations_from_timestamps(double superior_timestamp, double inferior_timestamp)
+cpdef list import_ohlcvs(list ohlcvs)
+cpdef list import_tickers(list tickers)
+cpdef list import_klines(list klines)
+cpdef list import_order_books(list order_books)
+cpdef list import_recent_trades(list recent_trades)
