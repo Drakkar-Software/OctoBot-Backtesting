@@ -100,3 +100,6 @@ class Backtesting:
 
     def _has_nothing_to_do(self):
         return not self.time_manager or self.time_manager.get_total_iteration() == 0
+
+    def has_finished(self):
+        return self.time_updater and self.time_updater.finished_event.is_set()
