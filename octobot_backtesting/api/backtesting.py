@@ -77,6 +77,11 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
                            f"and ending at: {end_timestamp}")
 
     if start_timestamp is not None:
+        # Adapt start timestamp to start exactly at the top of the 1st available candle
+        # This avoids backtesting to run from mid candle time to mid candle time.
+        time_frame_sec = common_enums.TimeFramesMinutes[min_time_frame_to_consider] * common_constants.MINUTE_TO_SECONDS
+        start_timestamp = start_timestamp + (time_frame_sec - start_timestamp % time_frame_sec)
+
         if min_timestamp <= start_timestamp < end_timestamp if end_timestamp else max_timestamp:
             min_timestamp = start_timestamp
         else:
