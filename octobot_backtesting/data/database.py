@@ -252,7 +252,7 @@ class DataBase:
     async def __init_tables_list(self):
         async with self.aio_cursor() as cursor:
             await cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
-            self.tables = await cursor.fetchall()
+            self.tables = [res[0] for res in await cursor.fetchall()]
 
     async def stop(self):
         try:
