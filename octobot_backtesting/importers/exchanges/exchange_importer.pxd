@@ -22,3 +22,7 @@ cdef class ExchangeDataImporter(importers.DataImporter):
     cdef public list available_data_types
     cdef public list symbols
     cdef public list time_frames
+    cdef dict cache
+
+cdef list _filter_candles(dict cache, float inferior_timestamp, float superior_timestamp, str exchange_name,
+                          str symbol, object time_frame)

@@ -30,6 +30,7 @@ class ExchangeDataImporter(importers.DataImporter):
         self.symbols = []
         self.time_frames = []
         self.available_data_types = []
+        self.cache = {}
 
     async def initialize(self) -> None:
         self.load_database()
@@ -111,14 +112,16 @@ class ExchangeDataImporter(importers.DataImporter):
                                         time_frame=common_enums.TimeFrames.ONE_HOUR,
                                         limit=data.DataBase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1) -> list:
-        timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp,
-                                                                          inferior_timestamp)
-        return importers.import_ohlcvs(await self.database.select_from_timestamp(
-            enums.ExchangeDataTables.OHLCV, size=limit,
-            exchange_name=exchange_name, symbol=symbol,
-            time_frame=time_frame.value,
-            timestamps=timestamps,
-            operations=operations))
+        try:
+            self.cache[exchange_name][symbol][time_frame]
+        except KeyError:
+            cache = sorted(await self.get_ohlcv(exchange_name, symbol, time_frame, -1), key=lambda x: x[0])
+            self.cache[exchange_name] = {
+                symbol: {
+                    time_frame: cache
+                }
+            }
+        return _filter_candles(self.cache, inferior_timestamp, superior_timestamp, exchange_name, symbol, time_frame)
 
     async def get_ticker(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
         return importers.import_tickers(
@@ -185,3 +188,33 @@ class ExchangeDataImporter(importers.DataImporter):
                                                       time_frame=time_frame.value,
                                                       timestamps=timestamps,
                                                       operations=operations))
+
+
+def _filter_candles(cache, inferior_timestamp, superior_timestamp, exchange_name, symbol, time_frame):
+    candles = cache[exchange_name][symbol][time_frame]
+    if inferior_timestamp == -1:
+        if superior_timestamp == -1:
+            return candles
+        else:
+            return [candle for candle in candles if candle[0] <= superior_timestamp]
+    if superior_timestamp == -1:
+        return [candle for candle in candles
+                     if candle[0] >= inferior_timestamp]
+    min_index = max_index = None
+    # identify the select window considering candles are time sorted
+    for index, candle in enumerate(candles):
+        if candle[0] >= inferior_timestamp and min_index is None:
+            min_index = index
+        if candle[0] > superior_timestamp and max_index is None:
+            max_index = index
+            # consider that since inferior_timestamp got requested, the current backtesting is going only
+            # towards future times and previous candles can be dropped to avoid iterating over them over and over
+            cache[exchange_name] = {
+                symbol: {
+                    time_frame: candles[min_index:]
+                }
+            }
+            return candles[min_index:max_index]
+    if min_index is None:
+        return []
+    return candles[min_index:]
