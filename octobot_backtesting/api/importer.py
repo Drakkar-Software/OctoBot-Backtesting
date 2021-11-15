@@ -16,6 +16,7 @@
 import octobot_backtesting.enums as backtesting_enums
 import octobot_backtesting.importers as importers
 import octobot_backtesting.data as data
+import octobot_backtesting.errors as errors
 
 
 def get_available_data_types(importer) -> list:
@@ -46,15 +47,18 @@ async def get_data_timestamp_interval(exchange_importer, time_frame=None) -> (fl
 async def get_all_ohlcvs(database_path, exchange_name, symbol, time_frame,
                          inferior_timestamp=-1, superior_timestamp=-1) -> list:
     timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
-    async with data.new_database(database_path) as database:
-        candles_with_metadata = importers.import_ohlcvs(
-            await database.select_from_timestamp(backtesting_enums.ExchangeDataTables.OHLCV,
-                                                 exchange_name=exchange_name, symbol=symbol,
-                                                 time_frame=time_frame.value,
-                                                 timestamps=timestamps,
-                                                 operations=operations)
-        )
-        return [candle_with_metadata[-1] for candle_with_metadata in sorted(candles_with_metadata, key=lambda x: x[0])]
+    try:
+        async with data.new_database(database_path) as database:
+            candles_with_metadata = importers.import_ohlcvs(
+                await database.select_from_timestamp(backtesting_enums.ExchangeDataTables.OHLCV,
+                                                     exchange_name=exchange_name, symbol=symbol,
+                                                     time_frame=time_frame.value,
+                                                     timestamps=timestamps,
+                                                     operations=operations)
+            )
+            return [candle_with_metadata[-1] for candle_with_metadata in sorted(candles_with_metadata, key=lambda x: x[0])]
+    except errors.DataBaseNotExists:
+        return []
 
 
 async def stop_importer(importer) -> None:
