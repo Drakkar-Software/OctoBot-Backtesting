@@ -65,6 +65,11 @@ class TimeUpdater(time_channel.TimeProducer):
         await self.backtesting.delete_time_channel()
         self.channels_manager.flush()
         self.finished_event.set()
+        self.backtesting = None
+
+    async def stop(self) -> None:
+        self.channels_manager.stop()
+        await super().stop()
 
     async def modify(self, set_timestamp=None, minimum_timestamp=None, maximum_timestamp=None) -> None:
         if set_timestamp is not None:

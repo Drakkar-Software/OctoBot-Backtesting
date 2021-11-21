@@ -20,12 +20,15 @@ cdef class ChannelsManager:
 
     cdef list exchange_ids
     cdef list producers
+    cdef object iteration_task
+    cdef bint should_stop
 
     cdef str matrix_id
 
     cdef int refresh_timeout
 
     cpdef void flush(self)
+    cpdef void stop(self)
 
     cdef list _get_trading_producers(self)
     cdef list _get_evaluator_producers(self)
