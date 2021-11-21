@@ -32,6 +32,8 @@ class ChannelsManager:
         self.matrix_id = matrix_id
         self.refresh_timeout = refresh_timeout
         self.producers = []
+        self.iteration_task = None
+        self.should_stop = False
 
     async def initialize(self) -> None:
         """
@@ -58,13 +60,19 @@ class ChannelsManager:
                 self.logger.error(f"Refreshing priority level {level_key.value} has been timed out.")
 
     async def refresh_priority_level(self, priority_level: int, join_consumers: bool) -> None:
-        while not _check_producers_consumers_emptiness(self.producers, priority_level):
+        while not self.should_stop and not _check_producers_consumers_emptiness(self.producers, priority_level):
             for producer in self.producers:
                 await producer.synchronized_perform_consumers_queue(priority_level, join_consumers,
                                                                     self.refresh_timeout)
 
+    def stop(self):
+        self.should_stop = True
+        if self.iteration_task is not None:
+            self.iteration_task.cancel()
+
     def flush(self):
         self.producers = []
+        self.iteration_task = None
 
     def _get_trading_producers(self):
         import octobot_trading.exchange_channel as exchange_channel

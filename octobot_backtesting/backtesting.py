@@ -54,7 +54,6 @@ class Backtesting:
 
     async def stop(self):
         await self.delete_time_channel()
-        self.time_updater.backtesting = None
 
     async def delete_time_channel(self):
         await self.time_channel.stop()
