@@ -116,14 +116,21 @@ class ExchangeDataImporter(importers.DataImporter):
             self.cache[exchange_name][symbol][time_frame]
         except KeyError:
             cache = sorted(await self.get_ohlcv(exchange_name, symbol, time_frame, -1), key=lambda x: x[0])
-            self.cache[exchange_name] = {
-                symbol: {
-                    time_frame: {
+            if exchange_name not in self.cache:
+                self.cache[exchange_name] = {}
+            if symbol in self.cache[exchange_name]:
+                self.cache[exchange_name][symbol][time_frame] = {
                         "data": cache,
                         "cache_index": 0,
                     }
+            else:
+                self.cache[exchange_name][symbol] = {
+                    time_frame: {
+                        "data": cache,
+                        "cache_index": 0,
+
+                    }
                 }
-            }
         return _filter_candles(self.cache, inferior_timestamp, superior_timestamp, exchange_name, symbol, time_frame)
 
     async def get_ticker(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
