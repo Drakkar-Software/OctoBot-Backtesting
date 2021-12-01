@@ -21,6 +21,7 @@ import octobot_commons.logging as logging
 
 import octobot_backtesting.enums as enums
 import octobot_backtesting.errors as errors
+import octobot_backtesting.data.cursor_pool as cursor_pool
 
 
 class DataBase:
@@ -41,22 +42,18 @@ class DataBase:
         self.connection = None
 
         # should never be used directly, use async with self.aio_cursor() as cursor: instead
-        self._cursor_pool = []
-        self._current_cursor_index = 0
+        self._cursor_pool = None
 
     async def initialize(self):
         try:
             self.connection = await aiosqlite.connect(self.file_name)
-            await self._add_cursor_in_pool()
+            self._cursor_pool = cursor_pool.CursorPool(self.connection)
             await self.__init_tables_list()
         except (sqlite3.OperationalError, sqlite3.DatabaseError) as e:
             raise errors.DataBaseNotExists(e)
 
     async def create_index(self, table, columns):
         await self.__execute_index_creation(table, '_'.join(columns), ', '.join(columns))
-
-    async def _add_cursor_in_pool(self):
-        self._cursor_pool.append(await self.connection.cursor())
 
     @contextlib.asynccontextmanager
     async def aio_cursor(self) -> sqlite3.Cursor:
@@ -65,13 +62,8 @@ class DataBase:
         :yield: A free cursor
         :return: None
         """
-        if self._current_cursor_index != 0 and len(self._cursor_pool) <= self._current_cursor_index:
-            await self._add_cursor_in_pool()
-        self._current_cursor_index += 1
-        try:
-            yield self._cursor_pool[self._current_cursor_index - 1]
-        finally:
-            self._current_cursor_index -= 1
+        async with self._cursor_pool.idle_cursor() as cursor:
+            yield cursor.cursor
 
     async def __execute_index_creation(self, table, name, columns):
         async with self.aio_cursor() as cursor:
@@ -256,8 +248,7 @@ class DataBase:
 
     async def stop(self):
         try:
-            for cursor in self._cursor_pool:
-                await cursor.close()
+            await self._cursor_pool.close()
         finally:
             if self.connection is not None:
                 await self.connection.close()
