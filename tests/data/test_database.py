@@ -37,6 +37,8 @@ DATA_FILE2 = "second_ExchangeHistoryDataCollector_1589740606.4862757.data"
 async def get_database(data_file=DATA_FILE1):
     async with backtesting_data.new_database(os.path.join("tests", "static", data_file)) as db:
         yield db
+    # prevent "generator didn't stop after athrow(), see https://github.com/python-trio/trio/issues/2081"
+    await asyncio_tools.wait_asyncio_next_cycle()
 
 
 # use context manager instead of fixture to prevent pytest threads issues
@@ -47,6 +49,8 @@ async def get_temp_empty_database():
         async with backtesting_data.new_database(database_name) as db:
             yield db
     finally:
+        # prevent "generator didn't stop after athrow(), see https://github.com/python-trio/trio/issues/2081"
+        await asyncio_tools.wait_asyncio_next_cycle()
         os.remove(database_name)
 
 
@@ -103,11 +107,13 @@ async def test_select_min():
         assert await database.select_min(enums.ExchangeDataTables.OHLCV, ["timestamp"], ["symbol"], time_frame="1h") == \
             [(1587945600, "ETH/BTC")]
 
+
 async def test_select_count():
     async with get_database() as database:
         assert await database.select_count(enums.ExchangeDataTables.OHLCV, ["*"]) == [(6531,)]
         assert await database.select_count(enums.ExchangeDataTables.OHLCV, ["*"], time_frame="1h") == [(500,)]
         assert await database.select_count(enums.ExchangeDataTables.OHLCV, ["*"], time_frame="1M") == [(35,)]
+
 
 async def test_select_from_timestamp():
     async with get_database() as database:
@@ -138,17 +144,55 @@ async def test_select_from_timestamp():
         assert len(candles) == 0
 
 
-async def test_concurrent_select():
+async def test_gather_concurrent_select():
     async with get_database() as database:
-        timestamps = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
-        await asyncio.gather(*[_check_select_result(database, ts) for ts in timestamps])
+        timestamps_1h = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
+        timestamps_4h = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="4h")]
+        coros = [_check_select_result(database, ts, "1h") for ts in timestamps_1h]
+        coros += [_check_select_result(database, ts, "4h") for ts in timestamps_4h]
+        await asyncio.gather(*coros)
+
+
+async def test_create_tasks_concurrent_selects():
+    async with get_database() as database:
+        timestamps_1h = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
+        timestamps_1m = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1m")]
+        timestamps_4h = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="4h",
+                                                                     size=50)]
+
+        calls_count = len(timestamps_1h) + len(timestamps_4h) + len(timestamps_1m)
+        failed_calls = []
+        success_calls = []
+
+        async def select_task(db, timestamp, time_frame):
+            try:
+                await _check_select_result(db, timestamp, time_frame)
+                success_calls.append((timestamp, time_frame))
+            except Exception as e:
+                failed_calls.append((timestamp, time_frame, e))
+
+        tasks = []
+        for ts in timestamps_1h:
+            tasks.append(asyncio.get_event_loop().create_task(select_task(database, ts, "1h")))
+        for ts in timestamps_4h:
+            tasks.append(asyncio.get_event_loop().create_task(select_task(database, ts, "4h")))
+        for ts in timestamps_1m:
+            tasks.append(asyncio.get_event_loop().create_task(select_task(database, ts, "1m")))
+            # for wait for next cycle to make previous requests end and re-use previous cursors
+            await asyncio_tools.wait_asyncio_next_cycle()
+
+        await asyncio.gather(*tasks)
+        assert len(success_calls) == calls_count
+        assert failed_calls == []
 
 
 async def test_stop_while_concurrent_select():
     async with get_database() as database:
         timestamps = [ohlcv[0] for ohlcv in await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
         await _check_select_result(database, timestamps[0])
-        asyncio.create_task(asyncio.wait(asyncio.gather(*[_check_select_result(database, ts) for ts in timestamps])))
+        asyncio.create_task(asyncio.wait(
+            asyncio.gather(*[_check_select_result(database, ts, expected_exception=sqlite3.ProgrammingError)
+                             for ts in timestamps])))
         # not enough time to finish all requests, most if not all will remaining pending
         await asyncio_tools.wait_asyncio_next_cycle()
 
@@ -167,8 +211,12 @@ async def test_double_database_stop_while_concurrent_select():
         timestamps2 = [ohlcv[0] for ohlcv in await database2.select(enums.ExchangeDataTables.OHLCV, time_frame="1h")]
         await _check_select_result(database1, timestamps1[0])
         await _check_select_result(database2, timestamps2[0])
-        asyncio.create_task(asyncio.wait(asyncio.gather(*[_check_select_result(database1, ts) for ts in timestamps1])))
-        asyncio.create_task(asyncio.wait(asyncio.gather(*[_check_select_result(database2, ts) for ts in timestamps2])))
+        asyncio.create_task(asyncio.wait(
+            asyncio.gather(*[_check_select_result(database1, ts, expected_exception=sqlite3.ProgrammingError)
+                             for ts in timestamps1])))
+        asyncio.create_task(asyncio.wait(
+            asyncio.gather(*[_check_select_result(database2, ts, expected_exception=sqlite3.ProgrammingError)
+                             for ts in timestamps2])))
         # not enough time to finish all requests, most if not all will remaining pending
         await asyncio_tools.wait_asyncio_next_cycle()
 
@@ -198,7 +246,13 @@ async def test_create_index():
         assert await temp_empty_database.select(enums.ExchangeDataTables.OHLCV) == [(1, 'xyz', '1', '01')]
 
 
-async def _check_select_result(database, timestamp):
-    ohlcv = await database.select(enums.ExchangeDataTables.OHLCV, time_frame="1h", timestamp=str(timestamp))
-    assert len(ohlcv) == 1
-    assert ohlcv[0][0] == timestamp
+async def _check_select_result(database, timestamp, time_frame="1h", expected_exception=None):
+    try:
+        ohlcv = await database.select(enums.ExchangeDataTables.OHLCV, time_frame=time_frame, timestamp=str(timestamp))
+        assert len(ohlcv) == 1
+        assert ohlcv[0][0] == timestamp
+    except Exception as e:
+        if e.__class__ is expected_exception:
+            pass
+        else:
+            raise

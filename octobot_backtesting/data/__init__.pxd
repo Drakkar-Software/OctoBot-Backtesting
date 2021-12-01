@@ -16,8 +16,16 @@
 #  License along with this library.
 
 from octobot_backtesting.data cimport data_file_manager
+from octobot_backtesting.data cimport cursor_wrapper
+from octobot_backtesting.data cimport cursor_pool
 from octobot_backtesting.data cimport database
 
+from octobot_backtesting.data.cursor_wrapper cimport (
+    CursorWrapper,
+)
+from octobot_backtesting.data.cursor_pool cimport (
+    CursorPool,
+)
 from octobot_backtesting.data.data_file_manager cimport (
     get_data_type,
     get_file_ending,
@@ -31,6 +39,8 @@ from octobot_backtesting.data.database cimport (
 )
 
 __all__ = [
+    "CursorWrapper",
+    "CursorPool",
     "get_data_type",
     "get_file_ending",
     "get_date",
