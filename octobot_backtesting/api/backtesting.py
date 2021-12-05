@@ -52,21 +52,30 @@ async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
 async def adapt_backtesting_channels(backtesting, config, importer_class, run_on_common_part_only=True,
                                      start_timestamp=None, end_timestamp=None):
     # set mininmum and maximum timestamp according to all importers data
-    min_time_frame_to_consider = time_frame_manager.find_min_time_frame(
-        time_frame_manager.get_config_time_frame(config))
+    sorted_time_frames = time_frame_manager.sort_time_frames(time_frame_manager.get_config_time_frame(config))
+    min_time_frame_to_consider = sorted_time_frames[0]
+    max_time_frame_to_consider = sorted_time_frames[-1]
     importers = backtesting.get_importers(importer_class)
     if not importers:
         raise RuntimeError("No exchange importer has been found for this data file, backtesting can't start.")
     try:
-        timestamps = [await api.get_data_timestamp_interval(importer, min_time_frame_to_consider)
-                      for importer in importers]  # [(min, max) ... ]
+        short_tf_timestamps = [await api.get_data_timestamp_interval(importer, min_time_frame_to_consider)
+                               for importer in importers]  # [(min, max) ... ]
+        large_tf_timestamps = [await api.get_data_timestamp_interval(importer, max_time_frame_to_consider)
+                               for importer in importers]  # [(min, max) ... ]
     except errors.MissingTimeFrame as e:
         raise RuntimeError(f"Impossible to start backtesting on this configuration: {e}")
-    min_timestamps = [timestamp[0] for timestamp in timestamps]
-    max_timestamps = [timestamp[1] for timestamp in timestamps]
+    min_timestamps = [timestamp[0] for timestamp in short_tf_timestamps]
+    max_timestamps = [timestamp[1] for timestamp in short_tf_timestamps]
 
     min_timestamp = max(min_timestamps) if run_on_common_part_only else min(min_timestamps)
     max_timestamp = min(max_timestamps) if run_on_common_part_only else max(max_timestamps)
+
+    large_min_timestamps = [timestamp[0] for timestamp in large_tf_timestamps]
+    min_large_timestamp = max(large_min_timestamps) if run_on_common_part_only else min(large_min_timestamps)
+
+    # set min timestamp where we have data in the largest candle to avoid starting with missing large candles data
+    min_timestamp = max(min_timestamp, min_large_timestamp)
 
     if min_timestamp > max_timestamp:
         raise RuntimeError(f"No candle data to run backtesting on in this time window: starting at: {min_timestamp} "
