@@ -49,7 +49,7 @@ class TimeUpdater(time_channel.TimeProducer):
                     last_print = time.time()
 
                 # Call synchronous channels callbacks
-                await self.channels_manager.handle_new_iteration()
+                await self.channels_manager.handle_new_iteration(current_timestamp)
 
                 if self.time_manager.has_finished():
                     self.logger.debug("Maximum timestamp hit, stopping...")
