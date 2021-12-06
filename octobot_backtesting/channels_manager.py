@@ -24,7 +24,7 @@ import octobot_commons.logging as logging
 
 
 class ChannelsManager:
-    DEFAULT_REFRESH_TIMEOUT = 5
+    DEFAULT_REFRESH_TIMEOUT = 1
 
     def __init__(self, exchange_ids, matrix_id, refresh_timeout=DEFAULT_REFRESH_TIMEOUT):
         self.logger = logging.get_logger(self.__class__.__name__)
@@ -52,12 +52,13 @@ class ChannelsManager:
             self.logger.exception(exception, True, f"Error when initializing backtesting: {exception}")
             raise
 
-    async def handle_new_iteration(self) -> None:
+    async def handle_new_iteration(self, current_timestamp) -> None:
         for level_key in channel_enums.ChannelConsumerPriorityLevels:
             try:
                 await asyncio.wait_for(self.refresh_priority_level(level_key.value, True), timeout=self.refresh_timeout)
             except asyncio.TimeoutError:
-                self.logger.error(f"Refreshing priority level {level_key.value} has been timed out.")
+                self.logger.error(f"Refreshing priority level {level_key.value} has been timed out at timestamp "
+                                  f"{current_timestamp}.")
 
     async def refresh_priority_level(self, priority_level: int, join_consumers: bool) -> None:
         while not self.should_stop and not _check_producers_consumers_emptiness(self.producers, priority_level):
