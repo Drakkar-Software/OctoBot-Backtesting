@@ -55,7 +55,8 @@ class ChannelsManager:
     async def handle_new_iteration(self, current_timestamp) -> None:
         for level_key in channel_enums.ChannelConsumerPriorityLevels:
             try:
-                await asyncio.wait_for(self.refresh_priority_level(level_key.value, True), timeout=self.refresh_timeout)
+                self.iteration_task = await asyncio.wait_for(self.refresh_priority_level(level_key.value, True),
+                                                             timeout=self.refresh_timeout)
             except asyncio.TimeoutError:
                 self.logger.error(f"Refreshing priority level {level_key.value} has been timed out at timestamp "
                                   f"{current_timestamp}.")
@@ -63,8 +64,7 @@ class ChannelsManager:
     async def refresh_priority_level(self, priority_level: int, join_consumers: bool) -> None:
         while not self.should_stop and not _check_producers_consumers_emptiness(self.producers, priority_level):
             for producer in self.producers:
-                await producer.synchronized_perform_consumers_queue(priority_level, join_consumers,
-                                                                    self.refresh_timeout)
+                await producer.synchronized_perform_consumers_queue(priority_level, join_consumers, self.refresh_timeout)
 
     def stop(self):
         self.should_stop = True
