@@ -24,7 +24,7 @@ import octobot_commons.logging as logging
 
 
 class ChannelsManager:
-    DEFAULT_REFRESH_TIMEOUT = 1
+    DEFAULT_REFRESH_TIMEOUT = 15
 
     def __init__(self, exchange_ids, matrix_id, refresh_timeout=DEFAULT_REFRESH_TIMEOUT):
         self.logger = logging.get_logger(self.__class__.__name__)
