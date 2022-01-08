@@ -16,6 +16,6 @@
 import logging
 
 PROJECT_NAME = "OctoBot-Backtesting"
-VERSION = "1.6.27"
+VERSION = "1.6.28"
 
 logging.getLogger('aiosqlite').setLevel(logging.ERROR)
