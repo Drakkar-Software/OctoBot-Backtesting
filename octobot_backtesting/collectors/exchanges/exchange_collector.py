@@ -87,10 +87,13 @@ class ExchangeDataCollector(data_collector.DataCollector):
                 while start_time > end_time and candles:
                     start_time = candles.pop(-1)[commons_enums.PriceIndexes.IND_PRICE_TIME.value]
                     reached_max = True
-                exchange_manager.exchange.uniformize_candles_if_necessary(candles)
-                yield candles
-                # avoid fetching the last element twice
-                start_time += 1
+                if candles:
+                    exchange_manager.exchange.uniformize_candles_if_necessary(candles)
+                    yield candles
+                    # avoid fetching the last element twice
+                    start_time += 1
+                else:
+                    reached_max = True
             else:
                 reached_max = True
 
