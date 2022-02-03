@@ -27,14 +27,21 @@ cdef class TimeManager:
 
     cdef public bint time_initialized
 
-    cdef void __reset_time(self)
+    cdef public object timestamp_accept_check_callback
+    cdef public list timestamps_whitelist
+    cdef int _timestamps_whitelist_index
 
     cpdef void initialize(self)
     cpdef void start(self)
     cpdef bint has_finished(self)
-    cpdef void next_timestamp(self)
+    cpdef object next_timestamp(self)    # object to allow exception raising
     cpdef void set_minimum_timestamp(self, double minimum_timestamp)
     cpdef void set_maximum_timestamp(self, double maximum_timestamp)
     cpdef void set_current_timestamp(self, double timestamp)
     cpdef double get_total_iteration(self)
     cpdef double get_remaining_iteration(self)
+    cpdef void register_timestamp_whitelist(self, object timestamps, object check_callback)
+
+    cdef void _reset_time(self)
+    cdef object _should_skip_current_timestamp(self)    # object to allow exception raising
+    cdef bool _has_current_timestamp_in_whitelist(self)

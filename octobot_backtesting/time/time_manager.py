@@ -34,8 +34,12 @@ class TimeManager:
         self.current_timestamp = self.DEFAULT_TIMESTAMP_INIT_VALUE
         self.time_interval = self.DEFAULT_TIME_INTERVAL
 
+        self.timestamp_accept_check_callback = None
+        self.timestamps_whitelist = None
+        self._timestamps_whitelist_index = 0
+
     def initialize(self):
-        self.__reset_time()
+        self._reset_time()
         self.time_initialized = True
 
     def start(self):
@@ -47,14 +51,32 @@ class TimeManager:
 
         self.current_timestamp = self.starting_timestamp
 
-    def __reset_time(self):
+    def _reset_time(self):
         self.set_current_timestamp(0)
 
     def has_finished(self):
+        if self.timestamps_whitelist is not None:
+            if self._timestamps_whitelist_index >= len(self.timestamps_whitelist) - 1:
+                return True
         return self.current_timestamp >= self.finishing_timestamp
 
     def next_timestamp(self):
         self.current_timestamp += self.time_interval
+        if self.timestamps_whitelist is not None:
+            # when timestamps_whitelist is set: fast forward time to only trigger whitelisted timestamps
+            while self._should_skip_current_timestamp() and self.current_timestamp <= self.finishing_timestamp:
+                self.current_timestamp += self.time_interval
+
+    def _should_skip_current_timestamp(self):
+        if self.timestamp_accept_check_callback is not None and self.timestamp_accept_check_callback():
+            return False
+        return not self._has_current_timestamp_in_whitelist()
+
+    def _has_current_timestamp_in_whitelist(self):
+        while self.timestamps_whitelist[self._timestamps_whitelist_index] < self.current_timestamp and \
+             self._timestamps_whitelist_index < len(self.timestamps_whitelist) - 1:
+            self._timestamps_whitelist_index += 1
+        return self.timestamps_whitelist[self._timestamps_whitelist_index] == self.current_timestamp
 
     def set_minimum_timestamp(self, minimum_timestamp):
         if self.starting_timestamp == self.DEFAULT_TIMESTAMP_INIT_VALUE or self.starting_timestamp > minimum_timestamp:
@@ -75,3 +97,8 @@ class TimeManager:
 
     def get_remaining_iteration(self):
         return (self.finishing_timestamp - self.current_timestamp) / self.time_interval
+
+    def register_timestamp_whitelist(self, timestamps, check_callback):
+        self.timestamp_accept_check_callback = check_callback
+        self.timestamps_whitelist = sorted(set(timestamps))
+        self._timestamps_whitelist_index = 0
