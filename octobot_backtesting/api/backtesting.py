@@ -154,6 +154,14 @@ def get_backtesting_ending_time(backtesting) -> float:
     return backtesting.time_manager.finishing_timestamp
 
 
+def register_backtesting_timestamp_whitelist(backtesting, timestamps, check_callback):
+    backtesting.time_manager.register_timestamp_whitelist(timestamps, check_callback)
+
+
+def get_backtesting_timestamp_whitelist(backtesting) -> list:
+    return backtesting.time_manager.timestamps_whitelist
+
+
 def is_backtesting_enabled(config) -> bool:
     return constants.CONFIG_BACKTESTING in config \
            and common_constants.CONFIG_ENABLED_OPTION in config[constants.CONFIG_BACKTESTING] \
