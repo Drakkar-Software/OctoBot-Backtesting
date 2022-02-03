@@ -25,7 +25,7 @@ cdef class ChannelsManager:
 
     cdef str matrix_id
 
-    cdef int refresh_timeout
+    cdef public int refresh_timeout
 
     cpdef void flush(self)
     cpdef void stop(self)

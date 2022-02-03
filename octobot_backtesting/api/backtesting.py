@@ -126,6 +126,10 @@ def set_time_updater_interval(backtesting, interval_in_seconds):
     backtesting.time_manager.time_interval = interval_in_seconds
 
 
+def set_iteration_timeout(backtesting, iteration_timeout_in_seconds):
+    backtesting.time_updater.channels_manager.refresh_timeout = iteration_timeout_in_seconds
+
+
 async def start_backtesting(backtesting) -> None:
     await backtesting.start_time_updater()
 

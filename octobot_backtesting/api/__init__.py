@@ -40,6 +40,7 @@ from octobot_backtesting.api.importer import (
 )
 from octobot_backtesting.api.backtesting import (
     set_time_updater_interval,
+    set_iteration_timeout,
     get_importers,
     get_backtesting_current_time,
     get_backtesting_starting_time,
@@ -82,6 +83,7 @@ __all__ = [
     "get_all_ohlcvs",
     "stop_importer",
     "set_time_updater_interval",
+    "set_iteration_timeout",
     "get_importers",
     "get_backtesting_current_time",
     "get_backtesting_starting_time",
