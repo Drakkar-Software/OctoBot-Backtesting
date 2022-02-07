@@ -40,7 +40,7 @@ cdef class TimeManager:
     cpdef void set_current_timestamp(self, double timestamp)
     cpdef double get_total_iteration(self)
     cpdef double get_remaining_iteration(self)
-    cpdef void register_timestamp_whitelist(self, object timestamps, object check_callback)
+    cpdef void register_timestamp_whitelist(self, object timestamps, object check_callback, bint append_to_whitelist=*)
 
     cdef void _reset_time(self)
     cdef object _should_skip_current_timestamp(self)    # object to allow exception raising
