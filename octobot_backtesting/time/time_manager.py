@@ -98,7 +98,10 @@ class TimeManager:
     def get_remaining_iteration(self):
         return (self.finishing_timestamp - self.current_timestamp) / self.time_interval
 
-    def register_timestamp_whitelist(self, timestamps, check_callback):
+    def register_timestamp_whitelist(self, timestamps, check_callback, append_to_whitelist=False):
         self.timestamp_accept_check_callback = check_callback
-        self.timestamps_whitelist = sorted(set(timestamps))
+        if append_to_whitelist and self.timestamps_whitelist:
+            self.timestamps_whitelist += sorted(set(self.timestamps_whitelist + timestamps))
+        else:
+            self.timestamps_whitelist = sorted(set(timestamps))
         self._timestamps_whitelist_index = 0

@@ -158,8 +158,9 @@ def get_backtesting_ending_time(backtesting) -> float:
     return backtesting.time_manager.finishing_timestamp
 
 
-def register_backtesting_timestamp_whitelist(backtesting, timestamps, check_callback):
-    backtesting.time_manager.register_timestamp_whitelist(timestamps, check_callback)
+def register_backtesting_timestamp_whitelist(backtesting, timestamps, check_callback, append_to_whitelist=False):
+    backtesting.time_manager.register_timestamp_whitelist(timestamps, check_callback,
+                                                          append_to_whitelist=append_to_whitelist)
 
 
 def get_backtesting_timestamp_whitelist(backtesting) -> list:
