@@ -49,14 +49,13 @@ async def get_all_ohlcvs(database_path, exchange_name, symbol, time_frame,
     timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
     try:
         async with data.new_database(database_path) as database:
-            candles_with_metadata = importers.import_ohlcvs(
-                await database.select_from_timestamp(backtesting_enums.ExchangeDataTables.OHLCV,
-                                                     exchange_name=exchange_name, symbol=symbol,
-                                                     time_frame=time_frame.value,
-                                                     timestamps=timestamps,
-                                                     operations=operations)
-            )
-            return [candle_with_metadata[-1] for candle_with_metadata in sorted(candles_with_metadata, key=lambda x: x[0])]
+            candles = await database.select_from_timestamp(backtesting_enums.ExchangeDataTables.OHLCV,
+                                                           exchange_name=exchange_name, symbol=symbol,
+                                                           time_frame=time_frame.value,
+                                                           timestamps=timestamps,
+                                                           operations=operations)
+        return [candle_with_metadata[-1]
+                for candle_with_metadata in sorted(importers.import_ohlcvs(candles), key=lambda x: x[0])]
     except errors.DataBaseNotExists:
         return []
 
