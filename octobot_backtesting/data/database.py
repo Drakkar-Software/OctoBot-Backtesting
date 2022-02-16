@@ -93,7 +93,7 @@ class DataBase:
         await self.__execute_insert(table, ", ".join(insert_values))
 
     async def update(self, table, updated_value_by_column, **kwargs):
-        # Insert a row of data
+        # Update a row of data
         updating_values = [f"{key} = '{value}'" for key, value in updated_value_by_column.items()]
         await self.__execute_update(table,
                                     ', '.join(updating_values),
@@ -251,8 +251,9 @@ class DataBase:
             await self._cursor_pool.close()
         finally:
             if self.connection is not None:
-                await self.connection.close()
+                conn = self.connection
                 self.connection = None
+                await conn.close()
 
 
 @contextlib.asynccontextmanager
