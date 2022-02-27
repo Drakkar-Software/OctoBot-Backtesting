@@ -178,4 +178,6 @@ def get_backtesting_data_files(config) -> list:
 
 
 def get_backtesting_duration(backtesting) -> float:
-    return backtesting.time_updater.simulation_duration
+    if backtesting.time_updater.simulation_duration > 0:
+        return backtesting.time_updater.simulation_duration
+    return time.time() - backtesting.time_updater.starting_time
