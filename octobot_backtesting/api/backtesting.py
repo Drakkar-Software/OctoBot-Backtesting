@@ -13,6 +13,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import time
+
 import octobot_commons.constants as common_constants
 import octobot_commons.enums as common_enums
 import octobot_commons.logging as logging
@@ -53,6 +55,9 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
                                      start_timestamp=None, end_timestamp=None):
     # set mininmum and maximum timestamp according to all importers data
     sorted_time_frames = time_frame_manager.sort_time_frames(time_frame_manager.get_config_time_frame(config))
+    if not sorted_time_frames:
+        # use min timeframe as default if no timeframe is enabled
+        sorted_time_frames = [time_frame_manager.find_min_time_frame([])]
     min_time_frame_to_consider = sorted_time_frames[0]
     max_time_frame_to_consider = sorted_time_frames[-1]
     importers = backtesting.get_importers(importer_class)
@@ -89,10 +94,10 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
     if start_timestamp is not None:
         # Adapt start and end timestamp to start exactly at the top of the 1st available candle
         # This avoids backtesting to run from mid candle time to mid candle time.
-        # Adapt end timestamp
+        # Adapt start timestamp
         start_timestamp = start_timestamp + (time_frame_sec - start_timestamp % time_frame_sec)
 
-        if min_timestamp <= start_timestamp < end_timestamp if end_timestamp else max_timestamp:
+        if min_timestamp <= start_timestamp < (end_timestamp if end_timestamp else max_timestamp):
             min_timestamp = start_timestamp
         else:
             logging.get_logger("BacktestingAPI").warning(f"Can't set the minimum timestamp to {start_timestamp}. "
