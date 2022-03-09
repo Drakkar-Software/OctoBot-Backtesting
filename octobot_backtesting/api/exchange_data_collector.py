@@ -81,8 +81,3 @@ def get_data_collector_progress(data_collector):
 def is_data_collector_finished(data_collector):
     return not is_data_collector_in_progress(
         data_collector) and data_collector.is_finished() if data_collector else False
-
-
-def historical_ohlcv_collector(exchange_manager, symbol, time_frame, start_time, end_time):
-    return collectors.ExchangeDataCollector.historical_ohlcv_collector(exchange_manager, symbol,
-                                                                       time_frame, start_time, end_time)
