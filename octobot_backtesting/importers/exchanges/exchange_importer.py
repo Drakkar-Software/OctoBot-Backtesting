@@ -30,7 +30,6 @@ class ExchangeDataImporter(importers.DataImporter):
         self.symbols = []
         self.time_frames = []
         self.available_data_types = []
-        self.cache = {}
 
     async def initialize(self) -> None:
         self.load_database()
@@ -112,26 +111,8 @@ class ExchangeDataImporter(importers.DataImporter):
                                         time_frame=common_enums.TimeFrames.ONE_HOUR,
                                         limit=data.DataBase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1) -> list:
-        try:
-            self.cache[exchange_name][symbol][time_frame]
-        except KeyError:
-            cache = sorted(await self.get_ohlcv(exchange_name, symbol, time_frame, -1), key=lambda x: x[0])
-            if exchange_name not in self.cache:
-                self.cache[exchange_name] = {}
-            if symbol in self.cache[exchange_name]:
-                self.cache[exchange_name][symbol][time_frame] = {
-                        "data": cache,
-                        "cache_index": 0,
-                    }
-            else:
-                self.cache[exchange_name][symbol] = {
-                    time_frame: {
-                        "data": cache,
-                        "cache_index": 0,
-
-                    }
-                }
-        return _filter_candles(self.cache, inferior_timestamp, superior_timestamp, exchange_name, symbol, time_frame)
+        return await self._get_from_cache(exchange_name, symbol, time_frame, enums.ExchangeDataTables.OHLCV,
+                                          inferior_timestamp, superior_timestamp, self.get_ohlcv, limit)
 
     async def get_ticker(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
         return importers.import_tickers(
@@ -140,13 +121,8 @@ class ExchangeDataImporter(importers.DataImporter):
 
     async def get_ticker_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
                                          inferior_timestamp=-1, superior_timestamp=-1):
-        timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp,
-                                                                          inferior_timestamp)
-        return importers.import_tickers(
-            await self.database.select_from_timestamp(enums.ExchangeDataTables.TICKER, size=limit,
-                                                      exchange_name=exchange_name, symbol=symbol,
-                                                      timestamps=timestamps,
-                                                      operations=operations))
+        return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.TICKER,
+                                          inferior_timestamp, superior_timestamp, self.get_ticker, limit)
 
     async def get_order_book(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
         return importers.import_order_books(
@@ -155,12 +131,8 @@ class ExchangeDataImporter(importers.DataImporter):
 
     async def get_order_book_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
                                              inferior_timestamp=-1, superior_timestamp=-1):
-        timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp,
-                                                                          inferior_timestamp)
-        return importers.import_order_books(
-            await self.database.select_from_timestamp(enums.ExchangeDataTables.ORDER_BOOK, size=limit,
-                                                      exchange_name=exchange_name, symbol=symbol,
-                                                      timestamps=timestamps, operations=operations))
+        return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.ORDER_BOOK,
+                                          inferior_timestamp, superior_timestamp, self.get_order_book, limit)
 
     async def get_recent_trades(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
         return importers.import_recent_trades(
@@ -169,16 +141,8 @@ class ExchangeDataImporter(importers.DataImporter):
 
     async def get_recent_trades_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
                                                 inferior_timestamp=-1, superior_timestamp=-1):
-        timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp,
-                                                                          inferior_timestamp)
-        return importers.import_recent_trades(await
-                                              self.database.select_from_timestamp(
-                                                  enums.ExchangeDataTables.RECENT_TRADES,
-                                                  size=limit,
-                                                  exchange_name=exchange_name,
-                                                  symbol=symbol,
-                                                  timestamps=timestamps,
-                                                  operations=operations))
+        return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.RECENT_TRADES,
+                                          inferior_timestamp, superior_timestamp, self.get_recent_trades, limit)
 
     async def get_kline(self, exchange_name=None, symbol=None,
                         time_frame=common_enums.TimeFrames.ONE_HOUR, limit=data.DataBase.DEFAULT_SIZE):
@@ -190,40 +154,20 @@ class ExchangeDataImporter(importers.DataImporter):
                                         time_frame=common_enums.TimeFrames.ONE_HOUR,
                                         limit=data.DataBase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1):
-        timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp,
-                                                                          inferior_timestamp)
-        return importers.import_klines(
-            await self.database.select_from_timestamp(enums.ExchangeDataTables.KLINE, size=limit,
-                                                      exchange_name=exchange_name, symbol=symbol,
-                                                      time_frame=time_frame.value,
-                                                      timestamps=timestamps,
-                                                      operations=operations))
+        return await self._get_from_cache(exchange_name, symbol, time_frame, enums.ExchangeDataTables.KLINE,
+                                          inferior_timestamp, superior_timestamp, self.get_kline, limit)
 
-
-def _filter_candles(cache, inferior_timestamp, superior_timestamp, exchange_name, symbol, time_frame):
-    candles = cache[exchange_name][symbol][time_frame]["data"]
-    cache_index = cache[exchange_name][symbol][time_frame]["cache_index"]
-    if inferior_timestamp == -1:
-        if superior_timestamp == -1:
-            return candles
-        else:
-            return [candle for candle in candles if candle[0] <= superior_timestamp]
-    if superior_timestamp == -1:
-        return [candle for candle in candles if candle[0] >= inferior_timestamp]
-    min_index = max_index = None
-    # identify the select window considering candles are time sorted
-    # for index, candle in enumerate(candles, start=0):
-    for index in range(cache_index, len(candles)):
-        candle = candles[index]
-        if candle[0] >= inferior_timestamp and min_index is None:
-            min_index = index
-        if candle[0] > superior_timestamp and max_index is None:
-            max_index = index
-            # consider that since inferior_timestamp got requested, the current backtesting is going only
-            # towards future times and previous candles can be dropped to avoid iterating over them over and over
-            cache[exchange_name][symbol][time_frame]["cache_index"] = min_index
-            # cache[exchange_name][symbol][time_frame]["data"] = candles[min_index:]
-            return candles[min_index:max_index]
-    if min_index is None:
-        return []
-    return candles[min_index:]
+    async def _get_from_cache(self, exchange_name, symbol, time_frame, data_type,
+                              inferior_timestamp, superior_timestamp, set_cache_method, limit):
+        if not self.chronological_cache.has((exchange_name, symbol, time_frame, data_type)):
+            # initializer without time_frame args are not expecting the time_frame argument, remove it
+            # ignore the limit param as it might reduce the available cache and give false later select results
+            init_cache_method_args = (exchange_name, symbol, data.DataBase.DEFAULT_SIZE) if time_frame is None \
+                else (exchange_name, symbol, time_frame, data.DataBase.DEFAULT_SIZE)
+            self.chronological_cache.set(
+                await set_cache_method(*init_cache_method_args),
+                0,
+                (exchange_name, symbol, time_frame, data_type)
+            )
+        return self.chronological_cache.get(inferior_timestamp, superior_timestamp,
+                                            (exchange_name, symbol, time_frame, data_type))
