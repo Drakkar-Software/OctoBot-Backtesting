@@ -66,7 +66,6 @@ from octobot_backtesting.api.exchange_data_collector import (
     is_data_collector_in_progress,
     get_data_collector_progress,
     is_data_collector_finished,
-    historical_ohlcv_collector,
 )
 
 __all__ = [
@@ -107,5 +106,4 @@ __all__ = [
     "is_data_collector_in_progress",
     "get_data_collector_progress",
     "is_data_collector_finished",
-    "historical_ohlcv_collector",
 ]

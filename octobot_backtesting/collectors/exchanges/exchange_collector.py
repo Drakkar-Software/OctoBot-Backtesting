@@ -77,26 +77,6 @@ class ExchangeDataCollector(data_collector.DataCollector):
         self.config[commons_constants.CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {
             commons_constants.CONFIG_CRYPTO_PAIRS: self.symbols}}
 
-    @staticmethod
-    async def historical_ohlcv_collector(exchange_manager, symbol, time_frame, start_time, end_time):
-        reached_max = False
-        while start_time < end_time and not reached_max:
-            candles = await exchange_manager.exchange.get_symbol_prices(symbol, time_frame, since=int(start_time))
-            if candles:
-                start_time = candles[-1][commons_enums.PriceIndexes.IND_PRICE_TIME.value]
-                while start_time > end_time and candles:
-                    start_time = candles.pop(-1)[commons_enums.PriceIndexes.IND_PRICE_TIME.value]
-                    reached_max = True
-                if candles:
-                    exchange_manager.exchange.uniformize_candles_if_necessary(candles)
-                    yield candles
-                    # avoid fetching the last element twice
-                    start_time += 1
-                else:
-                    reached_max = True
-            else:
-                reached_max = True
-
     def _load_timeframes_if_necessary(self):
         if self.use_all_available_timeframes:
             self._load_all_available_timeframes()
