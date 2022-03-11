@@ -19,7 +19,6 @@ import octobot_commons.logging as logging
 import octobot_commons.databases as databases
 
 import octobot_backtesting.constants as constants
-import octobot_backtesting.data as data
 import octobot_backtesting.errors as errors
 
 
@@ -52,7 +51,7 @@ class DataImporter:
     def load_database(self) -> None:
         file_path = self.adapt_file_path_if_necessary()
         if not self.database:
-            self.database = data.DataBase(file_path)
+            self.database = databases.SQLiteDatabase(file_path)
 
     def adapt_file_path_if_necessary(self):
         if path.isfile(self.file_path):

@@ -16,17 +16,16 @@
 
 import json
 import os.path as path
-import os 
-import time
+import os
 from datetime import datetime
 
-import octobot_backtesting.data as data
+import octobot_commons.databases as databases
 import octobot_commons.enums as common_enums
 import octobot_commons.time_frame_manager as tmf_manager
+import octobot_commons.errors as commons_errors
 
 import octobot_backtesting.constants as constants
 import octobot_backtesting.enums as enums
-import octobot_backtesting.errors as errors
 
 
 def get_backtesting_file_name(clazz, identifier, data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA):
@@ -92,10 +91,10 @@ async def get_database_description(database):
 async def get_file_description(database_file):
     database = None
     try:
-        database = data.DataBase(database_file)
+        database = databases.SQLiteDatabase(database_file)
         await database.initialize()
         description = await get_database_description(database)
-    except (errors.DataBaseNotExists, TypeError):
+    except (commons_errors.DatabaseNotFoundError, TypeError):
         description = None
     finally:
         if database is not None:

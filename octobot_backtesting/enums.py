@@ -42,11 +42,6 @@ class ReportFormat(enum.Enum):
     SYMBOLS_WITH_TF = "symbols_with_time_frames_frames"
 
 
-class DataBaseOrderBy(enum.Enum):
-    ASC = "ASC"
-    DESC = "DESC"
-
-
 class DataTables(enum.Enum):
     DESCRIPTION = "description"
 
@@ -58,11 +53,3 @@ class ExchangeDataTables(enum.Enum):
     KLINE = "kline"
     TICKER = "ticker"
     FUNDING = "funding"
-
-
-class DataBaseOperations(enum.Enum):
-    SUP = ">"
-    INF = "<"
-    EQUALS = "="
-    INF_EQUALS = f"{INF}{EQUALS}"
-    SUP_EQUALS = f"{SUP}{EQUALS}"
