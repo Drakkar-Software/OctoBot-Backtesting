@@ -15,16 +15,6 @@
 #  License along with this library.
 
 from octobot_backtesting.data import data_file_manager
-from octobot_backtesting.data import cursor_wrapper
-from octobot_backtesting.data import cursor_pool
-from octobot_backtesting.data import database
-
-from octobot_backtesting.data.cursor_wrapper import (
-    CursorWrapper,
-)
-from octobot_backtesting.data.cursor_pool import (
-    CursorPool,
-)
 from octobot_backtesting.data.data_file_manager import (
     get_backtesting_file_name,
     get_data_type,
@@ -36,14 +26,8 @@ from octobot_backtesting.data.data_file_manager import (
     get_database_description,
     get_file_description,
 )
-from octobot_backtesting.data.database import (
-    DataBase,
-    new_database,
-)
 
 __all__ = [
-    "CursorWrapper",
-    "CursorPool",
     "get_backtesting_file_name",
     "get_data_type",
     "get_file_ending",
@@ -53,6 +37,4 @@ __all__ = [
     "delete_data_file",
     "get_database_description",
     "get_file_description",
-    "DataBase",
-    "new_database",
 ]

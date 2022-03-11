@@ -15,8 +15,8 @@
 #  License along with this library.
 import octobot_backtesting.enums as backtesting_enums
 import octobot_backtesting.importers as importers
-import octobot_backtesting.data as data
-import octobot_backtesting.errors as errors
+import octobot_commons.errors as commons_errors
+import octobot_commons.databases as databases
 
 
 def get_available_data_types(importer) -> list:
@@ -48,7 +48,7 @@ async def get_all_ohlcvs(database_path, exchange_name, symbol, time_frame,
                          inferior_timestamp=-1, superior_timestamp=-1) -> list:
     timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
     try:
-        async with data.new_database(database_path) as database:
+        async with databases.SQLiteDatabase.new_database(database_path) as database:
             candles = await database.select_from_timestamp(backtesting_enums.ExchangeDataTables.OHLCV,
                                                            exchange_name=exchange_name, symbol=symbol,
                                                            time_frame=time_frame.value,
@@ -56,7 +56,7 @@ async def get_all_ohlcvs(database_path, exchange_name, symbol, time_frame,
                                                            operations=operations)
         return [candle_with_metadata[-1]
                 for candle_with_metadata in sorted(importers.import_ohlcvs(candles), key=lambda x: x[0])]
-    except errors.DataBaseNotExists:
+    except commons_errors.DatabaseNotFoundError:
         return []
 
 

@@ -15,7 +15,7 @@
 #  License along with this library.
 import json
 
-import octobot_backtesting.enums as enums
+import octobot_commons.enums as commons_enums
 
 
 def get_operations_from_timestamps(superior_timestamp, inferior_timestamp):
@@ -23,10 +23,10 @@ def get_operations_from_timestamps(superior_timestamp, inferior_timestamp):
     timestamps: list = []
     if superior_timestamp != -1:
         timestamps.append(str(superior_timestamp))
-        operations.append(enums.DataBaseOperations.INF_EQUALS.value)
+        operations.append(commons_enums.DataBaseOperations.INF_EQUALS.value)
     if inferior_timestamp != -1:
         timestamps.append(str(inferior_timestamp))
-        operations.append(enums.DataBaseOperations.SUP_EQUALS.value)
+        operations.append(commons_enums.DataBaseOperations.SUP_EQUALS.value)
 
     return timestamps, operations
 

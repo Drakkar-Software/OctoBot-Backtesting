@@ -15,6 +15,8 @@
 #  License along with this library.
 import octobot_commons.constants as common_constants
 import octobot_commons.enums as common_enums
+import octobot_commons.errors as common_errors
+import octobot_commons.databases as databases
 
 import octobot_backtesting.data as data
 import octobot_backtesting.enums as enums
@@ -59,21 +61,23 @@ class ExchangeDataImporter(importers.DataImporter):
                       enums.ExchangeDataTables.RECENT_TRADES, enums.ExchangeDataTables.TICKER]:
             if table in self.available_data_types:
                 try:
-                    min_timestamp = (await self.database.select_min(table, [data.DataBase.TIMESTAMP_COLUMN]))[0][0]
+                    min_timestamp = (await self.database.select_min(table,
+                                                                    [databases.SQLiteDatabase.TIMESTAMP_COLUMN]))[0][0]
                     if not minimum_timestamp or minimum_timestamp > min_timestamp:
                         minimum_timestamp = min_timestamp
 
-                    max_timestamp = (await self.database.select_max(table, [data.DataBase.TIMESTAMP_COLUMN]))[0][0]
+                    max_timestamp = (await self.database.select_max(table,
+                                                                    [databases.SQLiteDatabase.TIMESTAMP_COLUMN]))[0][0]
                     if not maximum_timestamp or maximum_timestamp < max_timestamp:
                         maximum_timestamp = max_timestamp
-                except (IndexError, errors.DataBaseNotExists):
+                except (IndexError, common_errors.DatabaseNotFoundError):
                     pass
 
         # OHLCV timestamps
         try:
             ohlcv_kwargs = {"time_frame": time_frame} if time_frame else {}
             ohlcv_min_timestamps = (await self.database.select_min(enums.ExchangeDataTables.OHLCV,
-                                                                   [data.DataBase.TIMESTAMP_COLUMN],
+                                                                   [databases.SQLiteDatabase.TIMESTAMP_COLUMN],
                                                                    [common_constants.CONFIG_TIME_FRAME],
                                                                    group_by=common_constants.CONFIG_TIME_FRAME,
                                                                    **ohlcv_kwargs
@@ -83,12 +87,12 @@ class ExchangeDataImporter(importers.DataImporter):
                 # if the required time frame is not included in this database, ohlcv_min_timestamps is empty: ignore it
                 min_ohlcv_timestamp = max(ohlcv_min_timestamps)[0]
                 max_ohlcv_timestamp = (await self.database.select_max(enums.ExchangeDataTables.OHLCV,
-                                                                      [data.DataBase.TIMESTAMP_COLUMN],
+                                                                      [databases.SQLiteDatabase.TIMESTAMP_COLUMN],
                                                                       **ohlcv_kwargs))[0][0]
             elif time_frame:
                 raise errors.MissingTimeFrame(f"Missing time frame in data file: {time_frame}")
 
-        except (IndexError, errors.DataBaseNotExists):
+        except (IndexError, common_errors.DatabaseNotFoundError):
             pass
 
         if minimum_timestamp > 0 and maximum_timestamp > 0:
@@ -102,57 +106,60 @@ class ExchangeDataImporter(importers.DataImporter):
 
     async def get_ohlcv(self, exchange_name=None, symbol=None,
                         time_frame=common_enums.TimeFrames.ONE_HOUR,
-                        limit=data.DataBase.DEFAULT_SIZE):
+                        limit=databases.SQLiteDatabase.DEFAULT_SIZE):
         return importers.import_ohlcvs(await self.database.select(enums.ExchangeDataTables.OHLCV, size=limit,
                                                                   exchange_name=exchange_name, symbol=symbol,
                                                                   time_frame=time_frame.value))
 
     async def get_ohlcv_from_timestamps(self, exchange_name=None, symbol=None,
                                         time_frame=common_enums.TimeFrames.ONE_HOUR,
-                                        limit=data.DataBase.DEFAULT_SIZE,
+                                        limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1) -> list:
         return await self._get_from_cache(exchange_name, symbol, time_frame, enums.ExchangeDataTables.OHLCV,
                                           inferior_timestamp, superior_timestamp, self.get_ohlcv, limit)
 
-    async def get_ticker(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
+    async def get_ticker(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
         return importers.import_tickers(
             await self.database.select(enums.ExchangeDataTables.TICKER, size=limit,
                                        exchange_name=exchange_name, symbol=symbol))
 
-    async def get_ticker_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
+    async def get_ticker_from_timestamps(self, exchange_name=None, symbol=None,
+                                         limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                          inferior_timestamp=-1, superior_timestamp=-1):
         return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.TICKER,
                                           inferior_timestamp, superior_timestamp, self.get_ticker, limit)
 
-    async def get_order_book(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
+    async def get_order_book(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
         return importers.import_order_books(
             await self.database.select(enums.ExchangeDataTables.ORDER_BOOK, size=limit,
                                        exchange_name=exchange_name, symbol=symbol))
 
-    async def get_order_book_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
+    async def get_order_book_from_timestamps(self, exchange_name=None, symbol=None,
+                                             limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                              inferior_timestamp=-1, superior_timestamp=-1):
         return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.ORDER_BOOK,
                                           inferior_timestamp, superior_timestamp, self.get_order_book, limit)
 
-    async def get_recent_trades(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE):
+    async def get_recent_trades(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
         return importers.import_recent_trades(
             await self.database.select(enums.ExchangeDataTables.RECENT_TRADES, size=limit,
                                        exchange_name=exchange_name, symbol=symbol))
 
-    async def get_recent_trades_from_timestamps(self, exchange_name=None, symbol=None, limit=data.DataBase.DEFAULT_SIZE,
+    async def get_recent_trades_from_timestamps(self, exchange_name=None, symbol=None,
+                                                limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                                 inferior_timestamp=-1, superior_timestamp=-1):
         return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.RECENT_TRADES,
                                           inferior_timestamp, superior_timestamp, self.get_recent_trades, limit)
 
     async def get_kline(self, exchange_name=None, symbol=None,
-                        time_frame=common_enums.TimeFrames.ONE_HOUR, limit=data.DataBase.DEFAULT_SIZE):
+                        time_frame=common_enums.TimeFrames.ONE_HOUR, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
         return importers.import_klines(await self.database.select(enums.ExchangeDataTables.KLINE, size=limit,
                                                                   exchange_name=exchange_name, symbol=symbol,
                                                                   time_frame=time_frame.value))
 
     async def get_kline_from_timestamps(self, exchange_name=None, symbol=None,
                                         time_frame=common_enums.TimeFrames.ONE_HOUR,
-                                        limit=data.DataBase.DEFAULT_SIZE,
+                                        limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1):
         return await self._get_from_cache(exchange_name, symbol, time_frame, enums.ExchangeDataTables.KLINE,
                                           inferior_timestamp, superior_timestamp, self.get_kline, limit)
@@ -162,8 +169,8 @@ class ExchangeDataImporter(importers.DataImporter):
         if not self.chronological_cache.has((exchange_name, symbol, time_frame, data_type)):
             # initializer without time_frame args are not expecting the time_frame argument, remove it
             # ignore the limit param as it might reduce the available cache and give false later select results
-            init_cache_method_args = (exchange_name, symbol, data.DataBase.DEFAULT_SIZE) if time_frame is None \
-                else (exchange_name, symbol, time_frame, data.DataBase.DEFAULT_SIZE)
+            init_cache_method_args = (exchange_name, symbol, databases.SQLiteDatabase.DEFAULT_SIZE) if time_frame is None \
+                else (exchange_name, symbol, time_frame, databases.SQLiteDatabase.DEFAULT_SIZE)
             self.chronological_cache.set(
                 await set_cache_method(*init_cache_method_args),
                 0,

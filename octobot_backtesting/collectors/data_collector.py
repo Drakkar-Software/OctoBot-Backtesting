@@ -22,6 +22,7 @@ import time
 import aiohttp
 
 import octobot_commons.logging as logging
+import octobot_commons.databases as databases
 
 import octobot_backtesting.enums as enums
 import octobot_backtesting.constants as constants
@@ -81,7 +82,7 @@ class DataCollector:
 
     def create_database(self) -> None:
         if not self.database:
-            self.database = data.DataBase(self.temp_file_path)
+            self.database = databases.SQLiteDatabase(self.temp_file_path)
 
     def finalize_database(self):
         os.rename(self.temp_file_path, self.file_path)

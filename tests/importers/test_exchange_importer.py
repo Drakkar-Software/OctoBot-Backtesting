@@ -18,7 +18,7 @@ import os
 from contextlib import asynccontextmanager
 
 
-from octobot_backtesting.errors import DataBaseNotExists
+import octobot_commons.errors as commons_errors
 from octobot_backtesting.importers.exchanges.exchange_importer import ExchangeDataImporter
 from octobot_backtesting.enums import ExchangeDataTables
 from octobot_commons.enums import TimeFrames
@@ -105,54 +105,54 @@ async def test_get_ohlcv_from_timestamps():
 async def test_get_ticker():
     async with get_importer() as importer:
         # TODO complete this test when available datafile with ticker data
-        with pytest.raises(DataBaseNotExists):
+        with pytest.raises(commons_errors.DatabaseNotFoundError):
             await importer.get_ticker()
 
 
 async def test_get_ticker_from_timestamps():
     async with get_importer() as importer:
         # TODO complete this test when available datafile with ticker data
-        with pytest.raises(DataBaseNotExists):
+        with pytest.raises(commons_errors.DatabaseNotFoundError):
             await importer.get_ticker_from_timestamps()
 
 
 async def test_get_order_book():
     async with get_importer() as importer:
         # TODO complete this test when available datafile with order book data
-        with pytest.raises(DataBaseNotExists):
+        with pytest.raises(commons_errors.DatabaseNotFoundError):
             await importer.get_order_book()
 
 
 async def test_get_order_book_from_timestamps():
     async with get_importer() as importer:
         # TODO complete this test when available datafile with order book data
-        with pytest.raises(DataBaseNotExists):
+        with pytest.raises(commons_errors.DatabaseNotFoundError):
             await importer.get_order_book_from_timestamps()
 
 
 async def test_get_recent_trades():
     async with get_importer() as importer:
         # TODO complete this test when available datafile with recent trades data
-        with pytest.raises(DataBaseNotExists):
+        with pytest.raises(commons_errors.DatabaseNotFoundError):
             await importer.get_recent_trades()
 
 
 async def test_get_recent_trades_from_timestamps():
     async with get_importer() as importer:
         # TODO complete this test when available datafile with recent trades data
-        with pytest.raises(DataBaseNotExists):
+        with pytest.raises(commons_errors.DatabaseNotFoundError):
             await importer.get_recent_trades_from_timestamps()
 
 
 async def test_get_kline():
     async with get_importer() as importer:
         # TODO complete this test when available datafile with kline data
-        with pytest.raises(DataBaseNotExists):
+        with pytest.raises(commons_errors.DatabaseNotFoundError):
             await importer.get_kline()
 
 
 async def test_get_kline_from_timestamps():
     async with get_importer() as importer:
         # TODO complete this test when available datafile with kline data
-        with pytest.raises(DataBaseNotExists):
+        with pytest.raises(commons_errors.DatabaseNotFoundError):
             await importer.get_kline_from_timestamps()
