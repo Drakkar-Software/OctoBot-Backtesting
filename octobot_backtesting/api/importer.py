@@ -48,7 +48,7 @@ async def get_all_ohlcvs(database_path, exchange_name, symbol, time_frame,
                          inferior_timestamp=-1, superior_timestamp=-1) -> list:
     timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
     try:
-        async with databases.SQLiteDatabase.new_database(database_path) as database:
+        async with databases.new_sqlite_database(database_path) as database:
             candles = await database.select_from_timestamp(backtesting_enums.ExchangeDataTables.OHLCV,
                                                            exchange_name=exchange_name, symbol=symbol,
                                                            time_frame=time_frame.value,

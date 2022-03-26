@@ -6,9 +6,5 @@ Async-Channel>=2.0.13, <2.1
 OctoBot-Commons>=1.6.20, <1.7
 OctoBot-Tentacles-Manager>=2.6.4, <2.7
 
-# Backtesting core requirements
-# async sqlite connection
-aiosqlite>=0.16.0, <0.17
-
 # async http requests
 aiohttp>=3.8.1
