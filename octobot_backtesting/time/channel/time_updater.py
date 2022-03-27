@@ -35,18 +35,13 @@ class TimeUpdater(time_channel.TimeProducer):
         self.channels_manager = channels_manager.ChannelsManager(exchange_ids=self.backtesting.exchange_ids,
                                                                  matrix_id=self.backtesting.matrix_id)
         await self.channels_manager.initialize()
-        latest_progress = 0
-        last_print = time.time()
         while not self.should_stop:
             try:
                 current_timestamp = self.time_manager.current_timestamp
                 await self.push(self.time_manager.current_timestamp)
-                if self.backtesting.get_progress() - latest_progress > 0.05:
-                    latest_progress = self.backtesting.get_progress()
-                    print(f"Progress : {round(min(self.backtesting.get_progress(), 1) * 100, 2)}% "
-                          f"[{current_timestamp}] ({round(time.time() - self.starting_time, 3)}s) - "
-                          f"{round(time.time() - last_print, 3)}s")
-                    last_print = time.time()
+
+                self.logger.info(f"Progress : {round(min(self.backtesting.get_progress(), 1) * 100, 2)}% "
+                                 f"[{current_timestamp}]")
 
                 # Call synchronous channels callbacks
                 await self.channels_manager.handle_new_iteration(current_timestamp)
@@ -55,7 +50,6 @@ class TimeUpdater(time_channel.TimeProducer):
                     self.logger.debug("Maximum timestamp hit, stopping...")
                     self.simulation_duration = time.time() - self.starting_time
                     self.logger.info(f"Lasted {round(self.simulation_duration, 3)}s")
-                    print(f"Lasted {round(self.simulation_duration, 3)}s")
                     await self.stop()
                 else:
                     # jump to the next time point
