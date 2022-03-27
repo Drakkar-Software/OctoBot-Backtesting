@@ -1,5 +1,5 @@
 # cython: language_level=3
-#  Drakkar-Software OctoBot
+#  Drakkar-Software OctoBot-Backtesting
 #  Copyright (c) Drakkar-Software, All rights reserved.
 #
 #  This library is free software; you can redistribute it and/or
