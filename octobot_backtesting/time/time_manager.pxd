@@ -28,8 +28,8 @@ cdef class TimeManager:
     cdef public bint time_initialized
 
     cdef public object timestamp_accept_check_callback
-    cdef public list timestamps_whitelist
-    cdef int _timestamps_whitelist_index
+    cdef readonly list timestamps_whitelist
+    cdef object _timestamps_whitelist_queue
 
     cpdef void initialize(self)
     cpdef void start(self)

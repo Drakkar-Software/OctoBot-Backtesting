@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import collections
 import time
 
 import octobot_commons.logging as logging
@@ -35,8 +36,8 @@ class TimeManager:
         self.time_interval = self.DEFAULT_TIME_INTERVAL
 
         self.timestamp_accept_check_callback = None
-        self.timestamps_whitelist = None
-        self._timestamps_whitelist_index = 0
+        self.timestamps_whitelist: set = None
+        self._timestamps_whitelist_queue: collections.deque = None
 
     def initialize(self):
         self._reset_time()
@@ -55,14 +56,14 @@ class TimeManager:
         self.set_current_timestamp(0)
 
     def has_finished(self):
-        if self.timestamps_whitelist is not None:
-            if self._timestamps_whitelist_index >= len(self.timestamps_whitelist) - 1:
+        if self._timestamps_whitelist_queue is not None:
+            if len(self._timestamps_whitelist_queue) == 0:
                 return True
         return self.current_timestamp >= self.finishing_timestamp
 
     def next_timestamp(self):
         self.current_timestamp += self.time_interval
-        if self.timestamps_whitelist is not None:
+        if self._timestamps_whitelist_queue is not None:
             # when timestamps_whitelist is set: fast forward time to only trigger whitelisted timestamps
             while self._should_skip_current_timestamp() and self.current_timestamp <= self.finishing_timestamp:
                 self.current_timestamp += self.time_interval
@@ -73,10 +74,12 @@ class TimeManager:
         return not self._has_current_timestamp_in_whitelist()
 
     def _has_current_timestamp_in_whitelist(self):
-        while self.timestamps_whitelist[self._timestamps_whitelist_index] < self.current_timestamp and \
-             self._timestamps_whitelist_index < len(self.timestamps_whitelist) - 1:
-            self._timestamps_whitelist_index += 1
-        return self.timestamps_whitelist[self._timestamps_whitelist_index] == self.current_timestamp
+        if self._timestamps_whitelist_queue:
+            whitelist_timestamp = self._timestamps_whitelist_queue[0]
+            while whitelist_timestamp < self.current_timestamp and self._timestamps_whitelist_queue:
+                whitelist_timestamp = self._timestamps_whitelist_queue.popleft()
+            return whitelist_timestamp == self.current_timestamp
+        return False
 
     def set_minimum_timestamp(self, minimum_timestamp):
         if self.starting_timestamp == self.DEFAULT_TIMESTAMP_INIT_VALUE or self.starting_timestamp > minimum_timestamp:
@@ -101,7 +104,7 @@ class TimeManager:
     def register_timestamp_whitelist(self, timestamps, check_callback, append_to_whitelist=False):
         self.timestamp_accept_check_callback = check_callback
         if append_to_whitelist and self.timestamps_whitelist:
-            self.timestamps_whitelist += sorted(set(self.timestamps_whitelist + timestamps))
+            self.timestamps_whitelist = sorted(set(self.timestamps_whitelist + timestamps))
         else:
             self.timestamps_whitelist = sorted(set(timestamps))
-        self._timestamps_whitelist_index = 0
+        self._timestamps_whitelist_queue = collections.deque(self.timestamps_whitelist)
