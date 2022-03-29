@@ -26,6 +26,9 @@ import octobot_backtesting.backtesting as backtesting_class
 import octobot_backtesting.constants as constants
 
 
+LOGGER_NAME = "BacktestingAPI"
+
+
 async def initialize_backtesting(config, exchange_ids, matrix_id, data_files) -> backtesting_class.Backtesting:
     backtesting_instance = backtesting_class.Backtesting(config=config,
                                                          exchange_ids=exchange_ids,
@@ -51,18 +54,9 @@ async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
                                           maximum_timestamp=maximum_timestamp)
 
 
-async def adapt_backtesting_channels(backtesting, config, importer_class, run_on_common_part_only=True,
-                                     start_timestamp=None, end_timestamp=None):
+async def _get_min_max_timestamps(importers, run_on_common_part_only, start_timestamp, end_timestamp,
+                                  min_time_frame_to_consider, max_time_frame_to_consider):
     # set mininmum and maximum timestamp according to all importers data
-    sorted_time_frames = time_frame_manager.sort_time_frames(time_frame_manager.get_config_time_frame(config))
-    if not sorted_time_frames:
-        # use min timeframe as default if no timeframe is enabled
-        sorted_time_frames = [time_frame_manager.find_min_time_frame([])]
-    min_time_frame_to_consider = sorted_time_frames[0]
-    max_time_frame_to_consider = sorted_time_frames[-1]
-    importers = backtesting.get_importers(importer_class)
-    if not importers:
-        raise RuntimeError("No exchange importer has been found for this data file, backtesting can't start.")
     try:
         short_tf_timestamps = [await api.get_data_timestamp_interval(importer, min_time_frame_to_consider)
                                for importer in importers]  # [(min, max) ... ]
@@ -100,7 +94,7 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
         if min_timestamp <= start_timestamp < (end_timestamp if end_timestamp else max_timestamp):
             min_timestamp = start_timestamp
         else:
-            logging.get_logger("BacktestingAPI").warning(f"Can't set the minimum timestamp to {start_timestamp}. "
+            logging.get_logger(LOGGER_NAME).warning(f"Can't set the minimum timestamp to {start_timestamp}. "
                                                          f"The minimum available({min_timestamp}) will be used instead.")
     if end_timestamp is not None:
         # Adapt end timestamp
@@ -109,8 +103,25 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
         if max_timestamp >= end_timestamp > start_timestamp if start_timestamp else min_timestamp:
             max_timestamp = end_timestamp
         else:
-            logging.get_logger("BacktestingAPI").warning(f"Can't set the maximum timestamp to {end_timestamp}. "
+            logging.get_logger(LOGGER_NAME).warning(f"Can't set the maximum timestamp to {end_timestamp}. "
                                                          f"The maximum available({max_timestamp}) will be used instead.")
+    return min_timestamp, max_timestamp
+
+
+async def adapt_backtesting_channels(backtesting, config, importer_class, run_on_common_part_only=True,
+                                     start_timestamp=None, end_timestamp=None):
+    importers = backtesting.get_importers(importer_class)
+    if not importers:
+        raise RuntimeError("No exchange importer has been found for this data file, backtesting can't start.")
+    sorted_time_frames = time_frame_manager.sort_time_frames(time_frame_manager.get_config_time_frame(config))
+    if not sorted_time_frames:
+        # use min timeframe as default if no timeframe is enabled
+        sorted_time_frames = [time_frame_manager.find_min_time_frame([])]
+    min_time_frame_to_consider = sorted_time_frames[0]
+    max_time_frame_to_consider = sorted_time_frames[-1]
+    min_timestamp, max_timestamp = await _get_min_max_timestamps(importers, run_on_common_part_only,
+                                                                 start_timestamp, end_timestamp,
+                                                                 min_time_frame_to_consider, max_time_frame_to_consider)
 
     await modify_backtesting_timestamps(
         backtesting,
@@ -124,7 +135,7 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
                                       common_enums.TimeFramesMinutes[min_time_frame_to_consider] *
                                       common_constants.MINUTE_TO_SECONDS)
     except ImportError:
-        logging.get_logger("BacktestingAPI").error("requires OctoBot-Trading package installed")
+        logging.get_logger(LOGGER_NAME).error("requires OctoBot-Trading package installed")
 
 
 def set_time_updater_interval(backtesting, interval_in_seconds):
