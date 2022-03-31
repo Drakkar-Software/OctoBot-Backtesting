@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 
-cimport octobot_backtesting.data as data
+cimport octobot_commons.databases as databases
 
 cdef class DataCollector:
     cdef public dict config
@@ -32,7 +32,7 @@ cdef class DataCollector:
     cdef public bint finished
     cdef public bint in_progress
 
-    cdef public data.DataBase database
+    cdef public databases.SQLiteDatabase database
 
     cpdef bint is_finished(self)
     cpdef bint is_in_progress(self)

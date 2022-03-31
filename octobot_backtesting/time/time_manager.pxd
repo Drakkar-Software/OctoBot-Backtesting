@@ -44,4 +44,4 @@ cdef class TimeManager:
 
     cdef void _reset_time(self)
     cdef object _should_skip_current_timestamp(self)    # object to allow exception raising
-    cdef bool _has_current_timestamp_in_whitelist(self)
+    cdef bint _has_current_timestamp_in_whitelist(self)
