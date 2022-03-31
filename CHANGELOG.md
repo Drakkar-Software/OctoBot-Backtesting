@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2022-03-31
+### Updated
+- [DataImporter] optimized backtesting historical data reading
+- [Databases] migrate databases into octobot-commons
+
 ## [1.6.29] - 2022-01-16
 ### Updated
 - synchronized_perform_consumers_queue call
