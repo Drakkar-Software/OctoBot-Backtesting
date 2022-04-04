@@ -4,7 +4,7 @@ cython==0.29.26
 # Drakkar-Software requirements
 Async-Channel>=2.0.13, <2.1
 OctoBot-Commons>=1.6.20, <1.7
-OctoBot-Tentacles-Manager>=2.6.4, <2.7
+OctoBot-Tentacles-Manager>=2.6.4, <2.8
 
 # Backtesting core requirements
 # async sqlite connection
