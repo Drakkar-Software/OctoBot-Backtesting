@@ -23,11 +23,19 @@ def get_available_data_types(importer) -> list:
     return importer.available_data_types
 
 
-def get_data_file(importer) -> list:
+def get_data_file(importer) -> str:
     return importer.file_path
 
 
-def get_data_file_path(importer) -> list:
+def get_data_file_from_importers(available_importers, symbol, time_frame) -> str:
+    for importer in available_importers:
+        if symbol in get_available_symbols(importer) and \
+                time_frame in get_available_time_frames(importer):
+            return get_data_file_path(importer)
+    return None
+
+
+def get_data_file_path(importer) -> str:
     return importer.adapt_file_path_if_necessary()
 
 

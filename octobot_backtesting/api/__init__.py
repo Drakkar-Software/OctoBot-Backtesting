@@ -31,6 +31,7 @@ from octobot_backtesting.api.data_file import (
 from octobot_backtesting.api.importer import (
     get_available_data_types,
     get_data_file,
+    get_data_file_from_importers,
     get_data_file_path,
     get_available_time_frames,
     get_available_symbols,
@@ -75,6 +76,7 @@ __all__ = [
     "get_file_description",
     "get_available_data_types",
     "get_data_file",
+    "get_data_file_from_importers",
     "get_data_file_path",
     "get_available_time_frames",
     "get_available_symbols",
