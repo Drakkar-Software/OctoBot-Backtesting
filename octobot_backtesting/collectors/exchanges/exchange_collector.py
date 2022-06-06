@@ -75,7 +75,7 @@ class ExchangeDataCollector(data_collector.DataCollector):
         self.config[commons_constants.CONFIG_TIME_FRAME] = self.time_frames
         self.config[commons_constants.CONFIG_EXCHANGES] = {self.exchange_name: {}}
         self.config[commons_constants.CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {
-            commons_constants.CONFIG_CRYPTO_PAIRS: self.symbols}}
+            commons_constants.CONFIG_CRYPTO_PAIRS: [symbol.legacy_symbol() for symbol in self.symbols]}}
 
     def _load_timeframes_if_necessary(self):
         if self.use_all_available_timeframes:
@@ -87,7 +87,7 @@ class ExchangeDataCollector(data_collector.DataCollector):
                                    timestamp=time.time(),
                                    version=self.VERSION,
                                    exchange=self.exchange_name,
-                                   symbols=json.dumps(self.symbols),
+                                   symbols=json.dumps([symbol.symbol_str for symbol in self.symbols]),
                                    time_frames=json.dumps([tf.value for tf in self.time_frames]),
                                    start_timestamp=int(self.start_timestamp/1000) if self.start_timestamp else 0,
                                    end_timestamp=int(self.end_timestamp/1000) if self.end_timestamp

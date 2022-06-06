@@ -33,6 +33,9 @@ class ExchangeDataImporter(importers.DataImporter):
         self.time_frames = []
         self.available_data_types = []
 
+        # TODO remove when new symbol format is supported
+        self.legacy_symbol_to_storage_symbol = {}
+
     async def initialize(self) -> None:
         self.load_database()
         await self.database.initialize()
@@ -41,6 +44,7 @@ class ExchangeDataImporter(importers.DataImporter):
         description = await data.get_database_description(self.database)
         self.exchange_name = description[enums.DataFormatKeys.EXCHANGE.value]
         self.symbols = description[enums.DataFormatKeys.SYMBOLS.value]
+        self.legacy_symbol_to_storage_symbol = self.get_legacy_symbol_dict(self.symbols)
         self.time_frames = description[enums.DataFormatKeys.TIME_FRAMES.value]
         await self._init_available_data_types()
 
@@ -107,6 +111,7 @@ class ExchangeDataImporter(importers.DataImporter):
     async def get_ohlcv(self, exchange_name=None, symbol=None,
                         time_frame=common_enums.TimeFrames.ONE_HOUR,
                         limit=databases.SQLiteDatabase.DEFAULT_SIZE):
+        symbol = self._get_importer_symbol(symbol)
         return importers.import_ohlcvs(await self.database.select(enums.ExchangeDataTables.OHLCV, size=limit,
                                                                   exchange_name=exchange_name, symbol=symbol,
                                                                   time_frame=time_frame.value))
@@ -119,6 +124,7 @@ class ExchangeDataImporter(importers.DataImporter):
                                           inferior_timestamp, superior_timestamp, self.get_ohlcv, limit)
 
     async def get_ticker(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
+        symbol = self._get_importer_symbol(symbol)
         return importers.import_tickers(
             await self.database.select(enums.ExchangeDataTables.TICKER, size=limit,
                                        exchange_name=exchange_name, symbol=symbol))
@@ -130,6 +136,7 @@ class ExchangeDataImporter(importers.DataImporter):
                                           inferior_timestamp, superior_timestamp, self.get_ticker, limit)
 
     async def get_order_book(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
+        symbol = self._get_importer_symbol(symbol)
         return importers.import_order_books(
             await self.database.select(enums.ExchangeDataTables.ORDER_BOOK, size=limit,
                                        exchange_name=exchange_name, symbol=symbol))
@@ -141,6 +148,7 @@ class ExchangeDataImporter(importers.DataImporter):
                                           inferior_timestamp, superior_timestamp, self.get_order_book, limit)
 
     async def get_recent_trades(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
+        symbol = self._get_importer_symbol(symbol)
         return importers.import_recent_trades(
             await self.database.select(enums.ExchangeDataTables.RECENT_TRADES, size=limit,
                                        exchange_name=exchange_name, symbol=symbol))
@@ -153,6 +161,7 @@ class ExchangeDataImporter(importers.DataImporter):
 
     async def get_kline(self, exchange_name=None, symbol=None,
                         time_frame=common_enums.TimeFrames.ONE_HOUR, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
+        symbol = self._get_importer_symbol(symbol)
         return importers.import_klines(await self.database.select(enums.ExchangeDataTables.KLINE, size=limit,
                                                                   exchange_name=exchange_name, symbol=symbol,
                                                                   time_frame=time_frame.value))
@@ -166,6 +175,7 @@ class ExchangeDataImporter(importers.DataImporter):
 
     async def _get_from_cache(self, exchange_name, symbol, time_frame, data_type,
                               inferior_timestamp, superior_timestamp, set_cache_method, limit):
+        symbol = self._get_importer_symbol(symbol)
         if not self.chronological_cache.has((exchange_name, symbol, time_frame, data_type)):
             # initializer without time_frame args are not expecting the time_frame argument, remove it
             # ignore the limit param as it might reduce the available cache and give false later select results
@@ -178,3 +188,17 @@ class ExchangeDataImporter(importers.DataImporter):
             )
         return self.chronological_cache.get(inferior_timestamp, superior_timestamp,
                                             (exchange_name, symbol, time_frame, data_type))
+
+    def _get_importer_symbol(self, symbol):
+        # TODO remove when full symbol handling
+        try:
+            return symbol if symbol in self.symbols else self.legacy_symbol_to_storage_symbol[symbol]
+        except KeyError:
+            return symbol
+
+    @staticmethod
+    def get_legacy_symbol_dict(symbols):
+        return {
+            symbol.split(":")[0]: symbol
+            for symbol in symbols
+        }

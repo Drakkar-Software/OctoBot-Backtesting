@@ -24,3 +24,4 @@ cdef class ExchangeDataImporter(importers.DataImporter):
     cdef public list time_frames
 
     cdef public object chronological_cache
+    cdef public dict legacy_symbol_to_storage_symbol
