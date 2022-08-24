@@ -108,68 +108,138 @@ class ExchangeDataImporter(importers.DataImporter):
                                      if await self.database.check_table_exists(table)
                                      and await self.database.check_table_not_empty(table)]
 
+    async def _get_from_db(
+            self, exchange_name, symbol, table,
+            time_frame=None,
+            limit=databases.SQLiteDatabase.DEFAULT_SIZE,
+            timestamps=None,
+            operations=None
+    ):
+        symbol = self._get_importer_symbol(symbol)
+        kwargs = {} if time_frame is None else {"time_frame": time_frame.value}
+
+        if timestamps:
+            return await self.database.select_from_timestamp(
+                table, size=limit,
+                exchange_name=exchange_name, symbol=symbol,
+                timestamps=timestamps,
+                operations=operations,
+                **kwargs
+            )
+        return await self.database.select(
+            table, size=limit,
+            exchange_name=exchange_name, symbol=symbol,
+            **kwargs
+        )
+
     async def get_ohlcv(self, exchange_name=None, symbol=None,
                         time_frame=common_enums.TimeFrames.ONE_HOUR,
-                        limit=databases.SQLiteDatabase.DEFAULT_SIZE):
-        symbol = self._get_importer_symbol(symbol)
-        return importers.import_ohlcvs(await self.database.select(enums.ExchangeDataTables.OHLCV, size=limit,
-                                                                  exchange_name=exchange_name, symbol=symbol,
-                                                                  time_frame=time_frame.value))
+                        limit=databases.SQLiteDatabase.DEFAULT_SIZE,
+                        timestamps=None,
+                        operations=None):
+        return importers.import_ohlcvs(await self._get_from_db(
+            exchange_name, symbol, enums.ExchangeDataTables.OHLCV,
+            time_frame=time_frame,
+            limit=limit,
+            timestamps=timestamps,
+            operations=operations
+        ))
 
     async def get_ohlcv_from_timestamps(self, exchange_name=None, symbol=None,
                                         time_frame=common_enums.TimeFrames.ONE_HOUR,
                                         limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1) -> list:
+        """
+        Reads OHLCV history from database and populates a local ChronologicalReadDatabaseCache.
+        Warning: can't read data from before last given inferior_timestamp unless associated cache is reset
+        """
         return await self._get_from_cache(exchange_name, symbol, time_frame, enums.ExchangeDataTables.OHLCV,
                                           inferior_timestamp, superior_timestamp, self.get_ohlcv, limit)
 
-    async def get_ticker(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
-        symbol = self._get_importer_symbol(symbol)
-        return importers.import_tickers(
-            await self.database.select(enums.ExchangeDataTables.TICKER, size=limit,
-                                       exchange_name=exchange_name, symbol=symbol))
+    async def get_ticker(self, exchange_name=None, symbol=None,
+                         limit=databases.SQLiteDatabase.DEFAULT_SIZE,
+                         timestamps=None,
+                         operations=None):
+        return importers.import_tickers(await self._get_from_db(
+            exchange_name, symbol, enums.ExchangeDataTables.TICKER,
+            limit=limit,
+            timestamps=timestamps,
+            operations=operations
+        ))
 
     async def get_ticker_from_timestamps(self, exchange_name=None, symbol=None,
                                          limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                          inferior_timestamp=-1, superior_timestamp=-1):
+        """
+        Reads ticker history from database and populates a local ChronologicalReadDatabaseCache.
+        Warning: can't read data from before last given inferior_timestamp unless associated cache is reset
+        """
         return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.TICKER,
                                           inferior_timestamp, superior_timestamp, self.get_ticker, limit)
 
-    async def get_order_book(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
-        symbol = self._get_importer_symbol(symbol)
-        return importers.import_order_books(
-            await self.database.select(enums.ExchangeDataTables.ORDER_BOOK, size=limit,
-                                       exchange_name=exchange_name, symbol=symbol))
+    async def get_order_book(self, exchange_name=None, symbol=None,
+                             limit=databases.SQLiteDatabase.DEFAULT_SIZE,
+                             timestamps=None,
+                             operations=None):
+        return importers.import_order_books(await self._get_from_db(
+            exchange_name, symbol, enums.ExchangeDataTables.ORDER_BOOK,
+            limit=limit,
+            timestamps=timestamps,
+            operations=operations
+        ))
 
     async def get_order_book_from_timestamps(self, exchange_name=None, symbol=None,
                                              limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                              inferior_timestamp=-1, superior_timestamp=-1):
+        """
+        Reads order book history from database and populates a local ChronologicalReadDatabaseCache.
+        Warning: can't read data from before last given inferior_timestamp unless associated cache is reset
+        """
         return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.ORDER_BOOK,
                                           inferior_timestamp, superior_timestamp, self.get_order_book, limit)
 
-    async def get_recent_trades(self, exchange_name=None, symbol=None, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
-        symbol = self._get_importer_symbol(symbol)
-        return importers.import_recent_trades(
-            await self.database.select(enums.ExchangeDataTables.RECENT_TRADES, size=limit,
-                                       exchange_name=exchange_name, symbol=symbol))
+    async def get_recent_trades(self, exchange_name=None, symbol=None,
+                                limit=databases.SQLiteDatabase.DEFAULT_SIZE,
+                                timestamps=None,
+                                operations=None):
+        return importers.import_recent_trades(await self._get_from_db(
+            exchange_name, symbol, enums.ExchangeDataTables.RECENT_TRADES,
+            limit=limit,
+            timestamps=timestamps,
+            operations=operations
+        ))
 
     async def get_recent_trades_from_timestamps(self, exchange_name=None, symbol=None,
                                                 limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                                 inferior_timestamp=-1, superior_timestamp=-1):
+        """
+        Reads recent trades history from database and populates a local ChronologicalReadDatabaseCache.
+        Warning: can't read data from before last given inferior_timestamp unless associated cache is reset
+        """
         return await self._get_from_cache(exchange_name, symbol, None, enums.ExchangeDataTables.RECENT_TRADES,
                                           inferior_timestamp, superior_timestamp, self.get_recent_trades, limit)
 
     async def get_kline(self, exchange_name=None, symbol=None,
-                        time_frame=common_enums.TimeFrames.ONE_HOUR, limit=databases.SQLiteDatabase.DEFAULT_SIZE):
-        symbol = self._get_importer_symbol(symbol)
-        return importers.import_klines(await self.database.select(enums.ExchangeDataTables.KLINE, size=limit,
-                                                                  exchange_name=exchange_name, symbol=symbol,
-                                                                  time_frame=time_frame.value))
+                        time_frame=common_enums.TimeFrames.ONE_HOUR,
+                        limit=databases.SQLiteDatabase.DEFAULT_SIZE,
+                        timestamps=None,
+                        operations=None):
+        return importers.import_klines(await self._get_from_db(
+            exchange_name, symbol, enums.ExchangeDataTables.KLINE,
+            time_frame=time_frame,
+            limit=limit,
+            timestamps=timestamps,
+            operations=operations
+        ))
 
     async def get_kline_from_timestamps(self, exchange_name=None, symbol=None,
                                         time_frame=common_enums.TimeFrames.ONE_HOUR,
                                         limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                         inferior_timestamp=-1, superior_timestamp=-1):
+        """
+        Reads kline history from database and populates a local ChronologicalReadDatabaseCache.
+        Warning: can't read data from before last given inferior_timestamp unless associated cache is reset
+        """
         return await self._get_from_cache(exchange_name, symbol, time_frame, enums.ExchangeDataTables.KLINE,
                                           inferior_timestamp, superior_timestamp, self.get_kline, limit)
 
@@ -177,10 +247,18 @@ class ExchangeDataImporter(importers.DataImporter):
                               inferior_timestamp, superior_timestamp, set_cache_method, limit):
         symbol = self._get_importer_symbol(symbol)
         if not self.chronological_cache.has((exchange_name, symbol, time_frame, data_type)):
+            # ignore superior timestamp to select everything starting from inferior_timestamp and cache it
+            select_superior_timestamp = -1
+            timestamps, operations = importers.get_operations_from_timestamps(
+                select_superior_timestamp,
+                inferior_timestamp
+            )
             # initializer without time_frame args are not expecting the time_frame argument, remove it
             # ignore the limit param as it might reduce the available cache and give false later select results
-            init_cache_method_args = (exchange_name, symbol, databases.SQLiteDatabase.DEFAULT_SIZE) if time_frame is None \
-                else (exchange_name, symbol, time_frame, databases.SQLiteDatabase.DEFAULT_SIZE)
+            init_cache_method_args = \
+                (exchange_name, symbol, databases.SQLiteDatabase.DEFAULT_SIZE, timestamps, operations) \
+                if time_frame is None \
+                else (exchange_name, symbol, time_frame, databases.SQLiteDatabase.DEFAULT_SIZE, timestamps, operations)
             self.chronological_cache.set(
                 await set_cache_method(*init_cache_method_args),
                 0,
