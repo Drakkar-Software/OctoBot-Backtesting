@@ -21,10 +21,11 @@ import octobot_commons.databases as databases
 import octobot_backtesting.data as data
 import octobot_backtesting.enums as enums
 import octobot_backtesting.errors as errors
-import octobot_backtesting.importers as importers
+import octobot_backtesting.importers.data_importer as data_importer
+import octobot_backtesting.importers.exchanges.util as util
 
 
-class ExchangeDataImporter(importers.DataImporter):
+class ExchangeDataImporter(data_importer.DataImporter):
     def __init__(self, config, file_path):
         super().__init__(config, file_path)
 
@@ -137,7 +138,7 @@ class ExchangeDataImporter(importers.DataImporter):
                         limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                         timestamps=None,
                         operations=None):
-        return importers.import_ohlcvs(await self._get_from_db(
+        return util.import_ohlcvs(await self._get_from_db(
             exchange_name, symbol, enums.ExchangeDataTables.OHLCV,
             time_frame=time_frame,
             limit=limit,
@@ -160,7 +161,7 @@ class ExchangeDataImporter(importers.DataImporter):
                          limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                          timestamps=None,
                          operations=None):
-        return importers.import_tickers(await self._get_from_db(
+        return util.import_tickers(await self._get_from_db(
             exchange_name, symbol, enums.ExchangeDataTables.TICKER,
             limit=limit,
             timestamps=timestamps,
@@ -181,7 +182,7 @@ class ExchangeDataImporter(importers.DataImporter):
                              limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                              timestamps=None,
                              operations=None):
-        return importers.import_order_books(await self._get_from_db(
+        return util.import_order_books(await self._get_from_db(
             exchange_name, symbol, enums.ExchangeDataTables.ORDER_BOOK,
             limit=limit,
             timestamps=timestamps,
@@ -202,7 +203,7 @@ class ExchangeDataImporter(importers.DataImporter):
                                 limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                                 timestamps=None,
                                 operations=None):
-        return importers.import_recent_trades(await self._get_from_db(
+        return util.import_recent_trades(await self._get_from_db(
             exchange_name, symbol, enums.ExchangeDataTables.RECENT_TRADES,
             limit=limit,
             timestamps=timestamps,
@@ -224,7 +225,7 @@ class ExchangeDataImporter(importers.DataImporter):
                         limit=databases.SQLiteDatabase.DEFAULT_SIZE,
                         timestamps=None,
                         operations=None):
-        return importers.import_klines(await self._get_from_db(
+        return util.import_klines(await self._get_from_db(
             exchange_name, symbol, enums.ExchangeDataTables.KLINE,
             time_frame=time_frame,
             limit=limit,
@@ -249,7 +250,7 @@ class ExchangeDataImporter(importers.DataImporter):
         if not self.chronological_cache.has((exchange_name, symbol, time_frame, data_type)):
             # ignore superior timestamp to select everything starting from inferior_timestamp and cache it
             select_superior_timestamp = -1
-            timestamps, operations = importers.get_operations_from_timestamps(
+            timestamps, operations = util.get_operations_from_timestamps(
                 select_superior_timestamp,
                 inferior_timestamp
             )
