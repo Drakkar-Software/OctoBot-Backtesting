@@ -18,6 +18,7 @@ import octobot_commons.tentacles_management as tentacles_management
 
 
 def exchange_historical_data_collector_factory(exchange_name,
+                                               exchange_type,
                                                tentacles_setup_config,
                                                symbols,
                                                time_frames=None,
@@ -25,6 +26,7 @@ def exchange_historical_data_collector_factory(exchange_name,
                                                end_timestamp=None):
     return _exchange_collector_factory(collectors.AbstractExchangeHistoryCollector,
                                        exchange_name,
+                                       exchange_type,
                                        tentacles_setup_config,
                                        symbols,
                                        time_frames,
@@ -41,6 +43,7 @@ def exchange_bot_snapshot_data_collector_factory(exchange_name,
                                                  end_timestamp=None):
     collector = _exchange_collector_factory(collectors.AbstractExchangeBotSnapshotCollector,
                                             exchange_name,
+                                            None,
                                             tentacles_setup_config,
                                             symbols,
                                             time_frames,
@@ -50,10 +53,10 @@ def exchange_bot_snapshot_data_collector_factory(exchange_name,
     return collector
 
 
-def _exchange_collector_factory(collector_parent_class, exchange_name, tentacles_setup_config, symbols,
+def _exchange_collector_factory(collector_parent_class, exchange_name, exchange_type, tentacles_setup_config, symbols,
                                 time_frames, start_timestamp, end_timestamp):
     collector_class = tentacles_management.get_single_deepest_child_class(collector_parent_class)
-    collector_instance = collector_class({}, exchange_name, tentacles_setup_config, symbols, time_frames,
+    collector_instance = collector_class({}, exchange_name, exchange_type, tentacles_setup_config, symbols, time_frames,
                                          use_all_available_timeframes=time_frames is None,
                                          start_timestamp=start_timestamp, end_timestamp=end_timestamp)
     return collector_instance

@@ -35,10 +35,12 @@ class ExchangeDataCollector(data_collector.DataCollector):
     VERSION = "1.1"
     IMPORTER = importers.ExchangeDataImporter
 
-    def __init__(self, config, exchange_name, tentacles_setup_config, symbols, time_frames, use_all_available_timeframes=False,
+    def __init__(self, config, exchange_name, exchange_type,
+                 tentacles_setup_config, symbols, time_frames, use_all_available_timeframes=False,
                  data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA, start_timestamp=None, end_timestamp=None):
         super().__init__(config, data_format=data_format)
         self.exchange_name = exchange_name
+        self.exchange_type = exchange_type
         self.tentacles_setup_config = tentacles_setup_config
         self.symbols = symbols if symbols else []
         self.time_frames = time_frames if time_frames else []
@@ -75,7 +77,7 @@ class ExchangeDataCollector(data_collector.DataCollector):
         self.config[commons_constants.CONFIG_TIME_FRAME] = self.time_frames
         self.config[commons_constants.CONFIG_EXCHANGES] = {self.exchange_name: {}}
         self.config[commons_constants.CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {
-            commons_constants.CONFIG_CRYPTO_PAIRS: [symbol.legacy_symbol() for symbol in self.symbols]}}
+            commons_constants.CONFIG_CRYPTO_PAIRS: [str(symbol) for symbol in self.symbols]}}
 
     def _load_timeframes_if_necessary(self):
         if self.use_all_available_timeframes:

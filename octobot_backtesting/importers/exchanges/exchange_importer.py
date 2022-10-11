@@ -33,9 +33,6 @@ class ExchangeDataImporter(importers.DataImporter):
         self.time_frames = []
         self.available_data_types = []
 
-        # TODO remove when new symbol format is supported
-        self.legacy_symbol_to_storage_symbol = {}
-
     async def initialize(self) -> None:
         self.load_database()
         await self.database.initialize()
@@ -44,7 +41,6 @@ class ExchangeDataImporter(importers.DataImporter):
         description = await data.get_database_description(self.database)
         self.exchange_name = description[enums.DataFormatKeys.EXCHANGE.value]
         self.symbols = description[enums.DataFormatKeys.SYMBOLS.value]
-        self.legacy_symbol_to_storage_symbol = self.get_legacy_symbol_dict(self.symbols)
         self.time_frames = description[enums.DataFormatKeys.TIME_FRAMES.value]
         await self._init_available_data_types()
 
@@ -115,7 +111,6 @@ class ExchangeDataImporter(importers.DataImporter):
             timestamps=None,
             operations=None
     ):
-        symbol = self._get_importer_symbol(symbol)
         kwargs = {} if time_frame is None else {"time_frame": time_frame.value}
 
         if timestamps:
@@ -245,7 +240,6 @@ class ExchangeDataImporter(importers.DataImporter):
 
     async def _get_from_cache(self, exchange_name, symbol, time_frame, data_type,
                               inferior_timestamp, superior_timestamp, set_cache_method, limit):
-        symbol = self._get_importer_symbol(symbol)
         if not self.chronological_cache.has((exchange_name, symbol, time_frame, data_type)):
             # ignore superior timestamp to select everything starting from inferior_timestamp and cache it
             select_superior_timestamp = -1
@@ -266,17 +260,3 @@ class ExchangeDataImporter(importers.DataImporter):
             )
         return self.chronological_cache.get(inferior_timestamp, superior_timestamp,
                                             (exchange_name, symbol, time_frame, data_type))
-
-    def _get_importer_symbol(self, symbol):
-        # TODO remove when full symbol handling
-        try:
-            return symbol if symbol in self.symbols else self.legacy_symbol_to_storage_symbol[symbol]
-        except KeyError:
-            return symbol
-
-    @staticmethod
-    def get_legacy_symbol_dict(symbols):
-        return {
-            symbol.split(":")[0]: symbol
-            for symbol in symbols
-        }

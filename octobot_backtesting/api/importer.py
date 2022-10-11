@@ -47,12 +47,7 @@ def get_available_time_frames(exchange_importer) -> list:
 
 
 def get_available_symbols(exchange_importer) -> list:
-    symbols = []
-    for symbol in exchange_importer.symbols:
-        # TODO remove when full symbol will be handled
-        symbol_identifier = octobot_commons.symbols.parse_symbol(symbol).base_and_quote()
-        symbols.append(octobot_commons.symbols.merge_currencies(*symbol_identifier))
-    return symbols
+    return [symbol for symbol in exchange_importer.symbols]
 
 
 async def get_data_timestamp_interval(exchange_importer, time_frame=None) -> (float, float):
@@ -65,11 +60,6 @@ async def get_all_ohlcvs(database_path, exchange_name, symbol, time_frame,
     timestamps, operations = importers.get_operations_from_timestamps(superior_timestamp, inferior_timestamp)
     try:
         async with databases.new_sqlite_database(database_path) as database:
-            description = await data.get_database_description(database)
-            if symbol not in description[backtesting_enums.DataFormatKeys.SYMBOLS.value]:
-                symbol = importers.ExchangeDataImporter.get_legacy_symbol_dict(
-                    description[backtesting_enums.DataFormatKeys.SYMBOLS.value]
-                )[symbol]
             candles = await database.select_from_timestamp(backtesting_enums.ExchangeDataTables.OHLCV,
                                                            exchange_name=exchange_name, symbol=symbol,
                                                            time_frame=time_frame.value,
