@@ -20,6 +20,7 @@ cimport octobot_backtesting.collectors.data_collector as data_collector
 
 cdef class ExchangeDataCollector(data_collector.DataCollector):
     cdef public str exchange_name
+    cdef public object exchange_type
 
     cdef public list symbols
     cdef public list time_frames
