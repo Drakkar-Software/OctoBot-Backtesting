@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 import asyncio
+import copy
 
 import async_channel.channels as channels
 import async_channel.enums as channel_enums
@@ -21,6 +22,7 @@ import async_channel.enums as channel_enums
 import octobot_commons.channels_name as channels_name
 import octobot_commons.list_util as list_util
 import octobot_commons.logging as logging
+import octobot_commons.asyncio_tools as asyncio_tools
 
 
 class ChannelsManager:
@@ -32,8 +34,13 @@ class ChannelsManager:
         self.matrix_id = matrix_id
         self.refresh_timeout = refresh_timeout
         self.producers = []
+        self.initial_producers = []
         self.iteration_task = None
         self.should_stop = False
+        self.priority_levels = [
+            priority_level.value
+            for priority_level in channel_enums.ChannelConsumerPriorityLevels
+        ]
 
     async def initialize(self) -> None:
         """
@@ -41,9 +48,10 @@ class ChannelsManager:
         """
         self.logger.debug("Initializing producers...")
         try:
-            self.producers = list_util.flatten_list(_get_backtesting_producers() +
-                                                    self._get_trading_producers() +
-                                                    self._get_evaluator_producers())
+            self.initial_producers = list_util.flatten_list(_get_backtesting_producers() +
+                                                            self._get_trading_producers() +
+                                                            self._get_evaluator_producers())
+            self.producers = copy.copy(self.initial_producers)
 
             # Initialize all producers by calling producer.start()
             for producer in list_util.flatten_list(self._get_trading_producers() + self._get_evaluator_producers()):
@@ -52,27 +60,50 @@ class ChannelsManager:
             self.logger.exception(exception, True, f"Error when initializing backtesting: {exception}")
             raise
 
+    def clear_empty_channels_producers(self):
+        self.producers = [
+            producer
+            for producer in self.initial_producers
+            if producer.channel.get_consumers()
+        ]
+
+    def clear_priority_levels(self):
+        self.priority_levels = [
+            priority_level.value
+            for priority_level in channel_enums.ChannelConsumerPriorityLevels
+            if _check_producers_has_priority_consumers(self.producers, priority_level.value)
+        ]
+
     async def handle_new_iteration(self, current_timestamp) -> None:
-        for level_key in channel_enums.ChannelConsumerPriorityLevels:
+        for level_key in self.priority_levels:
             try:
-                self.iteration_task = await asyncio.wait_for(self.refresh_priority_level(level_key.value, True),
-                                                             timeout=self.refresh_timeout)
+                if _check_producers_consumers_emptiness(self.producers, level_key):
+                    # avoid creating tasks when not necessary
+                    continue
+                self.iteration_task = self.refresh_priority_level(level_key, True)
+                await self.iteration_task
+                # trigger waiting events
+                await asyncio_tools.wait_asyncio_next_cycle()
+                # massive slow down
+                # self.iteration_task = await asyncio.wait_for(self.refresh_priority_level(level_key.value, True),
+                #                                              timeout=self.refresh_timeout)
             except asyncio.TimeoutError:
-                self.logger.error(f"Refreshing priority level {level_key.value} has been timed out at timestamp "
+                self.logger.error(f"Refreshing priority level {level_key} has been timed out at timestamp "
                                   f"{current_timestamp}.")
 
     async def refresh_priority_level(self, priority_level: int, join_consumers: bool) -> None:
-        while not self.should_stop and not _check_producers_consumers_emptiness(self.producers, priority_level):
+        while not self.should_stop:
             for producer in self.producers:
                 await producer.synchronized_perform_consumers_queue(priority_level, join_consumers, self.refresh_timeout)
+            if _check_producers_consumers_emptiness(self.producers, priority_level):
+                break
 
     def stop(self):
         self.should_stop = True
-        if self.iteration_task is not None:
-            self.iteration_task.cancel()
 
     def flush(self):
         self.producers = []
+        self.initial_producers = []
         self.iteration_task = None
 
     def _get_trading_producers(self):
@@ -109,3 +140,11 @@ def _check_producers_consumers_emptiness(producers, priority_level):
         if not producer.is_consumers_queue_empty(priority_level):
             return False
     return True
+
+
+def _check_producers_has_priority_consumers(producers, priority_level):
+    for producer in producers:
+        for consumer in producer.channel.get_consumers():
+            if consumer.priority_level == priority_level:
+                return True
+    return False
