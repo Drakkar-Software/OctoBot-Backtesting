@@ -15,11 +15,15 @@
 #  License along with this library.
 import octobot_backtesting.enums as backtesting_enums
 import octobot_backtesting.importers as importers
-import octobot_backtesting.data as data
+import octobot_backtesting.util as util
 
 import octobot_commons.errors as commons_errors
 import octobot_commons.databases as databases
-import octobot_commons.symbols
+
+
+async def create_importer(config, backtesting_file, default_importer=None):
+    return await util.create_importer_from_backtesting_file_name(config, backtesting_file,
+                                                                 default_importer=default_importer)
 
 
 def get_available_data_types(importer) -> list:
