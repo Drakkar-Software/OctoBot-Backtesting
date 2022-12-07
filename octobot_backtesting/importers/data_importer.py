@@ -37,6 +37,9 @@ class DataImporter:
     async def initialize(self) -> None:
         pass
 
+    def reset_cache(self):
+        self.chronological_cache.reset_cached_indexes()
+
     async def get_data_timestamp_interval(self, time_frame=None):
         raise NotImplementedError("get_data_timestamp_interval is not implemented")
 

@@ -23,17 +23,21 @@ import octobot_commons.time_frame_manager as time_frame_manager
 import octobot_backtesting.api as api
 import octobot_backtesting.errors as errors
 import octobot_backtesting.backtesting as backtesting_class
+import octobot_backtesting.backtest_data as backtest_data
 import octobot_backtesting.constants as constants
 
 
 LOGGER_NAME = "BacktestingAPI"
 
 
-async def initialize_backtesting(config, exchange_ids, matrix_id, data_files) -> backtesting_class.Backtesting:
+async def initialize_backtesting(config, exchange_ids, matrix_id, data_files,
+                                 importers_by_data_file, backtest_data=None) -> backtesting_class.Backtesting:
     backtesting_instance = backtesting_class.Backtesting(config=config,
                                                          exchange_ids=exchange_ids,
                                                          matrix_id=matrix_id,
-                                                         backtesting_files=data_files)
+                                                         backtesting_files=data_files,
+                                                         importers_by_data_file=importers_by_data_file,
+                                                         backtest_data=backtest_data)
     await backtesting_instance.create_importers()
     await backtesting_instance.initialize()
 
@@ -197,3 +201,18 @@ def get_backtesting_duration(backtesting) -> float:
     if backtesting.time_updater.simulation_duration > 0:
         return backtesting.time_updater.simulation_duration
     return time.time() - backtesting.time_updater.starting_time
+
+
+async def create_and_init_backtest_data(data_files, config, tentacles_config) -> backtest_data.BacktestData:
+    backtest_data_inst = backtest_data.BacktestData(data_files, config, tentacles_config)
+    await backtest_data_inst.initialize()
+    return backtest_data_inst
+
+
+async def get_preloaded_candles_manager(backtesting, exchange, symbol, time_frame):
+    if backtesting.backtest_data is None:
+        return None 
+    return await backtesting.backtest_data.get_preloaded_candles_manager(
+        exchange, symbol, time_frame,
+        get_backtesting_starting_time(backtesting), get_backtesting_ending_time(backtesting)
+    )

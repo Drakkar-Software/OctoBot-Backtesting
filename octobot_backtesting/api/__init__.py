@@ -29,6 +29,7 @@ from octobot_backtesting.api.data_file import (
     get_file_description,
 )
 from octobot_backtesting.api.importer import (
+    create_importer,
     get_available_data_types,
     get_data_file,
     get_data_file_from_importers,
@@ -51,6 +52,8 @@ from octobot_backtesting.api.backtesting import (
     is_backtesting_enabled,
     get_backtesting_data_files,
     get_backtesting_duration,
+    create_and_init_backtest_data,
+    get_preloaded_candles_manager,
     initialize_backtesting,
     initialize_independent_backtesting_config,
     modify_backtesting_timestamps,
@@ -74,6 +77,7 @@ __all__ = [
     "get_all_available_data_files",
     "delete_data_file",
     "get_file_description",
+    "create_importer",
     "get_available_data_types",
     "get_data_file",
     "get_data_file_from_importers",
@@ -94,6 +98,8 @@ __all__ = [
     "is_backtesting_enabled",
     "get_backtesting_data_files",
     "get_backtesting_duration",
+    "create_and_init_backtest_data",
+    "get_preloaded_candles_manager",
     "initialize_backtesting",
     "initialize_independent_backtesting_config",
     "modify_backtesting_timestamps",

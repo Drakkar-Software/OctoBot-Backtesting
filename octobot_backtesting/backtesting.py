@@ -25,15 +25,18 @@ import octobot_backtesting.time as backtesting_time
 
 
 class Backtesting:
-    def __init__(self, config, exchange_ids, matrix_id, backtesting_files):
+    def __init__(self, config, exchange_ids, matrix_id, backtesting_files,
+                 importers_by_data_file=None, backtest_data=None):
         self.config = config
         self.backtesting_files = backtesting_files
+        self.importers_by_data_file = importers_by_data_file or {}
         self.logger = logging.get_logger(self.__class__.__name__)
 
         self.exchange_ids = exchange_ids
         self.matrix_id = matrix_id
 
         self.importers = []
+        self.backtest_data = backtest_data
         self.time_manager = None
         self.time_updater = None
         self.time_channel = None
@@ -65,14 +68,21 @@ class Backtesting:
     async def start_time_updater(self):
         await self.time_updater.run()
 
+    async def _create_importer(self, backtesting_file):
+        return await backtesting_util.create_importer_from_backtesting_file_name(
+            self.config,
+            backtesting_file,
+            backtesting_util.get_default_importer()
+        )
+
     async def create_importers(self):
         try:
-            self.importers = [await backtesting_util.create_importer_from_backtesting_file_name(
-                self.config,
-                backtesting_file,
-                backtesting_util.get_default_importer()
-            )
-                              for backtesting_file in self.backtesting_files]
+            self.importers = []
+            for backtesting_file in self.backtesting_files:
+                if self.importers_by_data_file is not None and backtesting_file in self.importers_by_data_file:
+                    self.importers.append(self.importers_by_data_file[backtesting_file])
+                else:
+                    self.importers.append(await self._create_importer(backtesting_file))
         except TypeError:
             pass
 

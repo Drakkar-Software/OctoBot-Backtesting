@@ -14,29 +14,11 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-cimport octobot_backtesting.time.time_manager as time_manager
-cimport octobot_backtesting.time.channel.time as time_channel
-cimport octobot_backtesting.backtest_data as backtest_data_class
 
-cdef class Backtesting:
+cdef class BacktestData:
+    cdef public list data_files
     cdef public object config
-
-    cdef public list backtesting_files
+    cdef public object tentacles_config
     cdef public dict importers_by_data_file
-    cdef public list importers
-    cdef public backtest_data_class.BacktestData backtest_data
-    cdef public list exchange_ids
-
-    cdef public str matrix_id
-
-    cdef public time_manager.TimeManager time_manager
-    cdef public object time_updater
-    cdef public time_channel.TimeChannel time_channel
-    cdef object logger
-
-    cpdef list get_importers(self, object importer_parent_class=*)
-    cpdef double get_progress(self)
-    cpdef bint is_in_progress(self)
-    cpdef bint has_finished(self)
-
-    cdef bint _has_nothing_to_do(self)
+    cdef public dict preloaded_candle_managers
+    cdef public object default_importer
