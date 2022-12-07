@@ -35,6 +35,7 @@ class TimeUpdater(time_channel.TimeProducer):
         self.channels_manager = channels_manager.ChannelsManager(exchange_ids=self.backtesting.exchange_ids,
                                                                  matrix_id=self.backtesting.matrix_id)
         await self.channels_manager.initialize()
+        cleared_producers = False
         while not self.should_stop:
             try:
                 current_timestamp = self.time_manager.current_timestamp
@@ -54,6 +55,10 @@ class TimeUpdater(time_channel.TimeProducer):
                 else:
                     # jump to the next time point
                     self.time_manager.next_timestamp()
+                    if not cleared_producers:
+                        self.channels_manager.clear_empty_channels_producers()
+                        self.channels_manager.clear_priority_levels()
+                        cleared_producers = True
             except Exception as e:
                 self.logger.exception(e, True, f"Fail to update time : {e}")
         await self.backtesting.delete_time_channel()
