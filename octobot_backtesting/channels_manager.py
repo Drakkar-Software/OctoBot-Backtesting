@@ -37,10 +37,7 @@ class ChannelsManager:
         self.initial_producers = []
         self.iteration_task = None
         self.should_stop = False
-        self.priority_levels = [
-            priority_level.value
-            for priority_level in channel_enums.ChannelConsumerPriorityLevels
-        ]
+        self.producers_by_priority_levels = {}
 
     async def initialize(self) -> None:
         """
@@ -52,6 +49,11 @@ class ChannelsManager:
                                                             self._get_trading_producers() +
                                                             self._get_evaluator_producers())
             self.producers = copy.copy(self.initial_producers)
+
+            self.producers_by_priority_levels = {
+                priority_level.value: self.producers
+                for priority_level in channel_enums.ChannelConsumerPriorityLevels
+            }
 
             # Initialize all producers by calling producer.start()
             for producer in list_util.flatten_list(self._get_trading_producers() + self._get_evaluator_producers()):
@@ -67,20 +69,20 @@ class ChannelsManager:
             if producer.channel.get_consumers()
         ]
 
-    def clear_priority_levels(self):
-        self.priority_levels = [
-            priority_level.value
+    def update_producers_by_priority_levels(self):
+        self.producers_by_priority_levels = {
+            priority_level.value: _get_producers_with_priority_level_consumers(self.producers, priority_level.value)
             for priority_level in channel_enums.ChannelConsumerPriorityLevels
             if _check_producers_has_priority_consumers(self.producers, priority_level.value)
-        ]
+        }
 
     async def handle_new_iteration(self, current_timestamp) -> None:
-        for level_key in self.priority_levels:
+        for level_key, producers in self.producers_by_priority_levels.items():
             try:
-                if _check_producers_consumers_emptiness(self.producers, level_key):
+                if _check_producers_consumers_emptiness(producers, level_key):
                     # avoid creating tasks when not necessary
                     continue
-                self.iteration_task = self.refresh_priority_level(level_key, True)
+                self.iteration_task = self.refresh_priority_level(producers, level_key, True)
                 await self.iteration_task
                 # trigger waiting events
                 await asyncio_tools.wait_asyncio_next_cycle()
@@ -91,9 +93,9 @@ class ChannelsManager:
                 self.logger.error(f"Refreshing priority level {level_key} has been timed out at timestamp "
                                   f"{current_timestamp}.")
 
-    async def refresh_priority_level(self, priority_level: int, join_consumers: bool) -> None:
+    async def refresh_priority_level(self, producers, priority_level: int, join_consumers: bool) -> None:
         while not self.should_stop:
-            for producer in self.producers:
+            for producer in producers:
                 await producer.synchronized_perform_consumers_queue(priority_level, join_consumers, self.refresh_timeout)
             if _check_producers_consumers_emptiness(self.producers, priority_level):
                 break
@@ -104,6 +106,7 @@ class ChannelsManager:
     def flush(self):
         self.producers = []
         self.initial_producers = []
+        self.producers_by_priority_levels = {}
         self.iteration_task = None
 
     def _get_trading_producers(self):
@@ -144,7 +147,14 @@ def _check_producers_consumers_emptiness(producers, priority_level):
 
 def _check_producers_has_priority_consumers(producers, priority_level):
     for producer in producers:
-        for consumer in producer.channel.get_consumers():
-            if consumer.priority_level == priority_level:
-                return True
+        if producer.channel.get_prioritized_consumers(priority_level):
+            return True
     return False
+
+
+def _get_producers_with_priority_level_consumers(producers, priority_level):
+    return [
+        producer
+        for producer in producers
+        if producer.channel.get_prioritized_consumers(priority_level)
+    ]

@@ -57,7 +57,7 @@ class TimeUpdater(time_channel.TimeProducer):
                     self.time_manager.next_timestamp()
                     if not cleared_producers:
                         self.channels_manager.clear_empty_channels_producers()
-                        self.channels_manager.clear_priority_levels()
+                        self.channels_manager.update_producers_by_priority_levels()
                         cleared_producers = True
             except Exception as e:
                 self.logger.exception(e, True, f"Fail to update time : {e}")
