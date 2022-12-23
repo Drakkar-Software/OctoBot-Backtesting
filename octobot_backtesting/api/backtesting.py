@@ -31,7 +31,7 @@ LOGGER_NAME = "BacktestingAPI"
 
 
 async def initialize_backtesting(config, exchange_ids, matrix_id, data_files,
-                                 importers_by_data_file, backtest_data=None) -> backtesting_class.Backtesting:
+                                 importers_by_data_file=None, backtest_data=None) -> backtesting_class.Backtesting:
     backtesting_instance = backtesting_class.Backtesting(config=config,
                                                          exchange_ids=exchange_ids,
                                                          matrix_id=matrix_id,

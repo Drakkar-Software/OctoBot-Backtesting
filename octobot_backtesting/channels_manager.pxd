@@ -20,8 +20,10 @@ cdef class ChannelsManager:
 
     cdef list exchange_ids
     cdef list producers
+    cdef list initial_producers
     cdef object iteration_task
     cdef bint should_stop
+    cdef dict producers_by_priority_levels
 
     cdef str matrix_id
 
@@ -29,10 +31,13 @@ cdef class ChannelsManager:
 
     cpdef void flush(self)
     cpdef void stop(self)
+    cpdef void clear_empty_channels_producers(self)
+    cpdef void update_producers_by_priority_levels(self)
 
     cdef list _get_trading_producers(self)
     cdef list _get_evaluator_producers(self)
 
 cdef bint _check_producers_consumers_emptiness(list producers, int priority_level)
+cdef bint _check_producers_has_priority_consumers(list producers, int priority_level)
 cdef list _get_backtesting_producers()
 cdef list _get_channel_producers(object channel)
