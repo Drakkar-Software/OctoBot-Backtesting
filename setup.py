@@ -41,6 +41,7 @@ PACKAGES = find_packages(exclude=["tests"])
 
 packages_list = [
     "octobot_backtesting.channels_manager",
+    "octobot_backtesting.backtest_data",
     "octobot_backtesting.backtesting",
     "octobot_backtesting.importers.data_importer",
     "octobot_backtesting.importers.exchanges.util",
