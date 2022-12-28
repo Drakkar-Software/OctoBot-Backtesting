@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import os
 
 import octobot_commons.enums as enums
 
@@ -22,7 +23,7 @@ CONFIG_ANALYSIS_ENABLED_OPTION = "post_analysis_enabled"
 CONFIG_BACKTESTING_OTHER_MARKETS_STARTING_PORTFOLIO = 10000
 BACKTESTING_DATA_OHLCV = "ohlcv"
 BACKTESTING_DATA_TRADES = "trades"
-BACKTESTING_FILE_PATH = f"{CONFIG_BACKTESTING}/data"
+BACKTESTING_FILE_PATH = os.path.join(CONFIG_BACKTESTING, "data")
 BACKTESTING_DATA_FILE_EXT = ".data"
 BACKTESTING_DATA_FILE_TEMP_EXT = ".part"
 BACKTESTING_DATA_FILE_SEPARATOR = "_"
