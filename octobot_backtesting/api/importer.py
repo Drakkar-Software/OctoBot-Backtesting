@@ -34,10 +34,12 @@ def get_data_file(importer) -> str:
     return importer.file_path
 
 
-def get_data_file_from_importers(available_importers, symbol, time_frame) -> str:
+def get_data_file_from_importers(
+    available_importers, symbol, time_frame, exchange_name=None) -> str:
     for importer in available_importers:
         if symbol in get_available_symbols(importer) and \
-                time_frame in get_available_time_frames(importer):
+                time_frame in get_available_time_frames(importer) and \
+                    (not exchange_name or exchange_name == importer.exchange_name):
             return get_data_file_path(importer)
     return None
 

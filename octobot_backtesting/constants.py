@@ -19,6 +19,7 @@ import octobot_commons.enums as enums
 
 CONFIG_BACKTESTING = "backtesting"
 CONFIG_BACKTESTING_DATA_FILES = "files"
+CONFIG_CURRENT_BOT_DATA = "current_bot_data"
 CONFIG_ANALYSIS_ENABLED_OPTION = "post_analysis_enabled"
 CONFIG_BACKTESTING_OTHER_MARKETS_STARTING_PORTFOLIO = 10000
 BACKTESTING_DATA_OHLCV = "ohlcv"
