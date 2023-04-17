@@ -20,7 +20,6 @@ import abc
 import time
 
 import octobot_commons.constants as commons_constants
-import octobot_commons.enums as commons_enums
 import octobot_backtesting.collectors.data_collector as data_collector
 import octobot_backtesting.enums as enums
 import octobot_backtesting.importers as importers
@@ -149,3 +148,13 @@ class ExchangeDataCollector(data_collector.DataCollector):
                                            exchange_name=exchange, cryptocurrency=cryptocurrency,
                                            symbol=symbol, time_frame=time_frame.value,
                                            candle=[json.dumps(kl) for kl in kline])
+
+    async def delete_all(self, table, exchange, cryptocurrency, symbol, time_frame=None):
+        kwargs = {
+            "exchange_name": exchange,
+            "cryptocurrency": cryptocurrency,
+            "symbol": symbol,
+        }
+        if time_frame:
+            kwargs["time_frame"] = time_frame.value
+        await self.database.delete(table, **kwargs)
