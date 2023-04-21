@@ -23,7 +23,8 @@ def exchange_historical_data_collector_factory(exchange_name,
                                                symbols,
                                                time_frames=None,
                                                start_timestamp=None,
-                                               end_timestamp=None):
+                                               end_timestamp=None,
+                                               config=None):
     return _exchange_collector_factory(collectors.AbstractExchangeHistoryCollector,
                                        exchange_name,
                                        exchange_type,
@@ -31,7 +32,8 @@ def exchange_historical_data_collector_factory(exchange_name,
                                        symbols,
                                        time_frames,
                                        start_timestamp,
-                                       end_timestamp)
+                                       end_timestamp,
+                                       config)
 
 
 def exchange_bot_snapshot_data_collector_factory(exchange_name,
@@ -40,7 +42,8 @@ def exchange_bot_snapshot_data_collector_factory(exchange_name,
                                                  exchange_id,
                                                  time_frames=None,
                                                  start_timestamp=None,
-                                                 end_timestamp=None):
+                                                 end_timestamp=None,
+                                                 config=None):
     collector = _exchange_collector_factory(collectors.AbstractExchangeBotSnapshotCollector,
                                             exchange_name,
                                             None,
@@ -48,15 +51,17 @@ def exchange_bot_snapshot_data_collector_factory(exchange_name,
                                             symbols,
                                             time_frames,
                                             start_timestamp,
-                                            end_timestamp)
+                                            end_timestamp,
+                                            config)
     collector.register_exchange_id(exchange_id)
     return collector
 
 
 def _exchange_collector_factory(collector_parent_class, exchange_name, exchange_type, tentacles_setup_config, symbols,
-                                time_frames, start_timestamp, end_timestamp):
+                                time_frames, start_timestamp, end_timestamp, config):
     collector_class = tentacles_management.get_single_deepest_child_class(collector_parent_class)
-    collector_instance = collector_class({}, exchange_name, exchange_type, tentacles_setup_config, symbols, time_frames,
+    collector_instance = collector_class(config or {}, exchange_name, exchange_type,
+                                         tentacles_setup_config, symbols, time_frames,
                                          use_all_available_timeframes=time_frames is None,
                                          start_timestamp=start_timestamp, end_timestamp=end_timestamp)
     return collector_instance

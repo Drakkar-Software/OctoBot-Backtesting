@@ -74,7 +74,9 @@ class ExchangeDataCollector(data_collector.DataCollector):
 
         # set config from params
         self.config[commons_constants.CONFIG_TIME_FRAME] = self.time_frames
-        self.config[commons_constants.CONFIG_EXCHANGES] = {self.exchange_name: {}}
+        # get exchange credentials if available
+        existing_exchange_config = self.config.get(commons_constants.CONFIG_EXCHANGES, {}).get(self.exchange_name, {})
+        self.config[commons_constants.CONFIG_EXCHANGES] = {self.exchange_name: existing_exchange_config}
         self.config[commons_constants.CONFIG_CRYPTO_CURRENCIES] = {"Symbols": {
             commons_constants.CONFIG_CRYPTO_PAIRS: [str(symbol) for symbol in self.symbols]}}
 
