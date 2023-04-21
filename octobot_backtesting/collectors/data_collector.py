@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 import asyncio
+import copy
 import json
 import os.path as path
 import os
@@ -36,7 +37,7 @@ class DataCollector:
     def __init__(self, config,
                  path=constants.BACKTESTING_FILE_PATH,
                  data_format=enums.DataFormats.REGULAR_COLLECTOR_DATA):
-        self.config = config
+        self.config = copy.deepcopy(config)
         self.path = path
         self.logger = logging.get_logger(self.__class__.__name__)
 
