@@ -14,10 +14,8 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 # from distutils.extension import Extension
-import os
-
 from setuptools import find_packages
-from setuptools import setup, Extension
+from setuptools import setup
 
 from octobot_backtesting import PROJECT_NAME, VERSION
 
@@ -36,12 +34,10 @@ setup(
     description='OctoBot project backtesting engine',
     packages=PACKAGES,
     include_package_data=True,
-    # long_description=DESCRIPTION,
     tests_require=["pytest"],
     test_suite="tests",
     zip_safe=False,
     data_files=[],
-    setup_requires=REQUIRED,
     install_requires=REQUIRED,
     python_requires=REQUIRES_PYTHON,
     classifiers=[
