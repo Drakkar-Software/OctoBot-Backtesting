@@ -9,6 +9,7 @@ class BacktestData:
         self.tentacles_config = tentacles_config
         self.importers_by_data_file = None
         self.preloaded_candle_managers = {}
+        self.forced_markets: list = None
         self.default_importer = None
 
     async def initialize(self):
