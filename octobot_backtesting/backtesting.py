@@ -27,7 +27,7 @@ import octobot_backtesting.time as backtesting_time
 
 class Backtesting:
     def __init__(self, config, exchange_ids, matrix_id, backtesting_files,
-                 importers_by_data_file=None, backtest_data=None):
+                 importers_by_data_file=None, backtest_data=None, bot_id=None):
         self.config = config
         self.backtesting_files = backtesting_files
         self.importers_by_data_file = importers_by_data_file or {}
@@ -35,14 +35,13 @@ class Backtesting:
 
         self.exchange_ids = exchange_ids
         self.matrix_id = matrix_id
+        self.bot_id = bot_id or ""
 
         self.importers = []
         self.backtest_data = backtest_data
         self.time_manager = None
         self.time_updater = None
         self.time_channel = None
-
-        self._time_channel_identifier = str(uuid.uuid4().hex)
 
     async def initialize(self):
         time_chan_name = self.get_time_chan_name()  # not in try to be able to raise on error
@@ -65,7 +64,7 @@ class Backtesting:
             self.logger.exception(e, True, f"Error when initializing backtesting : {e}.")
 
     def get_time_chan_name(self):
-        return backtesting_time.TimeChannel.get_name(self._time_channel_identifier)
+        return backtesting_time.TimeChannel.get_name(self.bot_id)
 
     async def stop(self):
         await self.delete_time_channel()

@@ -31,13 +31,15 @@ LOGGER_NAME = "BacktestingAPI"
 
 
 async def initialize_backtesting(config, exchange_ids, matrix_id, data_files,
-                                 importers_by_data_file=None, backtest_data=None) -> backtesting_class.Backtesting:
+                                 importers_by_data_file=None, backtest_data=None,
+                                 bot_id=None) -> backtesting_class.Backtesting:
     backtesting_instance = backtesting_class.Backtesting(config=config,
                                                          exchange_ids=exchange_ids,
                                                          matrix_id=matrix_id,
                                                          backtesting_files=data_files,
                                                          importers_by_data_file=importers_by_data_file,
-                                                         backtest_data=backtest_data)
+                                                         backtest_data=backtest_data,
+                                                         bot_id=bot_id)
     await backtesting_instance.create_importers()
     await backtesting_instance.initialize()
 
