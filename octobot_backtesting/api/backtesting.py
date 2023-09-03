@@ -123,8 +123,8 @@ async def adapt_backtesting_channels(backtesting, config, importer_class, run_on
         raise RuntimeError("No exchange importer has been found for this data file, backtesting can't start.")
     sorted_time_frames = time_frame_manager.sort_time_frames(time_frame_manager.get_config_time_frame(config))
     if not sorted_time_frames:
-        # use min timeframe as default if no timeframe is enabled
-        sorted_time_frames = [time_frame_manager.find_min_time_frame([])]
+        # use min available timeframe as default if no timeframe is enabled
+        sorted_time_frames = time_frame_manager.sort_time_frames(api.get_available_time_frames(importers[0]))
     min_time_frame_to_consider = sorted_time_frames[0]
     max_time_frame_to_consider = sorted_time_frames[-1]
     min_timestamp, max_timestamp = await _get_min_max_timestamps(importers, run_on_common_part_only,
