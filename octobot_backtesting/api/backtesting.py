@@ -51,6 +51,10 @@ async def initialize_independent_backtesting_config(independent_backtesting) -> 
     return await independent_backtesting.initialize_config()
 
 
+def get_backtesting_time_channel_name(backtesting) -> str:
+    return backtesting.get_time_chan_name()
+
+
 async def modify_backtesting_timestamps(backtesting, set_timestamp=None,
                                         minimum_timestamp=None, maximum_timestamp=None) -> None:
     await backtesting.time_updater.modify(set_timestamp=set_timestamp,
