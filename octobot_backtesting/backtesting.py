@@ -13,11 +13,12 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import uuid
+
 import async_channel.channels as channels
 import async_channel.util as channel_util
 
 import octobot_commons.logging as logging
-import octobot_commons.channels_name as channels_name
 import octobot_commons.tentacles_management as tentacles_management
 
 import octobot_backtesting.util as backtesting_util
@@ -41,19 +42,30 @@ class Backtesting:
         self.time_updater = None
         self.time_channel = None
 
+        self._time_channel_identifier = str(uuid.uuid4().hex)
+
     async def initialize(self):
+        time_chan_name = self.get_time_chan_name()  # not in try to be able to raise on error
         try:
             self.time_manager = backtesting_time.TimeManager(config=self.config)
             self.time_manager.initialize()
 
-            self.time_channel = await channel_util.create_channel_instance(backtesting_time.TimeChannel,
-                                                                           channels.set_chan,
-                                                                           is_synchronized=True)
+            self.time_channel = await channel_util.create_channel_instance(
+                backtesting_time.TimeChannel,
+                channels.set_chan,
+                is_synchronized=True,
+                channel_name=time_chan_name
+            )
 
             self.time_updater = backtesting_time.TimeUpdater(
-                channels.get_chan(channels_name.OctoBotBacktestingChannelsName.TIME_CHANNEL.value), self)
+                channels.get_chan(self.get_time_chan_name()),
+                self
+            )
         except Exception as e:
             self.logger.exception(e, True, f"Error when initializing backtesting : {e}.")
+
+    def get_time_chan_name(self):
+        return backtesting_time.TimeChannel.get_name(self._time_channel_identifier)
 
     async def stop(self):
         await self.delete_time_channel()
@@ -63,7 +75,7 @@ class Backtesting:
         for consumer in self.time_channel.consumers:
             await self.time_channel.remove_consumer(consumer)
         self.time_channel.flush()
-        channels.del_chan(self.time_channel.get_name())
+        channels.del_chan(self.get_time_chan_name())
 
     async def start_time_updater(self):
         await self.time_updater.run()
