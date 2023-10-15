@@ -63,6 +63,15 @@ class Backtesting:
         except Exception as e:
             self.logger.exception(e, True, f"Error when initializing backtesting : {e}.")
 
+    def use_accurate_price_time_frame(self) -> bool:
+        for importer in self.importers:
+            if not importer.has_all_time_frames_candles_history:
+                # has_all_time_frames_candles_history is necessary for accurate price time frame
+                return False
+        if self.backtest_data:
+            return self.backtest_data.use_accurate_price_time_frame
+        return True
+
     def get_time_chan_name(self):
         return backtesting_time.TimeChannel.get_name(self.bot_id)
 

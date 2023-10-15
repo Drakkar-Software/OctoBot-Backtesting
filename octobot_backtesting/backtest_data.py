@@ -3,7 +3,7 @@ import octobot_commons.enums as commons_enums
 
 
 class BacktestData:
-    def __init__(self, data_files, config, tentacles_config):
+    def __init__(self, data_files, config, tentacles_config, use_accurate_price_time_frame):
         self.data_files = data_files
         self.config = config
         self.tentacles_config = tentacles_config
@@ -11,6 +11,7 @@ class BacktestData:
         self.preloaded_candle_managers = {}
         self.forced_markets: list = None
         self.default_importer = None
+        self.use_accurate_price_time_frame: bool = use_accurate_price_time_frame
 
     async def initialize(self):
         self.importers_by_data_file = {
