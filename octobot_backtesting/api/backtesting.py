@@ -118,15 +118,21 @@ async def _get_min_max_timestamps(importers, run_on_common_part_only, start_time
     return min_timestamp, max_timestamp
 
 
-async def adapt_backtesting_channels(backtesting, config, importer_class, run_on_common_part_only=True,
+async def adapt_backtesting_channels(backtesting, config, importer_class,
+                                     run_on_common_part_only=True,
                                      start_timestamp=None, end_timestamp=None):
     importers = backtesting.get_importers(importer_class)
     if not importers:
         raise RuntimeError("No exchange importer has been found for this data file, backtesting can't start.")
     sorted_time_frames = time_frame_manager.sort_time_frames(time_frame_manager.get_config_time_frame(config))
-    if not sorted_time_frames:
-        # use min available timeframe as default if no timeframe is enabled
-        sorted_time_frames = time_frame_manager.sort_time_frames(api.get_available_time_frames(importers[0]))
+    sorted_available_time_frames = time_frame_manager.sort_time_frames(api.get_available_time_frames(importers[0]))
+    min_available_time_frame = sorted_available_time_frames[0]
+    if not sorted_time_frames or (
+        backtesting.use_accurate_price_time_frame() and sorted_time_frames[0] != min_available_time_frame
+    ):
+        # use min available timeframe as default if no timeframe is enabled or if add min available timeframe
+        # if not already in handled time frames
+        sorted_time_frames.insert(0, min_available_time_frame)
     min_time_frame_to_consider = sorted_time_frames[0]
     max_time_frame_to_consider = sorted_time_frames[-1]
     min_timestamp, max_timestamp = await _get_min_max_timestamps(importers, run_on_common_part_only,
@@ -209,8 +215,9 @@ def get_backtesting_duration(backtesting) -> float:
     return time.time() - backtesting.time_updater.starting_time
 
 
-async def create_and_init_backtest_data(data_files, config, tentacles_config) -> backtest_data.BacktestData:
-    backtest_data_inst = backtest_data.BacktestData(data_files, config, tentacles_config)
+async def create_and_init_backtest_data(data_files, config, tentacles_config, use_accurate_price_time_frame) \
+        -> backtest_data.BacktestData:
+    backtest_data_inst = backtest_data.BacktestData(data_files, config, tentacles_config, use_accurate_price_time_frame)
     await backtest_data_inst.initialize()
     return backtest_data_inst
 
