@@ -152,6 +152,7 @@ async def adapt_backtesting_channels(backtesting, config, importer_class,
                                       common_constants.MINUTE_TO_SECONDS)
     except ImportError:
         logging.get_logger(LOGGER_NAME).error("requires OctoBot-Trading package installed")
+    return min_timestamp, max_timestamp
 
 
 def set_time_updater_interval(backtesting, interval_in_seconds):
