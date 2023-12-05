@@ -9,7 +9,7 @@ class BacktestData:
         self.tentacles_config = tentacles_config
         self.importers_by_data_file = None
         self.preloaded_candle_managers = {}
-        self.forced_markets: list = None
+        self.use_cached_markets: bool = False
         self.default_importer = None
         self.use_accurate_price_time_frame: bool = use_accurate_price_time_frame
 
