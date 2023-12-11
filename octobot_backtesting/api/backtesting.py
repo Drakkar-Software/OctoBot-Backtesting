@@ -135,6 +135,7 @@ async def adapt_backtesting_channels(backtesting, config, importer_class,
         sorted_time_frames.insert(0, min_available_time_frame)
     min_time_frame_to_consider = sorted_time_frames[0]
     max_time_frame_to_consider = sorted_time_frames[-1]
+    _ensure_extra_time_frames(min_time_frame_to_consider, config)
     min_timestamp, max_timestamp = await _get_min_max_timestamps(importers, run_on_common_part_only,
                                                                  start_timestamp, end_timestamp,
                                                                  min_time_frame_to_consider, max_time_frame_to_consider)
@@ -153,6 +154,15 @@ async def adapt_backtesting_channels(backtesting, config, importer_class,
     except ImportError:
         logging.get_logger(LOGGER_NAME).error("requires OctoBot-Trading package installed")
     return min_timestamp, max_timestamp
+
+
+def _ensure_extra_time_frames(min_time_frame_to_consider, config):
+    min_tf_minutes = common_enums.TimeFramesMinutes[min_time_frame_to_consider]
+    for required_extra_time_frame in config.get(common_constants.CONFIG_REQUIRED_EXTRA_TIMEFRAMES, []):
+        if common_enums.TimeFramesMinutes[common_enums.TimeFrames(required_extra_time_frame)] < min_tf_minutes:
+            raise errors.MissingTimeFrame(
+                f"Missing required (or lower) time frame in data file: {required_extra_time_frame}"
+            )
 
 
 def set_time_updater_interval(backtesting, interval_in_seconds):
