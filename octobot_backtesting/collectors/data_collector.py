@@ -49,6 +49,7 @@ class DataCollector:
         self.database = None
         self.aiohttp_session = None
         self.file_path = None
+        self.metadata_file_path = None
         self.temp_file_path = None
         self.finished = False
         self.in_progress = False
@@ -80,6 +81,7 @@ class DataCollector:
     def set_file_path(self) -> None:
         self.file_path = path.join(self.path, self.file_name) if self.path else self.file_name
         self.temp_file_path = self.file_path + constants.BACKTESTING_DATA_FILE_TEMP_EXT
+        self.metadata_file_path = self.file_path + constants.BACKTESTING_DATA_FILE_METADATA_EXT
 
     def create_database(self) -> None:
         if not self.database:
@@ -88,6 +90,9 @@ class DataCollector:
     def finalize_database(self):
         os.rename(self.temp_file_path, self.file_path)
 
+    def create_metadata_file(self, metadata):
+        with open(self.metadata_file_path, "w") as metadata_file:
+            metadata_file.write(metadata)
     def create_aiohttp_session(self) -> None:
         if not self.aiohttp_session:
             self.aiohttp_session = aiohttp.ClientSession()

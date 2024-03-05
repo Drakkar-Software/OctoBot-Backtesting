@@ -88,17 +88,28 @@ async def get_database_description(database):
         raise RuntimeError(f"Unknown datafile version: {version}")
 
 
+def get_metadata_description(metadata_file):
+    with open(metadata_file + constants.BACKTESTING_DATA_FILE_METADATA_EXT) as metadata_file:
+        description = json.loads(metadata_file.read())
+        description[enums.DataFormatKeys.TIME_FRAMES.value] = [common_enums.TimeFrames(tf)
+                                                               for tf in description[enums.DataFormatKeys.TIME_FRAMES.value]]
+        return description
+
+
 async def get_file_description(database_file):
     database = None
     try:
-        database = databases.SQLiteDatabase(database_file)
-        await database.initialize()
-        description = await get_database_description(database)
-    except (commons_errors.DatabaseNotFoundError, TypeError):
-        description = None
-    finally:
-        if database is not None:
-            await database.stop()
+        description = get_metadata_description(database_file)
+    except FileNotFoundError:
+        try:
+            database = databases.SQLiteDatabase(database_file)
+            await database.initialize()
+            description = await get_database_description(database)
+        except (commons_errors.DatabaseNotFoundError, TypeError):
+            description = None
+        finally:
+            if database is not None:
+                await database.stop()
     return description
 
 
@@ -117,12 +128,15 @@ def get_all_available_data_files(data_collector_path):
 
 
 def delete_data_file(data_collector_path, file_name):
+    file_path = path.join(data_collector_path, file_name)
     try:
-        file_path = path.join(data_collector_path, file_name)
-        if path.isfile(file_path):
-            os.remove(file_path)
-            return True, ""
-        else:
-            return False, f"file can't be found"
+        os.remove(file_path)
+        try:
+            os.remove(file_path + constants.BACKTESTING_DATA_FILE_METADATA_EXT)
+        except FileNotFoundError:
+            pass
+        return True, ""
+    except FileNotFoundError:
+        return False, f"file can't be found"
     except Exception as e:
         return False, e

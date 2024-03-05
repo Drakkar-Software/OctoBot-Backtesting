@@ -39,7 +39,9 @@ class ExchangeDataImporter(importers.DataImporter):
         await self.database.initialize()
 
         # load description
-        description = await data.get_database_description(self.database)
+        description = await data.get_database_description(self.database)  \
+            if await self.database.check_table_exists(enums.DataTables.DESCRIPTION)\
+            else data.get_metadata_description(self.file_path)
         self.exchange_name = description[enums.DataFormatKeys.EXCHANGE.value]
         self.symbols = description[enums.DataFormatKeys.SYMBOLS.value]
         self.time_frames = description[enums.DataFormatKeys.TIME_FRAMES.value]

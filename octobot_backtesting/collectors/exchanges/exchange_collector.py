@@ -20,6 +20,7 @@ import abc
 import time
 
 import octobot_commons.constants as commons_constants
+import octobot_commons.time_frame_manager as tmf_manager
 import octobot_backtesting.collectors.data_collector as data_collector
 import octobot_backtesting.enums as enums
 import octobot_backtesting.importers as importers
@@ -31,7 +32,7 @@ except ImportError:
 
 
 class ExchangeDataCollector(data_collector.DataCollector):
-    VERSION = "1.1"
+    VERSION = "1.2"
     IMPORTER = importers.ExchangeDataImporter
 
     def __init__(self, config, exchange_name, exchange_type,
@@ -86,15 +87,21 @@ class ExchangeDataCollector(data_collector.DataCollector):
         self.config[commons_constants.CONFIG_TIME_FRAME] = self.time_frames
 
     async def _create_description(self):
-        await self.database.insert(enums.DataTables.DESCRIPTION,
-                                   timestamp=time.time(),
-                                   version=self.VERSION,
-                                   exchange=self.exchange_name,
-                                   symbols=json.dumps([symbol.symbol_str for symbol in self.symbols]),
-                                   time_frames=json.dumps([tf.value for tf in self.time_frames]),
-                                   start_timestamp=int(self.start_timestamp/1000) if self.start_timestamp else 0,
-                                   end_timestamp=int(self.end_timestamp/1000) if self.end_timestamp
-                                   else int(time.time()) if self.start_timestamp else 0)
+        metadata = {
+            enums.DataFormatKeys.TIMESTAMP.value: time.time(),
+            enums.DataFormatKeys.VERSION.value: self.VERSION,
+            enums.DataFormatKeys.EXCHANGE.value: self.exchange_name,
+            enums.DataFormatKeys.SYMBOLS.value: [symbol.symbol_str for symbol in self.symbols],
+            enums.DataFormatKeys.TIME_FRAMES.value: [tf.value for tf in self.time_frames],
+            enums.DataFormatKeys.START_TIMESTAMP.value: int(self.start_timestamp/1000) if self.start_timestamp else 0,
+            enums.DataFormatKeys.END_TIMESTAMP.value: int(self.end_timestamp/1000) if self.end_timestamp
+            else int(time.time()) if self.start_timestamp else 0,
+            enums.DataFormatKeys.CANDLES_LENGTH.value:
+            int((await self.database.select_count(enums.ExchangeDataTables.OHLCV, ["*"],
+                                                  time_frame=tmf_manager.find_min_time_frame(self.time_frames).value))
+                [0][0] / len(self.symbols))
+        }
+        self.create_metadata_file(json.dumps(metadata))
 
     async def save_ticker(self, timestamp, exchange, cryptocurrency, symbol, ticker, multiple=False):
         if not multiple:
