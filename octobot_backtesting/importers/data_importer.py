@@ -25,7 +25,8 @@ import octobot_backtesting.errors as errors
 class DataImporter:
     def __init__(self, config, file_path):
         self.config = config
-        self.file_path = self.adapt_file_path_if_necessary(file_path)
+        self._raw_file_path = file_path
+        self.file_path = None
         self.logger = logging.get_logger(self.__class__.__name__)
 
         self.should_stop = False
@@ -52,6 +53,7 @@ class DataImporter:
         raise NotImplementedError("Start is not implemented")
 
     def load_database(self) -> None:
+        self.file_path = self.file_path or self.adapt_file_path_if_necessary(self._raw_file_path)
         if not self.database:
             self.database = databases.SQLiteDatabase(self.file_path)
 

@@ -88,8 +88,8 @@ async def get_database_description(database):
         raise RuntimeError(f"Unknown datafile version: {version}")
 
 
-def get_metadata_description(metadata_file):
-    with open(metadata_file + constants.BACKTESTING_DATA_FILE_METADATA_EXT) as metadata_file:
+def get_metadata_description(database_file):
+    with open(database_file + constants.BACKTESTING_DATA_FILE_METADATA_EXT) as metadata_file:
         description = json.loads(metadata_file.read())
         description[enums.DataFormatKeys.TIME_FRAMES.value] = [common_enums.TimeFrames(tf)
                                                                for tf in description[enums.DataFormatKeys.TIME_FRAMES.value]]
