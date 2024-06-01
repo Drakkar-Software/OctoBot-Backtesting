@@ -24,6 +24,7 @@ from octobot_backtesting.data.data_file_manager import (
     get_all_available_data_files,
     delete_data_file,
     get_database_description,
+    get_metadata_description,
     get_file_description,
 )
 
@@ -36,5 +37,6 @@ __all__ = [
     "get_all_available_data_files",
     "delete_data_file",
     "get_database_description",
+    "get_metadata_description",
     "get_file_description",
 ]
