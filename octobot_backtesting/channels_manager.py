@@ -143,8 +143,16 @@ def _get_backtesting_producers(time_chan_name):
 
 def _check_producers_consumers_emptiness(producers, priority_level):
     for producer in producers:
-        if not producer.is_consumers_queue_empty(priority_level):
-            return False
+        try:
+            if not producer.is_consumers_queue_empty(priority_level):
+                return False
+        except AttributeError:
+            if producer.channel is None:
+                # channel has been cleared, there is nothing to do
+                return True
+            else:
+                # unexpected, propagate
+                raise
     return True
 
 
