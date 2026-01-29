@@ -42,6 +42,11 @@ class ReportFormat(enum.Enum):
     SYMBOLS_WITH_TF = "symbols_with_time_frames_frames"
 
 
+class DataType(enum.Enum):
+    EXCHANGE = "exchange"
+    SOCIAL = "social"
+
+
 class DataTables(enum.Enum):
     DESCRIPTION = "description"
 
@@ -53,3 +58,7 @@ class ExchangeDataTables(enum.Enum):
     KLINE = "kline"
     TICKER = "ticker"
     FUNDING = "funding"
+
+
+class SocialDataTables(enum.Enum):
+    SOCIAL_EVENTS = "social_events"

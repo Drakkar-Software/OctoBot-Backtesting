@@ -13,13 +13,8 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import octobot_backtesting.collectors.social.social_collector as social_collector
 
-from octobot_backtesting.importers.social import social_importer
 
-from octobot_backtesting.importers.social.social_importer import (
-    SocialDataImporter,
-)
-
-__all__ = [
-    "SocialDataImporter",
-]
+class AbstractSocialLiveCollector(social_collector.SocialDataCollector):
+    pass
